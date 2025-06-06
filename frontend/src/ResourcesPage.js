@@ -56,11 +56,28 @@ const ResourcesPage = () => {
 
   const resetAnalytics = async () => {
     try {
-      await axios.post(`${API}/api/analytics/reset`);
+      // Since this needs authentication, show a message about requiring login
+      const confirmReset = window.confirm(
+        "Reset Analytics: This will clear all progress data. " +
+        "Note: This feature requires authentication. " +
+        "Continue to attempt reset?"
+      );
+      
+      if (!confirmReset) return;
+      
+      await axios.post(`${API}/api/analytics/reset`, {}, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
       alert("Analytics reset successfully! All progress has been cleared.");
     } catch (error) {
       console.error('Error resetting analytics:', error);
-      alert("Error resetting analytics. Please try again.");
+      if (error.response?.status === 401) {
+        alert("Analytics reset requires authentication. Please log in first and try again.");
+      } else {
+        alert("Error resetting analytics: " + (error.response?.data?.detail || error.message));
+      }
     }
   };
 
