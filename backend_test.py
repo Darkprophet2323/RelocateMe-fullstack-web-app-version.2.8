@@ -328,8 +328,8 @@ def main():
     if success and reset_response and "reset_code" in reset_response:
         reset_code = reset_response["reset_code"]
         # Test complete password reset with a temporary password
-        tester.test_complete_password_reset("relocate_user", reset_code, "TempPass2025!")
-        # Log back in with original password (since we're just testing)
+        tester.test_complete_password_reset("relocate_user", reset_code, "SecurePass2025!")
+        # Log back in with the same password (since we're resetting to the same password)
         tester.test_login("relocate_user", "SecurePass2025!")
     
     # Test visa requirement details
