@@ -149,8 +149,16 @@ const SpyCursor = () => {
   );
 };
 
-// MISSION DEBRIEF CONSOLE Noir Button Component
+// MISSION DEBRIEF CONSOLE Noir Button Component - ONLY SHOW ON LOGGED IN PAGES
 const MissionDebriefButton = () => {
+  const location = useLocation();
+  
+  // Don't show on login or loading pages
+  const hiddenPaths = ['/login', '/loading'];
+  if (hiddenPaths.some(path => location.pathname.includes(path))) {
+    return null;
+  }
+
   const handleClick = () => {
     window.open('https://os-theme-verify.emergent.host/', '_blank');
   };
@@ -158,12 +166,12 @@ const MissionDebriefButton = () => {
   return (
     <button
       onClick={handleClick}
-      className="mission-debrief-button"
+      className="mission-debrief-button hoverable"
       style={{
         position: 'fixed',
-        bottom: '120px',
+        bottom: '30px',
         right: '30px',
-        zIndex: 100,
+        zIndex: 9999,
         backgroundColor: '#e0e0e0',
         color: '#000',
         border: 'none',
@@ -184,28 +192,25 @@ const MissionDebriefButton = () => {
         transition: 'all 0.3s ease',
         animation: 'fadeInDebrief 1.2s ease-out',
         boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)',
-        overflow: 'hidden',
-        position: 'relative'
+        overflow: 'hidden'
       }}
       onMouseEnter={(e) => {
         e.target.style.transform = 'translateY(-2px)';
         e.target.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.4)';
-        e.target.querySelector('.arrow').style.transform = 'translateX(3px)';
+        const arrow = e.target.querySelector('.arrow');
+        if (arrow) arrow.style.transform = 'translateX(3px)';
         
         const sweep = e.target.querySelector('.sweep-effect');
-        if (sweep) {
-          sweep.style.transform = 'translateX(100%)';
-        }
+        if (sweep) sweep.style.transform = 'translateX(100%)';
       }}
       onMouseLeave={(e) => {
         e.target.style.transform = 'translateY(0)';
         e.target.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.3)';
-        e.target.querySelector('.arrow').style.transform = 'translateX(0)';
+        const arrow = e.target.querySelector('.arrow');
+        if (arrow) arrow.style.transform = 'translateX(0)';
         
         const sweep = e.target.querySelector('.sweep-effect');
-        if (sweep) {
-          sweep.style.transform = 'translateX(-100%)';
-        }
+        if (sweep) sweep.style.transform = 'translateX(-100%)';
       }}
     >
       <div 
