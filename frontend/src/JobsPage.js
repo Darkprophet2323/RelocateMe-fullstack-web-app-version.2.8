@@ -5,40 +5,86 @@ const API = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
 const JobsPage = () => {
   const [jobs, setJobs] = useState([]);
+  const [platforms, setPlatforms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredJobs, setFilteredJobs] = useState([]);
   const [filterType, setFilterType] = useState("all");
 
   useEffect(() => {
-    fetchJobs();
+    fetchJobsAndPlatforms();
   }, []);
 
   useEffect(() => {
     filterJobs();
   }, [searchQuery, filterType, jobs]);
 
-  const fetchJobs = async () => {
+  const fetchJobsAndPlatforms = async () => {
     try {
-      console.log('Fetching jobs from:', `${API}/api/jobs/hospitality`);
-      const response = await axios.get(`${API}/api/jobs/hospitality`);
-      console.log('Jobs response:', response.data);
+      console.log('Fetching jobs and platforms...');
       
-      if (response.data && response.data.featured_jobs) {
-        setJobs(response.data.featured_jobs);
-        setFilteredJobs(response.data.featured_jobs);
+      // Fetch both jobs and platforms
+      const [jobsResponse, platformsResponse] = await Promise.all([
+        axios.get(`${API}/api/jobs/hospitality`),
+        axios.get(`${API}/api/jobs/search-platforms`)
+      ]);
+      
+      console.log('Jobs response:', jobsResponse.data);
+      console.log('Platforms response:', platformsResponse.data);
+      
+      if (jobsResponse.data && jobsResponse.data.featured_jobs) {
+        setJobs(jobsResponse.data.featured_jobs);
+        setFilteredJobs(jobsResponse.data.featured_jobs);
       } else {
-        console.log('Empty job response, using fallback data');
         setFallbackJobs();
+      }
+
+      if (platformsResponse.data && platformsResponse.data.platforms) {
+        setPlatforms(platformsResponse.data.platforms.slice(0, 4)); // Show only first 4
+      } else {
+        setFallbackPlatforms();
       }
       
       setLoading(false);
     } catch (error) {
-      console.error('Error fetching jobs:', error);
-      console.log('Jobs API call failed, using fallback data');
+      console.error('Error fetching data:', error);
+      console.log('API calls failed, using fallback data');
       setFallbackJobs();
+      setFallbackPlatforms();
       setLoading(false);
     }
+  };
+
+  const setFallbackPlatforms = () => {
+    const fallbackPlatforms = [
+      {
+        "name": "AI Apply",
+        "url": "https://aiapply.co",
+        "description": "AI-powered job application platform",
+        "icon": "🤖"
+      },
+      {
+        "name": "Indeed UK",
+        "url": "https://uk.indeed.com/jobs?q=hospitality&l=Peak+District",
+        "description": "Largest UK job search platform",
+        "icon": "🔍"
+      },
+      {
+        "name": "Caterer.com",
+        "url": "https://www.caterer.com/jobs",
+        "description": "Hospitality industry specialists",
+        "icon": "🍽️"
+      },
+      {
+        "name": "Leisure Jobs",
+        "url": "https://www.leisurejobs.com",
+        "description": "Tourism & hospitality careers",
+        "icon": "🏨"
+      }
+    ];
+    
+    setPlatforms(fallbackPlatforms);
+    console.log('Fallback platforms set, total:', fallbackPlatforms.length);
   };
 
   const setFallbackJobs = () => {
