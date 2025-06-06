@@ -66,11 +66,46 @@ const ResourcesPage = () => {
         {"name": "Peak Cottages", "url": "https://www.peakcottages.com/", "description": "Peak District holiday and rental properties"},
         {"name": "Bagshaws Residential", "url": "https://www.bagshawsresidential.co.uk/", "description": "Local Peak District estate agents"}
       ],
+      "expat_communities": [
+        {"name": "InterNations UK", "url": "https://internations.org/united-kingdom-expats", "description": "Global expat community in UK"},
+        {"name": "Expatica UK", "url": "https://www.expatica.com/uk/", "description": "Expat news and information hub"},
+        {"name": "Manchester International Friends", "url": "https://www.meetup.com/manchester-international-friends/", "description": "Find expat meetups and social events"}
+      ],
+      "healthcare": [
+        {"name": "NHS UK", "url": "https://www.nhs.uk/", "description": "National Health Service portal"},
+        {"name": "NHS GP Registration", "url": "https://www.nhs.uk/nhs-services/gps/how-to-register-with-a-gp-surgery/", "description": "How to register with a local GP in the UK"},
+        {"name": "Bupa UK", "url": "https://www.bupa.co.uk/", "description": "Private health insurance and services"}
+      ],
+      "transport_driving": [
+        {"name": "Transport for Greater Manchester", "url": "https://tfgm.com/", "description": "Local public transport authority"},
+        {"name": "National Rail", "url": "https://www.nationalrail.co.uk/", "description": "Train schedules and tickets"},
+        {"name": "DVLA Driving License Services", "url": "https://www.gov.uk/browse/driving/driving-licences", "description": "Apply, renew or exchange your UK driving license"}
+      ],
+      "education": [
+        {"name": "Gov.uk School Performance", "url": "https://www.gov.uk/school-performance-tables", "description": "Official school comparison and search"},
+        {"name": "UCAS University Applications", "url": "https://www.ucas.com/", "description": "University admissions service for UK higher education"},
+        {"name": "Ofsted Reports", "url": "https://reports.ofsted.gov.uk/", "description": "School quality inspections and ratings"}
+      ],
+      "legal_tax": [
+        {"name": "HMRC Official", "url": "https://www.gov.uk/government/organisations/hm-revenue-customs", "description": "UK tax authority — Self-assessment, PAYE, etc."},
+        {"name": "Citizens Advice", "url": "https://www.citizensadvice.org.uk/", "description": "Free legal and tax advice"},
+        {"name": "Law Society Solicitor Search", "url": "https://solicitors.lawsociety.org.uk/", "description": "Search for qualified solicitors in the UK"}
+      ],
+      "peak_district_lifestyle": [
+        {"name": "Visit Peak District & Derbyshire", "url": "https://www.visitpeakdistrict.com/", "description": "Official tourism site"},
+        {"name": "Peak District National Park Authority", "url": "https://www.peakdistrict.gov.uk/", "description": "National Park official site — events, conservation, walks"},
+        {"name": "Peak District Online", "url": "https://www.peakdistrictonline.co.uk/", "description": "Local news, community, and activities"}
+      ],
       "financial": [
         {"name": "HSBC UK", "url": "https://www.hsbc.co.uk/", "description": "Major UK banking services"},
         {"name": "Wise", "url": "https://wise.com/", "description": "International money transfers"},
         {"name": "Revolut", "url": "https://www.revolut.com/", "description": "Digital banking platform"},
         {"name": "Monzo", "url": "https://www.monzo.com/", "description": "Mobile-first banking"}
+      ],
+      "miscellaneous": [
+        {"name": "Forward2Me", "url": "https://www.forward2me.com/", "description": "UK parcel forwarding service"},
+        {"name": "GiffGaff", "url": "https://www.giffgaff.com/", "description": "UK mobile network provider"},
+        {"name": "Vodafone UK", "url": "https://www.vodafone.co.uk/", "description": "Major UK mobile network"}
       ]
     };
     
