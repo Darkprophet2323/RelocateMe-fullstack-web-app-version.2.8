@@ -1012,7 +1012,12 @@ async def get_all_resources():
             {"name": "Bright Tax", "url": "https://brighttax.com/", "description": "Expat tax preparation"},
             {"name": "Expatriate Tax Returns", "url": "https://www.expatriatetaxreturns.com/", "description": "US expat tax services"},
             {"name": "Tax Samaritan", "url": "https://www.taxsamaritan.com/", "description": "US tax services for expats"},
-            {"name": "US Tax FS", "url": "https://www.ustaxfs.com/", "description": "US tax filing services"}
+            {"name": "US Tax FS", "url": "https://www.ustaxfs.com/", "description": "US tax filing services"},
+            {"name": "HMRC Official", "url": "https://www.gov.uk/government/organisations/hm-revenue-customs", "description": "UK tax authority — Self-assessment, PAYE, etc."},
+            {"name": "Citizens Advice", "url": "https://www.citizensadvice.org.uk/", "description": "Free legal and tax advice"},
+            {"name": "GOV.UK Tax Guide", "url": "https://www.gov.uk/tax-uk", "description": "UK tax guidance for newcomers"},
+            {"name": "Law Society Solicitor Search", "url": "https://solicitors.lawsociety.org.uk/", "description": "Search for qualified solicitors in the UK"},
+            {"name": "TaxAid", "url": "https://taxaid.org.uk/", "description": "Help with tax problems for low-income individuals"}
         ],
         "peak_district_lifestyle": [
             {"name": "Visit Peak District", "url": "https://www.visitpeakdistrict.com/", "description": "Official Peak District tourism"},
