@@ -107,15 +107,17 @@ const ResourcesPage = () => {
   }
 
   const resourceCategories = [
-    { key: 'visa_legal', title: 'VISA & LEGAL', description: 'Immigration and legal documentation' },
+    { key: 'visa_legal', title: 'VISA & LEGAL', description: 'UK immigration and legal documentation' },
+    { key: 'flights_moving', title: 'FLIGHTS & MOVING', description: 'Travel booking and international relocation' },
     { key: 'housing', title: 'HOUSING', description: 'Property search and rental guidance' },
-    { key: 'employment', title: 'EMPLOYMENT', description: 'Job search and career development' },
+    { key: 'expat_communities', title: 'EXPAT COMMUNITIES', description: 'UK expat networks and support groups' },
+    { key: 'healthcare', title: 'HEALTHCARE', description: 'NHS and private healthcare options' },
     { key: 'financial', title: 'FINANCIAL', description: 'Banking and financial services' },
-    { key: 'local_services', title: 'LOCAL SERVICES', description: 'Peak District regional services' },
-    { key: 'lifestyle', title: 'LIFESTYLE', description: 'Recreation and local attractions' },
-    { key: 'moving_logistics', title: 'LOGISTICS', description: 'International moving services' },
-    { key: 'education', title: 'EDUCATION', description: 'Learning and development opportunities' },
-    { key: 'additional_resources', title: 'ADDITIONAL', description: 'Essential utilities and services' }
+    { key: 'transport_driving', title: 'TRANSPORT & DRIVING', description: 'UK driving licenses and public transport' },
+    { key: 'education', title: 'EDUCATION', description: 'Schools and educational opportunities' },
+    { key: 'legal_tax', title: 'LEGAL & TAX', description: 'UK tax obligations and legal assistance' },
+    { key: 'peak_district_lifestyle', title: 'PEAK DISTRICT LIFESTYLE', description: 'Local attractions and community life' },
+    { key: 'miscellaneous', title: 'MISCELLANEOUS', description: 'Additional services and utilities' }
   ];
 
   return (
