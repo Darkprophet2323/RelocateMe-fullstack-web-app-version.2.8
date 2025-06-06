@@ -2167,7 +2167,7 @@ const LoginPage = () => {
     const typeNextChar = () => {
       if (currentLineIndex >= lines.length) {
         console.log("Typewriter animation completed, calling callback");
-        callback();
+        if (callback) callback();
         return;
       }
 
@@ -2178,19 +2178,24 @@ const LoginPage = () => {
         setTerminalLines([...currentTerminalLines]);
         currentLineIndex++;
         currentCharIndex = 0;
-        // Faster line transition - reduced from 100-300ms to 50-150ms
-        setTimeout(typeNextChar, 50 + Math.random() * 100);
+        // Faster line transition - reduced from 100-300ms to 30-80ms
+        setTimeout(typeNextChar, 30 + Math.random() * 50);
       } else {
         const partialLine = currentLine.substring(0, currentCharIndex + 1);
         const displayLines = [...currentTerminalLines, partialLine];
         setTerminalLines(displayLines);
         currentCharIndex++;
-        // Much faster character typing - reduced from 20-100ms to 5-15ms
-        setTimeout(typeNextChar, 5 + Math.random() * 10);
+        // Much faster character typing - reduced from 20-100ms to 2-8ms
+        setTimeout(typeNextChar, 2 + Math.random() * 6);
       }
     };
 
-    typeNextChar();
+    try {
+      typeNextChar();
+    } catch (error) {
+      console.error("Typewriter effect error:", error);
+      if (callback) callback(); // Fallback to complete the flow
+    }
   };
 
   const startHackingAnimation = () => {
