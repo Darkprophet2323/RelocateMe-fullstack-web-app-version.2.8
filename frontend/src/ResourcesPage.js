@@ -258,20 +258,20 @@ const ResourcesPage = () => {
               <h3 className="text-lg md:text-xl font-bold text-white mb-4 md:mb-6 font-mono">
                 SEARCH RESULTS ({searchResults.length})
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="resource-grid">
                 {searchResults.map((resource, index) => (
                   <a
                     key={index}
                     href={resource.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="hoverable bg-gray-900 border border-gray-700 p-4 hover:border-white transition-all duration-300"
+                    className="hoverable bg-gray-900 border border-gray-700 p-4 hover:border-white transition-all duration-300 no-overflow"
                   >
                     <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-2">
-                      <h4 className="font-bold text-white text-sm font-mono mb-1 md:mb-0">{resource.name}</h4>
+                      <h4 className="font-bold text-white text-sm font-mono mb-1 md:mb-0 break-words">{resource.name}</h4>
                       <span className="text-xs text-gray-500 font-mono">{resource.category}</span>
                     </div>
-                    <p className="text-gray-400 text-xs font-mono">{resource.description}</p>
+                    <p className="text-gray-400 text-xs font-mono break-words">{resource.description}</p>
                   </a>
                 ))}
               </div>
