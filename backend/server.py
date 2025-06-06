@@ -384,7 +384,7 @@ VISA_REQUIREMENTS = [
     }
 ]
 
-# Extended 39-Step Relocation Timeline
+# Enhanced Complete 39-Step Relocation Timeline
 RELOCATION_TIMELINE = [
     # Planning Phase (Days -180 to -90)
     {"id": 1, "title": "Initial Research & Decision", "description": "Research Peak District areas, cost of living, and lifestyle", "category": "Planning", "estimated_days": 7, "dependencies": [], "resources": ["Peak District National Park Authority", "UK Government Moving Guide"]},
