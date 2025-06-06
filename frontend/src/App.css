@@ -1,4 +1,4 @@
-/* Enhanced App.css with stable checkboxes and cursor fixes */
+/* Enhanced App.css - Mobile Responsive with Minimal Animations */
 
 .App {
   text-align: center;
@@ -30,6 +30,34 @@ label:hover input[type="checkbox"] {
   transform: none !important;
 }
 
+/* MINIMAL HOVER EFFECTS - Only for specific elements */
+.hoverable {
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+/* Remove excessive hover animations for most elements */
+.hoverable:hover {
+  transform: none !important;
+  scale: none !important;
+}
+
+/* Only specific elements get hover effects */
+.nav-button:hover,
+.primary-button:hover,
+.mission-console:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: #ffffff;
+}
+
+/* Remove group hover effects */
+.group:hover {
+  transform: none !important;
+}
+
+.group-hover\:bg-gray-900:hover {
+  background-color: #111827 !important;
+}
+
 /* SpyCursor Enhancements */
 .spy-cursor-active {
   cursor: none !important;
@@ -42,21 +70,6 @@ label:hover input[type="checkbox"] {
 .cursor-enhanced {
   position: relative;
   z-index: 1;
-}
-
-.cursor-enhanced:hover {
-  background-color: rgba(255, 255, 255, 0.05) !important;
-  border-color: rgba(255, 255, 255, 0.8) !important;
-}
-
-/* Stable hover effects */
-.hoverable {
-  transition: all 0.3s ease;
-  position: relative;
-}
-
-.hoverable:hover {
-  transform: none; /* Prevent any transforms that might affect layout */
 }
 
 /* Timeline specific fixes */
@@ -96,16 +109,125 @@ label:hover input[type="checkbox"] {
   flex-shrink: 0;
 }
 
-/* Global stability */
-* {
-  box-sizing: border-box;
+/* MOBILE RESPONSIVE DESIGN */
+@media (max-width: 768px) {
+  .timeline-step label {
+    gap: 8px;
+  }
+  
+  .progress-item label {
+    gap: 12px;
+  }
+  
+  .document-checkbox-container {
+    gap: 12px;
+  }
+  
+  /* Mobile text sizes */
+  h1 {
+    font-size: 2.5rem !important;
+  }
+  
+  h2 {
+    font-size: 1.5rem !important;
+  }
+  
+  h3 {
+    font-size: 1.25rem !important;
+  }
+  
+  /* Mobile padding */
+  .p-8 {
+    padding: 1rem !important;
+  }
+  
+  .p-6 {
+    padding: 0.75rem !important;
+  }
+  
+  /* Mobile grid adjustments */
+  .grid-cols-3 {
+    grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+  }
+  
+  .grid-cols-2 {
+    grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+  }
+  
+  /* Mobile text spacing */
+  .text-6xl,
+  .text-8xl {
+    font-size: 3rem !important;
+    line-height: 1.2 !important;
+  }
+  
+  .text-5xl {
+    font-size: 2.5rem !important;
+  }
+  
+  .text-4xl {
+    font-size: 2rem !important;
+  }
+  
+  .text-3xl {
+    font-size: 1.875rem !important;
+  }
+  
+  .text-2xl {
+    font-size: 1.5rem !important;
+  }
+  
+  .text-xl {
+    font-size: 1.25rem !important;
+  }
+  
+  /* Mobile navigation height */
+  .h-14 {
+    height: 3rem !important;
+  }
+  
+  /* Mobile checkbox sizes */
+  input[type="checkbox"] {
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+  }
+  
+  /* Mobile button sizing */
+  button {
+    padding: 0.5rem 1rem !important;
+    font-size: 0.875rem !important;
+  }
+  
+  /* Mobile form elements */
+  input, textarea, select {
+    padding: 0.75rem !important;
+    font-size: 1rem !important;
+  }
 }
 
-/* Enhanced cursor visibility */
-.cursor-highlight {
-  background-color: rgba(255, 255, 255, 0.1) !important;
-  border: 2px solid rgba(255, 255, 255, 0.3) !important;
-  z-index: 10;
+@media (max-width: 640px) {
+  /* Extra small mobile adjustments */
+  .px-6 {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+  
+  .mb-8 {
+    margin-bottom: 1.5rem !important;
+  }
+  
+  .mb-6 {
+    margin-bottom: 1rem !important;
+  }
+  
+  /* Stack mobile layouts */
+  .flex-col-mobile {
+    flex-direction: column !important;
+  }
+  
+  .w-full-mobile {
+    width: 100% !important;
+  }
 }
 
 /* Custom scrollbar for noir theme */
@@ -126,35 +248,22 @@ label:hover input[type="checkbox"] {
   background: #777;
 }
 
-/* Animation classes */
+/* SIMPLE Animation classes - minimal only */
 .fade-in {
-  animation: fadeIn 0.8s ease-in-out;
-}
-
-.slide-in-left {
-  animation: slideInLeft 0.8s ease-in-out;
+  animation: fadeIn 0.5s ease-in-out;
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(20px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
-@keyframes slideInLeft {
-  from {
-    opacity: 0;
-    transform: translateX(-30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+.animate-slideDown {
+  animation: slideDown 0.2s ease-out;
 }
 
 @keyframes slideDown {
@@ -168,32 +277,6 @@ label:hover input[type="checkbox"] {
   }
 }
 
-.animate-slideDown {
-  animation: slideDown 0.3s ease-out;
-}
-
-/* Typewriter effect */
-.typewriter {
-  overflow: hidden;
-  border-right: 3px solid rgba(255, 255, 255, 0.75);
-  white-space: nowrap;
-  margin: 0 auto;
-  letter-spacing: 0.1em;
-  animation: 
-    typing 3.5s steps(30, end),
-    blink-caret 0.5s step-end infinite;
-}
-
-@keyframes typing {
-  from { width: 0 }
-  to { width: 100% }
-}
-
-@keyframes blink-caret {
-  from, to { border-color: transparent }
-  50% { border-color: rgba(255, 255, 255, 0.75) }
-}
-
 /* Logout button styling */
 .logout-button {
   background: #1f2937;
@@ -203,23 +286,16 @@ label:hover input[type="checkbox"] {
   font-family: 'Courier New', monospace;
   font-weight: bold;
   letter-spacing: 0.05em;
-  transition: all 0.3s ease;
+  transition: border-color 0.2s ease;
 }
 
 .logout-button:hover {
-  background: #374151;
-  color: #f9fafb;
   border-color: #9ca3af;
 }
 
-/* Resource card hover effects */
-.resource-card {
-  transition: all 0.3s ease;
-}
-
+/* Resource card simple hover */
 .resource-card:hover {
   border-color: #ffffff !important;
-  background-color: #1f2937 !important;
 }
 
 /* Noir theme classes */
@@ -229,35 +305,53 @@ label:hover input[type="checkbox"] {
   text-transform: uppercase;
 }
 
-/* Fix for mobile responsiveness */
-@media (max-width: 768px) {
-  .timeline-step label {
-    gap: 8px;
-  }
-  
-  .progress-item label {
-    gap: 12px;
-  }
-  
-  .document-checkbox-container {
-    gap: 12px;
-  }
-}
-
 /* Ensure stable layout for all interactive elements */
 button, a, input, select, textarea {
   position: relative;
 }
 
-button:hover, a:hover {
-  transform: none !important;
-}
-
-/* Fix any unwanted transforms */
-.group:hover .group-hover\:scale-105 {
-  transform: none !important;
-}
-
+/* Remove all unwanted transforms and animations */
 .hover\:scale-105:hover {
   transform: none !important;
+}
+
+.transition-all {
+  transition: border-color 0.2s ease, background-color 0.2s ease !important;
+}
+
+.duration-300,
+.duration-500,
+.duration-1000 {
+  transition-duration: 0.2s !important;
+}
+
+/* Mobile utility classes */
+@media (max-width: 768px) {
+  .mobile-stack {
+    flex-direction: column !important;
+  }
+  
+  .mobile-full {
+    width: 100% !important;
+  }
+  
+  .mobile-center {
+    text-align: center !important;
+  }
+  
+  .mobile-p-4 {
+    padding: 1rem !important;
+  }
+  
+  .mobile-text-sm {
+    font-size: 0.875rem !important;
+  }
+  
+  .mobile-hidden {
+    display: none !important;
+  }
+  
+  .mobile-block {
+    display: block !important;
+  }
 }
