@@ -209,14 +209,8 @@ class RelocateMeAPITester:
             data={"username": username}
         )
         
-    def test_visa_requirement_details(self, visa_type):
-        """Test getting specific visa requirement details"""
-        return self.run_test(
-            "Get Visa Requirement Details",
-            "GET",
-            f"visa/requirements/{visa_type}",
-            200
-        )
+    def print_summary(self):
+        """Print test summary"""
         print("\n" + "="*50)
         print(f"📊 TEST SUMMARY: {self.tests_passed}/{self.tests_run} tests passed")
         print("="*50)
