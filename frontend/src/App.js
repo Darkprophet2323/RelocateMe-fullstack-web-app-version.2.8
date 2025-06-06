@@ -2126,25 +2126,27 @@ const ResourcesPage = () => {
           </div>
         </div>
 
-        {/* Category Filter - Centered Grid */}
+        {/* Category Filter - Enhanced Mobile Responsive */}
         <div className="mb-12">
-          <h2 className="text-2xl font-bold text-white mb-6 font-mono text-center tracking-wider">
+          <h2 className="text-xl md:text-2xl font-bold text-white mb-6 font-mono text-center tracking-wider">
             RESOURCE CATEGORIES
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4 max-w-6xl mx-auto px-2">
             {categories.map(category => (
               <button
                 key={category.key}
                 onClick={() => setActiveCategory(category.key)}
-                className={`hoverable p-4 border-2 transition-all duration-300 text-center ${
+                className={`hoverable p-3 md:p-4 border-2 transition-all duration-300 text-center flex-shrink-0 ${
                   activeCategory === category.key
                     ? 'bg-white text-black border-white'
                     : 'bg-black text-white border-gray-600 hover:border-white hover:bg-gray-900'
                 }`}
               >
-                <div className="text-2xl mb-2">{category.icon}</div>
-                <div className="font-mono font-bold text-sm tracking-wider">{category.name}</div>
-                <div className="text-xs opacity-75 mt-1">
+                <div className="text-lg md:text-2xl mb-1 md:mb-2 font-mono">{category.symbol}</div>
+                <div className="font-mono font-bold text-xs md:text-sm tracking-wider leading-tight">
+                  {category.name}
+                </div>
+                <div className="text-xs opacity-75 mt-1 font-mono">
                   {category.key === 'all' 
                     ? `${getTotalCount()} total` 
                     : `${resources[category.key]?.length || 0} links`
