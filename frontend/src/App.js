@@ -2382,7 +2382,26 @@ const App = () => {
 
   return (
     <Router>
-      {isLoggedIn ? <AppContent /> : <LoginPage />}
+      {isLoading ? (
+        <div className="min-h-screen bg-black flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-white text-4xl font-serif mb-4">RELOCATE.SYS</div>
+            <div className="text-gray-400 font-mono text-lg mb-8">[ INITIALIZING SECURE CONNECTION ]</div>
+            <div className="flex justify-center space-x-1">
+              <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+              <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
+              <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
+            </div>
+          </div>
+        </div>
+      ) : isLoggedIn ? (
+        <>
+          <AppContent />
+          <MissionDebriefButton />
+        </>
+      ) : (
+        <LoginPage />
+      )}
     </Router>
   );
 };
