@@ -171,6 +171,15 @@ class RelocateMeAPITester:
             "visa/checklist",
             200
         )
+        
+    def test_visa_requirement_details(self, visa_type):
+        """Test getting visa requirement details"""
+        return self.run_test(
+            "Get Visa Requirement Details",
+            "GET",
+            f"visa/requirements/{visa_type}",
+            200
+        )
 
     def test_resources_all(self):
         """Test getting all resources"""
