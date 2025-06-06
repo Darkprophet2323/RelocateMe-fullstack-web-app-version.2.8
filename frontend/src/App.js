@@ -2444,10 +2444,12 @@ const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState("");
   const [currentPath, setCurrentPath] = useState("/dashboard");
+  const [isLoading, setIsLoading] = useState(true);
 
   // Check if user is already logged in
   useEffect(() => {
     const checkLoginStatus = async () => {
+      setIsLoading(true);
       // Check for forced parameter to bypass login
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get('logout') === 'true') {
@@ -2455,6 +2457,7 @@ const App = () => {
         localStorage.removeItem('username');
         setIsLoggedIn(false);
         setUsername("");
+        setIsLoading(false);
         console.log("Forced logout via URL parameter");
         window.history.replaceState({}, document.title, window.location.pathname);
         return;
@@ -2466,6 +2469,7 @@ const App = () => {
       if (token && storedUsername) {
         setIsLoggedIn(true);
         setUsername(storedUsername);
+        setIsLoading(false);
         console.log("User is logged in, showing main app");
       } else {
         // Auto-login immediately to bypass animation issues
@@ -2480,11 +2484,14 @@ const App = () => {
             localStorage.setItem("username", "relocate_user");
             setIsLoggedIn(true);
             setUsername("relocate_user");
+            setIsLoading(false);
             console.log("Auto-login successful - main app loading");
+          } else {
+            setIsLoading(false);
           }
         } catch (error) {
           console.error("Auto-login failed, showing login screen:", error);
-          // If auto-login fails, show the login interface
+          setIsLoading(false);
         }
       }
     };
