@@ -883,6 +883,317 @@ def get_current_phase(completed_steps):
     else:
         return "Settlement"
 
+# Enhanced Jobs endpoints - Hospitality, Travel & Tourism with Visa Support
+@api_router.get("/jobs/hospitality")
+async def get_hospitality_jobs():
+    return {
+        "featured_jobs": [
+            {
+                "id": 1,
+                "title": "Hotel Receptionist - Peak District Resort",
+                "company": "Chatsworth Estate Hotels",
+                "location": "Bakewell, Peak District",
+                "salary": "£22,000 - £26,000 + Tips",
+                "type": "Full-time",
+                "visa_support": True,
+                "remote_options": "Hybrid training available",
+                "benefits": [
+                    "Tier 2 Skilled Worker Visa Sponsorship",
+                    "On-site accommodation available",
+                    "Staff meals and uniform provided",
+                    "28 days holiday + bank holidays",
+                    "Career progression to management",
+                    "Peak District staff discounts",
+                    "Healthcare benefits after probation"
+                ],
+                "description": "Join our luxury resort in the heart of Peak District! Perfect for hospitality professionals seeking UK visa sponsorship. We provide comprehensive training, beautiful working environment, and excellent career progression opportunities.",
+                "requirements": [
+                    "Previous hotel/customer service experience",
+                    "Excellent English communication skills",
+                    "Right to work in UK or eligible for sponsorship",
+                    "Flexible availability including weekends"
+                ],
+                "apply_url": "https://www.chatsworth.org/careers",
+                "posted_date": "2024-03-15",
+                "featured": True
+            },
+            {
+                "id": 2,
+                "title": "Restaurant Server - Michelin Recommended",
+                "company": "The Peacock at Rowsley",
+                "location": "Rowsley, Peak District",
+                "salary": "£11.50/hour + £200-400 weekly tips",
+                "type": "Full-time",
+                "visa_support": True,
+                "remote_options": "Online training modules",
+                "benefits": [
+                    "Skilled Worker Visa sponsorship available",
+                    "Share of tips (£200-400/week average)",
+                    "Staff discount on food and accommodation",
+                    "Professional development opportunities",
+                    "Relocation assistance package",
+                    "Pension scheme",
+                    "Staff events and team building"
+                ],
+                "description": "Work in a prestigious Michelin-recommended restaurant with stunning Peak District views. We offer excellent visa support for international candidates and comprehensive training in fine dining service.",
+                "requirements": [
+                    "Restaurant service experience preferred",
+                    "Passion for hospitality and fine dining",
+                    "Strong English language skills",
+                    "Availability for evening and weekend shifts"
+                ],
+                "apply_url": "https://www.thepeacockatrowsley.com/careers",
+                "posted_date": "2024-03-14",
+                "featured": True
+            },
+            {
+                "id": 3,
+                "title": "Travel Coordinator - Remote & On-site",
+                "company": "Peak District Adventures",
+                "location": "Castleton, Peak District (Remote options)",
+                "salary": "£25,000 - £30,000",
+                "type": "Full-time",
+                "visa_support": True,
+                "remote_options": "Hybrid: 3 days remote, 2 days on-site",
+                "benefits": [
+                    "Tier 2 General Visa sponsorship",
+                    "Flexible hybrid working arrangement",
+                    "Free Peak District activity passes",
+                    "Professional travel industry certifications",
+                    "25 days holiday + flexible time off",
+                    "Company laptop and equipment",
+                    "Annual team retreat to European destinations"
+                ],
+                "description": "Coordinate exciting travel experiences in Peak District while enjoying remote work flexibility. Perfect role for international candidates seeking work-life balance with visa sponsorship included.",
+                "requirements": [
+                    "Tourism or travel industry experience",
+                    "Excellent organizational skills",
+                    "Knowledge of booking systems preferred",
+                    "Strong written and verbal English"
+                ],
+                "apply_url": "https://www.peakdistrictadventures.co.uk/jobs",
+                "posted_date": "2024-03-13",
+                "featured": True
+            },
+            {
+                "id": 4,
+                "title": "Pub Manager - Traditional Peak District Inn",
+                "company": "The Old Nag's Head",
+                "location": "Edale, Peak District",
+                "salary": "£28,000 - £35,000 + Performance Bonus",
+                "type": "Full-time",
+                "visa_support": True,
+                "remote_options": "Management training online available",
+                "benefits": [
+                    "Skilled Worker Visa fully sponsored",
+                    "Free accommodation above pub included",
+                    "All utilities and meals provided",
+                    "Performance-based quarterly bonuses",
+                    "Management training and development",
+                    "Use of company vehicle",
+                    "Profit-sharing scheme"
+                ],
+                "description": "Manage a historic pub in the stunning Edale valley with full visa sponsorship and accommodation included. Perfect opportunity for experienced hospitality professionals to run their own establishment.",
+                "requirements": [
+                    "Previous pub or restaurant management experience",
+                    "Valid UK driving license or ability to obtain",
+                    "Experience with staff management",
+                    "Knowledge of food safety and licensing"
+                ],
+                "apply_url": "https://www.oldnagsheadedale.co.uk/careers",
+                "posted_date": "2024-03-12",
+                "featured": True
+            },
+            {
+                "id": 5,
+                "title": "Tourism Digital Marketing Specialist",
+                "company": "Visit Peak District",
+                "location": "Bakewell (Fully Remote Options)",
+                "salary": "£30,000 - £38,000",
+                "type": "Full-time",
+                "visa_support": True,
+                "remote_options": "100% remote with monthly team meetings",
+                "benefits": [
+                    "Tier 2 Skilled Worker Visa sponsorship",
+                    "Fully remote working arrangement",
+                    "Latest Apple MacBook Pro provided",
+                    "£500 annual learning & development budget",
+                    "Free annual Peak District Explorer Pass",
+                    "28 days holiday + birthday off",
+                    "Mental health and wellness support"
+                ],
+                "description": "Promote Peak District tourism from anywhere in the UK! We offer full remote working with excellent visa support for digital marketing professionals passionate about travel and tourism.",
+                "requirements": [
+                    "Digital marketing experience (2+ years)",
+                    "Social media management skills",
+                    "Content creation abilities",
+                    "SEO and analytics knowledge"
+                ],
+                "apply_url": "https://www.visitpeakdistrict.com/careers",
+                "posted_date": "2024-03-11",
+                "featured": True
+            },
+            {
+                "id": 6,
+                "title": "Hotel Housekeeping Supervisor",
+                "company": "Hassop Hall Hotel",
+                "location": "Hassop, Peak District",
+                "salary": "£20,000 - £24,000 + Overtime",
+                "type": "Full-time",
+                "visa_support": True,
+                "remote_options": "Digital scheduling and training tools",
+                "benefits": [
+                    "Visa sponsorship for suitable candidates",
+                    "On-site staff accommodation available",
+                    "Overtime pay at time-and-a-half",
+                    "Staff meals and laundry service",
+                    "Team leader development program",
+                    "Health and dental insurance",
+                    "Employee assistance program"
+                ],
+                "description": "Lead our housekeeping team at a luxury Peak District hotel. We provide excellent visa support and accommodation for international candidates looking to build their hospitality career in the UK.",
+                "requirements": [
+                    "Housekeeping or cleaning supervision experience",
+                    "Attention to detail and quality standards",
+                    "Team leadership skills",
+                    "Flexibility with weekend and holiday work"
+                ],
+                "apply_url": "https://www.hassophall.co.uk/careers",
+                "posted_date": "2024-03-10",
+                "featured": True
+            },
+            {
+                "id": 7,
+                "title": "Adventure Tourism Guide",
+                "company": "Peak District Outdoor Adventures",
+                "location": "Hope Valley, Peak District",
+                "salary": "£18,000 - £25,000 + Commission",
+                "type": "Full-time",
+                "visa_support": True,
+                "remote_options": "Online safety training and certifications",
+                "benefits": [
+                    "Tier 2 Visa sponsorship available",
+                    "Free outdoor gear and equipment",
+                    "Professional adventure qualifications paid",
+                    "Commission on tour bookings",
+                    "Seasonal bonus payments",
+                    "Access to all Peak District activities",
+                    "International guide exchange program"
+                ],
+                "description": "Share your passion for the outdoors while getting UK visa sponsorship! Lead hiking, climbing, and adventure tours in one of England's most beautiful national parks with full training provided.",
+                "requirements": [
+                    "Outdoor activity experience or qualifications",
+                    "First aid certification or willingness to obtain",
+                    "Excellent physical fitness",
+                    "Strong communication and safety awareness"
+                ],
+                "apply_url": "https://www.peakadventures.co.uk/guide-jobs",
+                "posted_date": "2024-03-09",
+                "featured": True
+            },
+            {
+                "id": 8,
+                "title": "Conference & Events Coordinator",
+                "company": "Peak District Conference Centre",
+                "location": "Buxton, Peak District",
+                "salary": "£24,000 - £28,000",
+                "type": "Full-time",
+                "visa_support": True,
+                "remote_options": "Hybrid working with event planning software",
+                "benefits": [
+                    "Full Skilled Worker Visa sponsorship",
+                    "Hybrid working: 3 office, 2 home",
+                    "Professional event management training",
+                    "26 days holiday + bank holidays",
+                    "Performance-related salary reviews",
+                    "Networking opportunities with industry leaders",
+                    "Company pension scheme"
+                ],
+                "description": "Coordinate exciting conferences and events in the Peak District with excellent visa support. Perfect for organized professionals seeking career growth in the events and tourism industry.",
+                "requirements": [
+                    "Event planning or coordination experience",
+                    "Strong organizational and communication skills",
+                    "Proficiency with MS Office and event software",
+                    "Flexibility to work occasional evenings/weekends"
+                ],
+                "apply_url": "https://www.peakdistrictconferences.co.uk/careers",
+                "posted_date": "2024-03-08",
+                "featured": True
+            },
+            {
+                "id": 9,
+                "title": "Boutique Hotel Night Manager",
+                "company": "The George Hotel",
+                "location": "Hathersage, Peak District",
+                "salary": "£26,000 - £30,000 + Night Allowance",
+                "type": "Full-time",
+                "visa_support": True,
+                "remote_options": "Digital management systems training",
+                "benefits": [
+                    "Tier 2 Visa sponsorship guaranteed",
+                    "Night shift allowance (£2/hour extra)",
+                    "Reduced rate staff accommodation",
+                    "Comprehensive health insurance",
+                    "Professional hotel management qualifications",
+                    "Quiet work environment with supportive team",
+                    "Annual performance bonus"
+                ],
+                "description": "Perfect role for night owls! Manage our boutique hotel during peaceful evening hours with full visa sponsorship. Ideal for hospitality professionals seeking work-life balance in beautiful Peak District.",
+                "requirements": [
+                    "Previous hotel or customer service experience",
+                    "Comfortable working night shifts (11pm-7am)",
+                    "Problem-solving and decision-making skills",
+                    "Reliable and trustworthy with security responsibilities"
+                ],
+                "apply_url": "https://www.george-hotel-hathersage.co.uk/jobs",
+                "posted_date": "2024-03-07",
+                "featured": True
+            },
+            {
+                "id": 10,
+                "title": "Travel Content Creator - Remote First",
+                "company": "Peak District Tourism Board",
+                "location": "Peak District (100% Remote)",
+                "salary": "£32,000 - £40,000",
+                "type": "Full-time",
+                "visa_support": True,
+                "remote_options": "Fully remote with quarterly on-site visits",
+                "benefits": [
+                    "Full Tier 2 Skilled Worker Visa support",
+                    "100% remote working arrangement",
+                    "Top-tier content creation equipment provided",
+                    "£1,000 annual travel and exploration budget",
+                    "Creative freedom and flexible hours",
+                    "Professional photography and video training",
+                    "International tourism conference attendance"
+                ],
+                "description": "Create compelling travel content from anywhere in the UK while promoting Peak District tourism! We offer complete remote working freedom with excellent visa sponsorship for creative professionals.",
+                "requirements": [
+                    "Content creation experience (writing, photo, video)",
+                    "Social media and digital marketing knowledge",
+                    "Portfolio of travel or tourism content",
+                    "Self-motivated and creative professional"
+                ],
+                "apply_url": "https://www.peakdistricttourism.gov.uk/creator-jobs",
+                "posted_date": "2024-03-06",
+                "featured": True
+            }
+        ],
+        "total_jobs": 10,
+        "visa_support_available": 10,
+        "remote_options": 7,
+        "with_accommodation": 4,
+        "job_categories": [
+            "Hotel & Accommodation",
+            "Restaurant & Food Service", 
+            "Tourism & Travel",
+            "Pub & Bar Management",
+            "Adventure Tourism",
+            "Events & Conferences",
+            "Digital Marketing & Content"
+        ]
+    }
+
 # Enhanced Resources endpoints - All links for 39 steps with user provided comprehensive list
 @api_router.get("/resources/all")
 async def get_all_resources():
