@@ -331,16 +331,19 @@ const Navigation = ({ user, onLogout, currentPath }) => {
             </button>
           </div>
 
-          {/* Mobile Header */}
+          {/* Mobile Header - Enhanced Responsive */}
           <div className="md:hidden flex items-center justify-between w-full">
-            <span className="text-white text-sm font-mono font-bold">RELOCATE.SYS</span>
-            <div className="flex items-center space-x-2">
-              <span className="text-gray-300 text-xs font-mono tracking-wider">
+            <span className="text-white text-sm font-mono font-bold truncate">RELOCATE.SYS</span>
+            <div className="flex items-center space-x-2 flex-shrink-0">
+              <span className="text-gray-300 text-xs font-mono tracking-wider hidden sm:block">
                 CODENAME: <span className="text-white font-bold">PHOENIX</span>
+              </span>
+              <span className="text-gray-300 text-xs font-mono tracking-wider sm:hidden">
+                <span className="text-white font-bold">PHOENIX</span>
               </span>
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="hoverable text-gray-400 hover:text-white p-2 rounded-md transition-colors duration-300"
+                className="hoverable text-gray-400 hover:text-white p-2 rounded-md transition-colors duration-300 flex-shrink-0"
               >
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   {isMobileMenuOpen ? (
