@@ -5,7 +5,7 @@ import json
 from datetime import datetime
 
 class RelocateMeAPITester:
-    def __init__(self, base_url="http://localhost:8001/api"):
+    def __init__(self, base_url="https://76b0ec44-d34c-46b0-b824-302567b87a97.preview.emergentagent.com/api"):
         self.base_url = base_url
         self.token = None
         self.tests_run = 0
