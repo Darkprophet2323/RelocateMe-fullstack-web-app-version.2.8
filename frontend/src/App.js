@@ -6,7 +6,7 @@ import { gsap } from "gsap";
 
 const API = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
-// Enhanced Spy Cursor Component - Fixed with color inversion
+// Enhanced Transparent Spy Cursor Component - Improved visibility
 const SpyCursor = () => {
   const bigBallRef = useRef(null);
   const smallBallRef = useRef(null);
@@ -29,15 +29,19 @@ const SpyCursor = () => {
     document.body.classList.add('spy-cursor-active');
     document.body.style.cursor = 'none';
     
-    // Add global styles for cursor behavior
+    // Add global styles for enhanced cursor transparency
     const style = document.createElement('style');
     style.textContent = `
       .spy-cursor-active * {
         cursor: none !important;
       }
       .cursor-hover-target {
-        color: inherit;
-        transition: color 0.2s ease, background-color 0.2s ease;
+        transition: all 0.3s ease;
+      }
+      .cursor-hover-highlight {
+        background-color: rgba(255, 255, 255, 0.1) !important;
+        box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3) !important;
+        transform: scale(1.02) !important;
       }
     `;
     document.head.appendChild(style);
@@ -46,49 +50,63 @@ const SpyCursor = () => {
       mousePos.current = { x: e.clientX, y: e.clientY };
       
       if (bigBall && smallBall) {
-        const bigX = e.clientX - 15;
-        const bigY = e.clientY - 15;
-        const smallX = e.clientX - 5;
-        const smallY = e.clientY - 5;
+        const bigX = e.clientX - 20;
+        const bigY = e.clientY - 20;
+        const smallX = e.clientX - 3;
+        const smallY = e.clientY - 3;
         
         bigBall.style.transform = `translate3d(${bigX}px, ${bigY}px, 0)`;
         smallBall.style.transform = `translate3d(${smallX}px, ${smallY}px, 0)`;
       }
     };
 
-    // Enhanced hover handlers with color inversion
+    // Enhanced hover handlers with better transparency
     const handleMouseEnter = (e) => {
       if (bigBall && smallBall) {
-        // Scale up the cursor
-        bigBall.style.transform = bigBall.style.transform + ' scale(3)';
-        bigBall.style.transition = 'transform 0.3s ease';
+        // Scale up with transparency
+        bigBall.style.transform = bigBall.style.transform + ' scale(2.5)';
+        bigBall.style.transition = 'transform 0.2s ease, opacity 0.2s ease';
+        bigBall.style.opacity = '0.8';
         
-        // Enable mix-blend-mode for color inversion
+        // Enhanced mix-blend for better text visibility
         bigBall.style.mixBlendMode = 'difference';
         smallBall.style.mixBlendMode = 'difference';
+        smallBall.style.opacity = '1';
         
-        // Add glow effect
-        bigBall.style.filter = 'drop-shadow(0 0 10px rgba(247, 248, 250, 0.8))';
+        // Add subtle glow effect
+        bigBall.style.filter = 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.4))';
         
-        // Add cursor-hover-target class for styling
-        e.target.classList.add('cursor-hover-target');
+        // Highlight the target element subtly
+        e.target.classList.add('cursor-hover-target', 'cursor-hover-highlight');
+        
+        // Add a subtle outline to the target for better visibility
+        const originalBoxShadow = e.target.style.boxShadow;
+        e.target.dataset.originalBoxShadow = originalBoxShadow;
       }
     };
 
     const handleMouseLeave = (e) => {
       if (bigBall && smallBall) {
-        // Reset scale
+        // Reset scale and transparency
         const currentTransform = bigBall.style.transform.replace(/ scale\([^)]*\)/g, '');
         bigBall.style.transform = currentTransform + ' scale(1)';
-        bigBall.style.transition = 'transform 0.3s ease';
+        bigBall.style.transition = 'transform 0.2s ease, opacity 0.2s ease';
+        bigBall.style.opacity = '0.6';
         
         // Reset mix blend mode and effects
         bigBall.style.mixBlendMode = 'normal';
         smallBall.style.mixBlendMode = 'normal';
+        smallBall.style.opacity = '0.8';
         bigBall.style.filter = 'none';
         
-        // Remove cursor-hover-target class
-        e.target.classList.remove('cursor-hover-target');
+        // Remove highlight classes
+        e.target.classList.remove('cursor-hover-target', 'cursor-hover-highlight');
+        
+        // Restore original box shadow
+        if (e.target.dataset.originalBoxShadow) {
+          e.target.style.boxShadow = e.target.dataset.originalBoxShadow;
+          delete e.target.dataset.originalBoxShadow;
+        }
       }
     };
 
@@ -121,7 +139,9 @@ const SpyCursor = () => {
         '[tabindex]:not([tabindex="-1"]):not([disabled])',
         '.cursor-target:not([disabled])',
         '.mission-console:not([disabled])',
-        '[type="checkbox"]:not([disabled])'
+        '[type="checkbox"]:not([disabled])',
+        '.resource-card:not([disabled])',
+        '.timeline-step:not([disabled])'
       ];
 
       let elementCount = 0;
@@ -143,7 +163,7 @@ const SpyCursor = () => {
         }
       });
 
-      console.log('SpyCursor: Enhanced', elementCount, 'interactive elements');
+      console.log('SpyCursor: Enhanced', elementCount, 'interactive elements with transparency');
     };
 
     // Initial setup
@@ -181,13 +201,14 @@ const SpyCursor = () => {
       document.querySelectorAll('.cursor-enhanced').forEach(element => {
         element.removeEventListener('mouseenter', handleMouseEnter);
         element.removeEventListener('mouseleave', handleMouseLeave);
-        element.classList.remove('cursor-enhanced', 'cursor-hover-target');
+        element.classList.remove('cursor-enhanced', 'cursor-hover-target', 'cursor-hover-highlight');
       });
     };
   }, []);
 
   return (
     <div className="spy-cursor-container" style={{ pointerEvents: 'none', position: 'fixed', top: 0, left: 0, zIndex: 10000 }}>
+      {/* Large transparent cursor with border */}
       <div 
         ref={bigBallRef} 
         className="cursor__ball cursor__ball--big"
@@ -195,17 +216,21 @@ const SpyCursor = () => {
           position: 'fixed',
           top: 0,
           left: 0,
-          width: '30px',
-          height: '30px',
+          width: '40px',
+          height: '40px',
           pointerEvents: 'none',
           zIndex: 10000,
           mixBlendMode: 'normal',
           willChange: 'transform',
           borderRadius: '50%',
-          backgroundColor: '#f7f8fa'
+          background: 'rgba(247, 248, 250, 0.2)',
+          border: '2px solid rgba(247, 248, 250, 0.6)',
+          opacity: '0.6',
+          transition: 'all 0.2s ease'
         }}
       />
       
+      {/* Small center dot for precision */}
       <div 
         ref={smallBallRef} 
         className="cursor__ball cursor__ball--small"
@@ -213,14 +238,16 @@ const SpyCursor = () => {
           position: 'fixed',
           top: 0,
           left: 0,
-          width: '10px',
-          height: '10px',
+          width: '6px',
+          height: '6px',
           pointerEvents: 'none',
           zIndex: 10000,
           mixBlendMode: 'normal',
           willChange: 'transform',
           borderRadius: '50%',
-          backgroundColor: '#f7f8fa'
+          backgroundColor: 'rgba(247, 248, 250, 0.9)',
+          opacity: '0.8',
+          transition: 'all 0.2s ease'
         }}
       />
     </div>
