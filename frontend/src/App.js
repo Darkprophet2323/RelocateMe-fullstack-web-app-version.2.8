@@ -523,7 +523,7 @@ const DashboardPage = () => {
       title: "EMPLOYMENT SEARCH",
       description: "Scout 8 verified opportunities in target region.",
       action: "BROWSE POSITIONS",
-      link: "/employment",
+      link: "/jobs",
       urgent: false,
       icon: "💼"
     }
