@@ -2202,7 +2202,7 @@ const ResourcesPage = () => {
             {filteredResources.map((resource, index) => (
               <div
                 key={index}
-                className="w-full bg-black border border-gray-600 p-4 md:p-6 hover:border-white hover:bg-gray-900 transition-all duration-300 group flex flex-col"
+                className="w-full bg-black border border-gray-600 p-4 md:p-6 hover:border-white hover:bg-gray-900 transition-all duration-300 group flex flex-col resource-card hoverable"
               >
                 <div className="flex items-start justify-between mb-3 md:mb-4">
                   <h3 className="font-bold text-white mb-2 font-mono tracking-wide group-hover:text-gray-200 text-sm md:text-lg leading-tight flex-grow">
