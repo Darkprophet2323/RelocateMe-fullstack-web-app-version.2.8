@@ -2512,11 +2512,24 @@ const App = () => {
           <div className="text-center">
             <div className="text-white text-4xl font-serif mb-4">RELOCATE.SYS</div>
             <div className="text-gray-400 font-mono text-lg mb-8">[ INITIALIZING SECURE CONNECTION ]</div>
-            <div className="flex justify-center space-x-1">
+            <div className="flex justify-center space-x-1 mb-4">
               <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
               <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
               <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
             </div>
+            <button 
+              onClick={() => {
+                console.log("Skip loading clicked");
+                setIsLoading(false);
+                localStorage.setItem("token", "manual_bypass");
+                localStorage.setItem("username", "relocate_user");
+                setIsLoggedIn(true);
+                setUsername("relocate_user");
+              }}
+              className="text-gray-500 hover:text-white text-sm border border-gray-600 px-4 py-2 transition-colors"
+            >
+              SKIP LOADING
+            </button>
           </div>
         </div>
       ) : isLoggedIn ? (
@@ -2525,7 +2538,24 @@ const App = () => {
           <MissionDebriefButton />
         </>
       ) : (
-        <LoginPage />
+        <div className="min-h-screen bg-black flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-white text-4xl font-serif mb-4">RELOCATE.SYS</div>
+            <div className="text-gray-400 font-mono text-lg mb-8">[ SECURE ACCESS REQUIRED ]</div>
+            <button 
+              onClick={() => {
+                console.log("Direct access clicked");
+                localStorage.setItem("token", "direct_access");
+                localStorage.setItem("username", "relocate_user");
+                setIsLoggedIn(true);
+                setUsername("relocate_user");
+              }}
+              className="bg-white text-black py-3 px-6 font-mono font-bold hover:bg-gray-200 transition-colors"
+            >
+              [ ACCESS SYSTEM ]
+            </button>
+          </div>
+        </div>
       )}
     </Router>
   );
