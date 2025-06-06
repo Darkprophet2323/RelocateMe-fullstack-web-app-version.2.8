@@ -119,42 +119,42 @@ const ResourcesPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black to-gray-900 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-black to-gray-900 p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8 fade-in">
-          <h1 className="text-5xl font-bold font-serif text-white mb-6">
+        <div className="text-center mb-6 md:mb-8 fade-in">
+          <h1 className="text-3xl md:text-5xl font-bold font-serif text-white mb-4 md:mb-6">
             RESOURCE NETWORK
           </h1>
-          <p className="text-xl text-gray-400 mb-8 font-mono tracking-wide">
+          <p className="text-lg md:text-xl text-gray-400 mb-6 md:mb-8 font-mono tracking-wide">
             [ {totalResources}+ VERIFIED RESOURCES FOR RELOCATION SUCCESS ]
           </p>
         </div>
 
         {/* Search Interface */}
-        <div className="mb-8 bg-black border border-gray-600 p-8 hover:border-white transition-all duration-300">
-          <h2 className="text-2xl font-bold text-white mb-6 font-mono tracking-wider">RESOURCE SEARCH</h2>
-          <div className="flex flex-col md:flex-row gap-4 mb-6">
+        <div className="mb-6 md:mb-8 bg-black border border-gray-600 p-4 md:p-8 hover:border-white transition-all duration-300">
+          <h2 className="text-xl md:text-2xl font-bold text-white mb-4 md:mb-6 font-mono tracking-wider">RESOURCE SEARCH</h2>
+          <div className="flex flex-col gap-4 mb-6">
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
               placeholder="Search resources by name, description, or URL..."
-              className="flex-1 px-6 py-4 bg-black border-2 border-gray-600 text-white font-mono focus:border-white focus:outline-none transition-all duration-300"
+              className="w-full px-4 md:px-6 py-3 md:py-4 bg-black border-2 border-gray-600 text-white font-mono focus:border-white focus:outline-none transition-all duration-300"
             />
             <button
               onClick={() => handleSearch(searchQuery)}
-              className="hoverable bg-white text-black px-8 py-4 font-mono font-bold tracking-wider hover:bg-gray-200 transition-all duration-300 border-2 border-white"
+              className="hoverable bg-white text-black px-6 md:px-8 py-3 md:py-4 font-mono font-bold tracking-wider hover:bg-gray-200 transition-all duration-300 border-2 border-white"
             >
               [SEARCH]
             </button>
           </div>
           
           {/* Reset Analytics Button */}
-          <div className="flex justify-end">
+          <div className="flex justify-center md:justify-end">
             <button
               onClick={resetAnalytics}
-              className="hoverable bg-red-900 text-white px-6 py-3 font-mono font-bold tracking-wider border-2 border-red-700 hover:bg-red-800 transition-all duration-300"
+              className="hoverable bg-red-900 text-white px-4 md:px-6 py-2 md:py-3 font-mono font-bold tracking-wider border-2 border-red-700 hover:bg-red-800 transition-all duration-300 text-sm md:text-base"
             >
               [RESET ANALYTICS]
             </button>
@@ -169,7 +169,7 @@ const ResourcesPage = () => {
           
           {searchQuery && searchResults.length > 0 && (
             <div className="mt-8">
-              <h3 className="text-xl font-bold text-white mb-6 font-mono">
+              <h3 className="text-lg md:text-xl font-bold text-white mb-4 md:mb-6 font-mono">
                 SEARCH RESULTS ({searchResults.length})
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -179,10 +179,10 @@ const ResourcesPage = () => {
                     href={resource.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="hoverable bg-gray-900 border border-gray-700 p-4 hover:border-white hover:bg-gray-800 transition-all duration-300"
+                    className="hoverable bg-gray-900 border border-gray-700 p-4 hover:border-white transition-all duration-300"
                   >
-                    <div className="flex justify-between items-start mb-2">
-                      <h4 className="font-bold text-white text-sm font-mono">{resource.name}</h4>
+                    <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-2">
+                      <h4 className="font-bold text-white text-sm font-mono mb-1 md:mb-0">{resource.name}</h4>
                       <span className="text-xs text-gray-500 font-mono">{resource.category}</span>
                     </div>
                     <p className="text-gray-400 text-xs font-mono">{resource.description}</p>
@@ -201,65 +201,74 @@ const ResourcesPage = () => {
 
         {/* Resource Categories */}
         {(!searchQuery || searchResults.length === 0) && (
-          <div className="space-y-8">
-            {resourceCategories.map((category) => (
-              <div key={category.key} className="bg-black border border-gray-600 p-8 hover:border-white transition-all duration-300">
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h2 className="text-2xl font-bold text-white font-mono tracking-wider">
-                      {category.title}
-                    </h2>
-                    <p className="text-gray-400 text-sm font-mono mt-2">{category.description}</p>
+          <div className="space-y-6 md:space-y-8">
+            {resourceCategories.map((category) => {
+              const categoryResources = resources[category.key] || [];
+              return (
+                <div key={category.key} className="bg-black border border-gray-600 p-4 md:p-8 hover:border-white transition-all duration-300">
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 md:mb-6">
+                    <div className="mb-4 md:mb-0">
+                      <h2 className="text-xl md:text-2xl font-bold text-white font-mono tracking-wider">
+                        {category.title}
+                      </h2>
+                      <p className="text-gray-400 text-sm font-mono mt-2">{category.description}</p>
+                    </div>
+                    <span className="bg-white text-black px-3 md:px-4 py-1 md:py-2 font-mono font-bold tracking-wider text-sm md:text-base">
+                      {categoryResources.length} LINKS
+                    </span>
                   </div>
-                  <span className="bg-white text-black px-4 py-2 font-mono font-bold tracking-wider">
-                    {resources[category.key]?.length || 0} LINKS
-                  </span>
-                </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {resources[category.key]?.map((resource, index) => (
-                    <a
-                      key={index}
-                      href={resource.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="hoverable bg-gray-900 border border-gray-700 p-4 hover:border-white hover:bg-gray-800 transition-all duration-300 group"
-                    >
-                      <h3 className="font-bold text-white mb-2 font-mono tracking-wide group-hover:text-gray-200">
-                        {resource.name}
-                      </h3>
-                      <p className="text-gray-400 text-sm font-mono">{resource.description}</p>
-                      <div className="text-xs text-gray-500 mt-2 font-mono">→ {resource.url}</div>
-                    </a>
-                  ))}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {categoryResources.map((resource, index) => (
+                      <a
+                        key={index}
+                        href={resource.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hoverable bg-gray-900 border border-gray-700 p-4 hover:border-white transition-all duration-300 block"
+                      >
+                        <h3 className="font-bold text-white mb-2 font-mono tracking-wide text-sm md:text-base">
+                          {resource.name}
+                        </h3>
+                        <p className="text-gray-400 text-xs md:text-sm font-mono mb-2">{resource.description}</p>
+                        <div className="text-xs text-gray-500 font-mono break-all">→ {resource.url}</div>
+                      </a>
+                    ))}
+                  </div>
+                  
+                  {categoryResources.length === 0 && (
+                    <div className="text-center py-8">
+                      <p className="text-gray-400 font-mono">No resources loaded for this category</p>
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
         {/* Summary */}
-        <div className="mt-12 bg-black border border-gray-600 p-8 text-center hover:border-white transition-all duration-300">
-          <h2 className="text-3xl font-bold text-white mb-6 font-serif">RESOURCE SUMMARY</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
-            <div className="bg-gray-900 border border-gray-700 p-4">
-              <div className="text-3xl font-bold text-white mb-2 font-mono">{totalResources}+</div>
-              <div className="text-gray-400 text-sm font-mono tracking-wider">TOTAL RESOURCES</div>
+        <div className="mt-8 md:mt-12 bg-black border border-gray-600 p-6 md:p-8 text-center hover:border-white transition-all duration-300">
+          <h2 className="text-2xl md:text-3xl font-bold text-white mb-4 md:mb-6 font-serif">RESOURCE SUMMARY</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
+            <div className="bg-gray-900 border border-gray-700 p-3 md:p-4">
+              <div className="text-2xl md:text-3xl font-bold text-white mb-1 md:mb-2 font-mono">{totalResources}+</div>
+              <div className="text-gray-400 text-xs md:text-sm font-mono tracking-wider">TOTAL RESOURCES</div>
             </div>
-            <div className="bg-gray-900 border border-gray-700 p-4">
-              <div className="text-3xl font-bold text-white mb-2 font-mono">{resourceCategories.length}</div>
-              <div className="text-gray-400 text-sm font-mono tracking-wider">CATEGORIES</div>
+            <div className="bg-gray-900 border border-gray-700 p-3 md:p-4">
+              <div className="text-2xl md:text-3xl font-bold text-white mb-1 md:mb-2 font-mono">{resourceCategories.length}</div>
+              <div className="text-gray-400 text-xs md:text-sm font-mono tracking-wider">CATEGORIES</div>
             </div>
-            <div className="bg-gray-900 border border-gray-700 p-4">
-              <div className="text-3xl font-bold text-white mb-2 font-mono">39</div>
-              <div className="text-gray-400 text-sm font-mono tracking-wider">TIMELINE STEPS</div>
+            <div className="bg-gray-900 border border-gray-700 p-3 md:p-4">
+              <div className="text-2xl md:text-3xl font-bold text-white mb-1 md:mb-2 font-mono">39</div>
+              <div className="text-gray-400 text-xs md:text-sm font-mono tracking-wider">TIMELINE STEPS</div>
             </div>
-            <div className="bg-gray-900 border border-gray-700 p-4">
-              <div className="text-3xl font-bold text-white mb-2 font-mono">100%</div>
-              <div className="text-gray-400 text-sm font-mono tracking-wider">VERIFIED</div>
+            <div className="bg-gray-900 border border-gray-700 p-3 md:p-4">
+              <div className="text-2xl md:text-3xl font-bold text-white mb-1 md:mb-2 font-mono">100%</div>
+              <div className="text-gray-400 text-xs md:text-sm font-mono tracking-wider">VERIFIED</div>
             </div>
           </div>
-          <p className="text-gray-300 font-mono leading-relaxed">
+          <p className="text-gray-300 font-mono leading-relaxed text-sm md:text-base">
             Complete resource database for Phoenix to Peak District relocation. All links verified and 
             categorized for efficient access during your emigration journey.
           </p>
