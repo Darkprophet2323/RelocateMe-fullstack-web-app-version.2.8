@@ -983,7 +983,12 @@ async def get_all_resources():
             {"name": "TfGM Trains", "url": "https://www.tfgm.com/public-transport/train", "description": "Greater Manchester train services"},
             {"name": "Traveline", "url": "https://www.traveline.info/", "description": "UK public transport planner"},
             {"name": "Trainline", "url": "https://www.trainline.com/", "description": "Train ticket booking platform"},
-            {"name": "Manchester Public Transport", "url": "https://www.introducingmanchester.com/public-transport", "description": "Manchester area transport guide"}
+            {"name": "Manchester Public Transport", "url": "https://www.introducingmanchester.com/public-transport", "description": "Manchester area transport guide"},
+            {"name": "Transport for Greater Manchester", "url": "https://tfgm.com/", "description": "Local public transport authority"},
+            {"name": "National Rail Official", "url": "https://www.nationalrail.co.uk/", "description": "Train schedules and tickets"},
+            {"name": "Stagecoach Manchester", "url": "https://www.stagecoachbus.com/about/manchester", "description": "Bus services in Greater Manchester"},
+            {"name": "DVLA Driving License Services", "url": "https://www.gov.uk/browse/driving/driving-licences", "description": "Apply, renew or exchange your UK driving license"},
+            {"name": "Trainline Booking", "url": "https://www.thetrainline.com/", "description": "Rail ticket booking and information"}
         ],
         "education": [
             {"name": "Find School in England", "url": "https://www.gov.uk/find-school-in-england", "description": "Official school finder tool"},
