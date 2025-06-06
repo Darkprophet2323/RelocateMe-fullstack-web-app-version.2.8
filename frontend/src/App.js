@@ -231,7 +231,7 @@ const MissionDebriefButton = () => {
         }}
       />
       <span style={{ position: 'relative', zIndex: 1 }}>
-        MISSION DEBRIEF
+        MISSION DEBRIEF CONSOLE
       </span>
       <span 
         className="arrow"
