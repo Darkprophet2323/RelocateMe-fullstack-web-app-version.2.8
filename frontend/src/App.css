@@ -703,7 +703,7 @@ body::before {
   background: var(--noir-light-grey);
 }
 
-/* MISSION DEBRIEF BUTTON STYLES */
+/* MISSION DEBRIEF CONSOLE BUTTON STYLES */
 .mission-debrief-button {
   font-family: 'Cinzel', serif !important;
   background: linear-gradient(135deg, #e0e0e0 0%, #c0c0c0 100%) !important;
@@ -712,12 +712,14 @@ body::before {
   color: #000000 !important;
   font-weight: 600 !important;
   text-transform: uppercase !important;
-  letter-spacing: 1.5px !important;
+  letter-spacing: 1.2px !important;
+  font-size: 13px !important;
   cursor: pointer !important;
   transition: all 0.3s ease !important;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
   position: relative !important;
   overflow: hidden !important;
+  padding: 12px 20px !important;
 }
 
 .mission-debrief-button:hover {
