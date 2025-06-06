@@ -995,7 +995,12 @@ async def get_all_resources():
             {"name": "School Performance Data", "url": "https://www.compare-school-performance.service.gov.uk/", "description": "Compare school performance data"},
             {"name": "Independent Schools Council", "url": "https://www.isc.co.uk/", "description": "Private school information"},
             {"name": "Universities UK", "url": "https://www.universitiesuk.ac.uk/", "description": "University sector representation"},
-            {"name": "Study UK British Council", "url": "https://www.study-uk.britishcouncil.org/", "description": "Official UK education guide"}
+            {"name": "Study UK British Council", "url": "https://www.study-uk.britishcouncil.org/", "description": "Official UK education guide"},
+            {"name": "Gov.uk School Performance", "url": "https://www.gov.uk/school-performance-tables", "description": "Official school comparison and search"},
+            {"name": "Manchester Education Services", "url": "https://www.manchester.gov.uk/info/200062/education_and_schools", "description": "Local education services and information"},
+            {"name": "UCAS University Applications", "url": "https://www.ucas.com/", "description": "University admissions service for UK higher education"},
+            {"name": "International Schools Manchester", "url": "https://www.international-schools-database.com/in/manchester", "description": "Directory of international schools in Manchester"},
+            {"name": "Ofsted Reports", "url": "https://reports.ofsted.gov.uk/", "description": "School quality inspections and ratings"}
         ],
         "legal_tax": [
             {"name": "UK Tax on Foreign Income", "url": "https://www.gov.uk/tax-foreign-income", "description": "Tax obligations on overseas income"},
