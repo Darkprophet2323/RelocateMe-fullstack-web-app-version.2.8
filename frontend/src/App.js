@@ -757,13 +757,16 @@ const TimelinePage = () => {
                           type="checkbox"
                           checked={step.is_completed}
                           onChange={(e) => updateStepProgress(step.id, e.target.checked)}
-                          className="mr-4 w-6 h-6 border-2 border-gray-600 bg-black checked:bg-white checked:border-white appearance-none cursor-pointer relative"
+                          className="hoverable mr-4 w-6 h-6 border-2 border-gray-600 bg-black checked:bg-white checked:border-white appearance-none cursor-pointer relative transition-all duration-300"
                           style={{
-                            backgroundImage: step.is_completed ? "url(\"data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='black' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='m13.854 3.646-7.5 7.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6 10.293l7.146-7.147a.5.5 0 0 1 .708.708z'/%3e%3c/svg%3e\")" : 'none'
+                            backgroundImage: step.is_completed ? "url(\"data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='black' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='m13.854 3.646-7.5 7.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6 10.293l7.146-7.147a.5.5 0 0 1 .708.708z'/%3e%3c/svg%3e\")" : 'none',
+                            backgroundSize: '16px 16px',
+                            backgroundPosition: 'center',
+                            backgroundRepeat: 'no-repeat'
                           }}
                         />
-                        <h3 className={`text-2xl font-bold font-mono tracking-wide transition-all duration-300 ${
-                          step.is_completed ? 'text-white line-through' : 'text-white group-hover:text-gray-300'
+                        <h3 className={`text-2xl font-bold font-mono tracking-wide transition-all duration-300 hoverable ${
+                          step.is_completed ? 'text-white line-through opacity-75' : 'text-white group-hover:text-gray-300'
                         }`}>
                           {step.title}
                         </h3>
