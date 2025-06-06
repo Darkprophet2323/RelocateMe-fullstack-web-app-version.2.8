@@ -254,6 +254,10 @@ const Navigation = ({ user, onLogout, currentPath }) => {
     { path: "/resources", name: "RESOURCES", step: 9, description: "SUPPORT NETWORK" }
   ];
 
+  const handleMissionConsole = () => {
+    window.open('https://os-theme-verify.emergent.host/', '_blank');
+  };
+
   return (
     <nav className="bg-black bg-opacity-95 backdrop-blur-sm border-b border-gray-700 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
