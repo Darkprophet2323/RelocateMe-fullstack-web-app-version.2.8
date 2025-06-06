@@ -788,7 +788,7 @@ const TimelinePage = () => {
                       </div>
                     </div>
                     <div className="flex-1">
-                      <label className="flex items-start cursor-pointer group">
+                      <label className="flex items-start cursor-pointer group timeline-step">
                         <input
                           type="checkbox"
                           checked={step.is_completed}
