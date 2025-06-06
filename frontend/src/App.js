@@ -6,12 +6,11 @@ import { gsap } from "gsap";
 
 const API = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
-// Enhanced Spy Cursor Component - Fixed hover functionality
+// Enhanced Spy Cursor Component - Fixed with color inversion
 const SpyCursor = () => {
   const bigBallRef = useRef(null);
   const smallBallRef = useRef(null);
   const mousePos = useRef({ x: 0, y: 0 });
-  const animationFrame = useRef(null);
 
   useEffect(() => {
     // Only enable cursor on desktop devices
@@ -26,46 +25,70 @@ const SpyCursor = () => {
 
     if (!bigBall || !smallBall) return;
 
-    // Add custom cursor class to body
+    // Add custom cursor class to body and hide default cursor
     document.body.classList.add('spy-cursor-active');
     document.body.style.cursor = 'none';
+    
+    // Add global styles for cursor behavior
+    const style = document.createElement('style');
+    style.textContent = `
+      .spy-cursor-active * {
+        cursor: none !important;
+      }
+      .cursor-hover-target {
+        color: inherit;
+        transition: color 0.2s ease, background-color 0.2s ease;
+      }
+    `;
+    document.head.appendChild(style);
 
-    // Smooth mouse move handler with requestAnimationFrame
-    const updateCursorPosition = () => {
+    const handleMouseMove = (e) => {
+      mousePos.current = { x: e.clientX, y: e.clientY };
+      
       if (bigBall && smallBall) {
-        const bigX = mousePos.current.x - 15;
-        const bigY = mousePos.current.y - 15;
-        const smallX = mousePos.current.x - 5;
-        const smallY = mousePos.current.y - 5;
+        const bigX = e.clientX - 15;
+        const bigY = e.clientY - 15;
+        const smallX = e.clientX - 5;
+        const smallY = e.clientY - 5;
         
         bigBall.style.transform = `translate3d(${bigX}px, ${bigY}px, 0)`;
         smallBall.style.transform = `translate3d(${smallX}px, ${smallY}px, 0)`;
       }
     };
 
-    const handleMouseMove = (e) => {
-      mousePos.current = { x: e.clientX, y: e.clientY };
-      updateCursorPosition();
-    };
-
-    // Enhanced hover handlers with proper scaling
+    // Enhanced hover handlers with color inversion
     const handleMouseEnter = (e) => {
-      if (bigBall) {
+      if (bigBall && smallBall) {
+        // Scale up the cursor
         bigBall.style.transform = bigBall.style.transform + ' scale(3)';
         bigBall.style.transition = 'transform 0.3s ease';
+        
+        // Enable mix-blend-mode for color inversion
         bigBall.style.mixBlendMode = 'difference';
+        smallBall.style.mixBlendMode = 'difference';
         
         // Add glow effect
-        bigBall.style.boxShadow = '0 0 20px rgba(247, 248, 250, 0.5)';
+        bigBall.style.filter = 'drop-shadow(0 0 10px rgba(247, 248, 250, 0.8))';
+        
+        // Add cursor-hover-target class for styling
+        e.target.classList.add('cursor-hover-target');
       }
     };
 
     const handleMouseLeave = (e) => {
-      if (bigBall) {
+      if (bigBall && smallBall) {
+        // Reset scale
         const currentTransform = bigBall.style.transform.replace(/ scale\([^)]*\)/g, '');
         bigBall.style.transform = currentTransform + ' scale(1)';
         bigBall.style.transition = 'transform 0.3s ease';
-        bigBall.style.boxShadow = 'none';
+        
+        // Reset mix blend mode and effects
+        bigBall.style.mixBlendMode = 'normal';
+        smallBall.style.mixBlendMode = 'normal';
+        bigBall.style.filter = 'none';
+        
+        // Remove cursor-hover-target class
+        e.target.classList.remove('cursor-hover-target');
       }
     };
 
@@ -81,7 +104,7 @@ const SpyCursor = () => {
         element.classList.remove('cursor-enhanced');
       });
 
-      // Add to all interactive elements with comprehensive selectors
+      // Comprehensive selectors for interactive elements
       const selectors = [
         'button:not([disabled])',
         'a[href]:not([disabled])',
@@ -95,16 +118,20 @@ const SpyCursor = () => {
         '[data-interactive]:not([disabled])',
         'nav a:not([disabled])',
         '.primary-button:not([disabled])',
-        '.mission-debrief-button:not([disabled])',
         '[tabindex]:not([tabindex="-1"]):not([disabled])',
-        '.cursor-target:not([disabled])'
+        '.cursor-target:not([disabled])',
+        '.mission-console:not([disabled])',
+        '[type="checkbox"]:not([disabled])'
       ];
 
       let elementCount = 0;
       selectors.forEach(selector => {
         try {
           document.querySelectorAll(selector).forEach(element => {
-            if (!element.classList.contains('cursor-enhanced') && element.offsetParent !== null) {
+            // Only add if element is visible and not already enhanced
+            if (!element.classList.contains('cursor-enhanced') && 
+                element.offsetParent !== null && 
+                window.getComputedStyle(element).display !== 'none') {
               element.classList.add('cursor-enhanced');
               element.addEventListener('mouseenter', handleMouseEnter, { passive: true });
               element.addEventListener('mouseleave', handleMouseLeave, { passive: true });
@@ -134,7 +161,7 @@ const SpyCursor = () => {
       childList: true,
       subtree: true,
       attributes: true,
-      attributeFilter: ['class', 'href', 'onclick', 'disabled']
+      attributeFilter: ['class', 'href', 'onclick', 'disabled', 'style']
     });
 
     // Cleanup
@@ -146,10 +173,15 @@ const SpyCursor = () => {
       observer.disconnect();
       clearTimeout(debounceTimer);
       
+      // Remove styles
+      if (style.parentNode) {
+        style.parentNode.removeChild(style);
+      }
+      
       document.querySelectorAll('.cursor-enhanced').forEach(element => {
         element.removeEventListener('mouseenter', handleMouseEnter);
         element.removeEventListener('mouseleave', handleMouseLeave);
-        element.classList.remove('cursor-enhanced');
+        element.classList.remove('cursor-enhanced', 'cursor-hover-target');
       });
     };
   }, []);
@@ -167,15 +199,12 @@ const SpyCursor = () => {
           height: '30px',
           pointerEvents: 'none',
           zIndex: 10000,
-          mixBlendMode: 'difference',
+          mixBlendMode: 'normal',
           willChange: 'transform',
-          borderRadius: '50%'
+          borderRadius: '50%',
+          backgroundColor: '#f7f8fa'
         }}
-      >
-        <svg height="30" width="30" style={{ display: 'block' }}>
-          <circle cx="15" cy="15" r="12" strokeWidth="0" fill="#f7f8fa"></circle>
-        </svg>
-      </div>
+      />
       
       <div 
         ref={smallBallRef} 
@@ -188,15 +217,12 @@ const SpyCursor = () => {
           height: '10px',
           pointerEvents: 'none',
           zIndex: 10000,
-          mixBlendMode: 'difference',
+          mixBlendMode: 'normal',
           willChange: 'transform',
-          borderRadius: '50%'
+          borderRadius: '50%',
+          backgroundColor: '#f7f8fa'
         }}
-      >
-        <svg height="10" width="10" style={{ display: 'block' }}>
-          <circle cx="5" cy="5" r="4" strokeWidth="0" fill="#f7f8fa"></circle>
-        </svg>
-      </div>
+      />
     </div>
   );
 };
