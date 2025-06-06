@@ -208,14 +208,45 @@ class RelocateMeAPITester:
             200
         )
 
-    def test_password_reset_request(self, username):
-        """Test requesting a password reset"""
+    def test_analytics_budget(self):
+        """Test getting budget analytics"""
         return self.run_test(
-            "Request Password Reset",
+            "Get Budget Analytics",
+            "GET",
+            "analytics/budget",
+            200
+        )
+
+    def test_analytics_overview(self):
+        """Test getting analytics overview"""
+        return self.run_test(
+            "Get Analytics Overview",
+            "GET",
+            "analytics/overview",
+            200
+        )
+
+    def test_progress_items(self):
+        """Test getting progress items"""
+        return self.run_test(
+            "Get Progress Items",
+            "GET",
+            "progress/items",
+            200
+        )
+
+    def test_complete_password_reset(self, username, reset_code, new_password):
+        """Test completing a password reset"""
+        return self.run_test(
+            "Complete Password Reset",
             "POST",
-            "auth/reset-password",
+            "auth/complete-password-reset",
             200,
-            data={"username": username}
+            data={
+                "username": username,
+                "reset_code": reset_code,
+                "new_password": new_password
+            }
         )
         
     def print_summary(self):
