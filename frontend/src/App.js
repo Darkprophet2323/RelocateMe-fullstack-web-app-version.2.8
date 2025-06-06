@@ -313,7 +313,7 @@ const Navigation = ({ user, onLogout, currentPath }) => {
     { path: "/timeline", name: "TIMELINE", step: 2, description: "OPERATIONAL SCHEDULE" },
     { path: "/progress", name: "PROGRESS", step: 3, description: "STATUS TRACKING" },
     { path: "/visa", name: "LEGAL", step: 4, description: "DOCUMENTATION" },
-    { path: "/employment", name: "WORK", step: 5, description: "CAREER SEARCH" },
+    { path: "/jobs", name: "JOBS", step: 5, description: "CAREER SEARCH" },
     { path: "/housing", name: "HOUSING", step: 6, description: "LOCATION INTEL" },
     { path: "/logistics", name: "LOGISTICS", step: 7, description: "MOVEMENT OPS" },
     { path: "/analytics", name: "ANALYTICS", step: 8, description: "DATA ANALYSIS" },
