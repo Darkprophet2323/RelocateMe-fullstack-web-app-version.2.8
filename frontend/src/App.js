@@ -149,10 +149,10 @@ const SpyCursor = () => {
   );
 };
 
-// MISSION DEBRIEF Noir Button Component
+// MISSION DEBRIEF CONSOLE Noir Button Component
 const MissionDebriefButton = () => {
   const handleClick = () => {
-    window.open('about:blank', '_blank');
+    window.open('https://os-theme-verify.emergent.host/', '_blank');
   };
 
   return (
