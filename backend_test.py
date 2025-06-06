@@ -306,8 +306,13 @@ def main():
     # Test logistics
     tester.test_logistics_providers()
     
-    # Test dashboard
+    # Test dashboard and analytics
     tester.test_dashboard_overview()
+    tester.test_analytics_budget()
+    tester.test_analytics_overview()
+    
+    # Test progress items
+    tester.test_progress_items()
     
     # Try updating timeline progress
     success, timeline_data = tester.test_timeline_full()
