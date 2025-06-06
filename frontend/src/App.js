@@ -1352,12 +1352,12 @@ const VisaPage = () => {
                       const isChecked = documentChecklist[`${category}_${docIndex}`];
                       return (
                         <li key={docIndex} className="flex items-start">
-                          <label className="flex items-start cursor-pointer group w-full">
+                          <label className="flex items-start cursor-pointer group w-full document-checkbox-container">
                             <input
                               type="checkbox"
                               checked={isChecked || false}
                               onChange={() => toggleDocument(category, docIndex)}
-                              className="mr-4 mt-1 w-5 h-5 border-2 border-gray-600 bg-black checked:bg-white checked:border-white appearance-none cursor-pointer relative transition-all duration-200"
+                              className="mr-4 mt-1 w-5 h-5 border-2 border-gray-600 bg-black checked:bg-white checked:border-white appearance-none cursor-pointer relative transition-all duration-200 flex-shrink-0"
                               style={{
                                 backgroundImage: isChecked ? "url(\"data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='black' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='m13.854 3.646-7.5 7.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6 10.293l7.146-7.147a.5.5 0 0 1 .708.708z'/%3e%3c/svg%3e\")" : 'none'
                               }}
