@@ -700,7 +700,10 @@ const TimelinePage = () => {
             OPERATIONAL TIMELINE
           </h1>
           <p className="text-xl text-gray-400 mb-8 font-mono tracking-wide">
-            [ 34-STEP RELOCATION PROTOCOL: PHOENIX → PEAK DISTRICT ]
+            [ 39-STEP RELOCATION PROTOCOL: PHOENIX → PEAK DISTRICT ]
+          </p>
+          <p className="text-lg text-gray-300 mb-8 font-mono">
+            Budget Allocation: $400,000 Total • Focus: Hospitality/Waitressing Careers
           </p>
           
           <ProgressWizard 
