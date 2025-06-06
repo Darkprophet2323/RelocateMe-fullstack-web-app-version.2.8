@@ -2168,25 +2168,25 @@ const ResourcesPage = () => {
             </div>
           </div>
 
-          {/* Centered Grid Layout */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 justify-items-center">
+          {/* Enhanced Mobile Responsive Grid Layout */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 justify-items-stretch px-2">
             {filteredResources.map((resource, index) => (
               <div
                 key={index}
-                className="w-full max-w-sm bg-black border border-gray-600 p-6 hover:border-white hover:bg-gray-900 transition-all duration-300 group"
+                className="w-full bg-black border border-gray-600 p-4 md:p-6 hover:border-white hover:bg-gray-900 transition-all duration-300 group flex flex-col"
               >
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-bold text-white mb-2 font-mono tracking-wide group-hover:text-gray-200 text-lg">
+                <div className="flex items-start justify-between mb-3 md:mb-4">
+                  <h3 className="font-bold text-white mb-2 font-mono tracking-wide group-hover:text-gray-200 text-sm md:text-lg leading-tight flex-grow">
                     {resource.name}
                   </h3>
                   {resource.category && (
-                    <span className="text-xs bg-gray-800 text-gray-300 px-2 py-1 font-mono">
-                      {categories.find(c => c.key === resource.category)?.icon || '🔗'}
+                    <span className="text-xs bg-gray-800 text-gray-300 px-2 py-1 font-mono ml-2 flex-shrink-0">
+                      {categories.find(c => c.key === resource.category)?.symbol || '■'}
                     </span>
                   )}
                 </div>
                 
-                <p className="text-gray-400 text-sm font-mono mb-4 leading-relaxed">
+                <p className="text-gray-400 text-xs md:text-sm font-mono mb-4 leading-relaxed flex-grow">
                   {resource.description}
                 </p>
                 
@@ -2194,7 +2194,7 @@ const ResourcesPage = () => {
                   href={resource.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hoverable inline-block w-full bg-white text-black px-4 py-3 font-mono font-bold text-sm tracking-wider hover:bg-gray-200 transition-all duration-300 text-center"
+                  className="hoverable inline-block w-full bg-white text-black px-3 md:px-4 py-2 md:py-3 font-mono font-bold text-xs md:text-sm tracking-wider hover:bg-gray-200 transition-all duration-300 text-center mt-auto"
                 >
                   ACCESS RESOURCE →
                 </a>
