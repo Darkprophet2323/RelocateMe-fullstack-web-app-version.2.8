@@ -1031,7 +1031,12 @@ async def get_all_resources():
             {"name": "Peak District Community", "url": "https://www.facebook.com/groups/1602339603425897/", "description": "Local community discussions"},
             {"name": "Derbyshire Expats", "url": "https://www.facebook.com/groups/derbyshireexpats/", "description": "Derbyshire expat community"},
             {"name": "Derbyshire Events", "url": "https://www.eventbrite.co.uk/d/united-kingdom--derbyshire/events/", "description": "Local events and activities"},
-            {"name": "Derbyshire Meetups", "url": "https://www.meetup.com/cities/gb/derbyshire/", "description": "Meetup groups in Derbyshire"}
+            {"name": "Derbyshire Meetups", "url": "https://www.meetup.com/cities/gb/derbyshire/", "description": "Meetup groups in Derbyshire"},
+            {"name": "Visit Peak District & Derbyshire", "url": "https://www.visitpeakdistrict.com/", "description": "Official tourism site"},
+            {"name": "Peak District National Park Authority", "url": "https://www.peakdistrict.gov.uk/", "description": "National Park official site — events, conservation, walks"},
+            {"name": "Peak District Walks", "url": "https://peakdistrictwalks.net/", "description": "Detailed guides for local walks"},
+            {"name": "Peak District Online", "url": "https://www.peakdistrictonline.co.uk/", "description": "Local news, community, and activities"},
+            {"name": "Derbyshire Life", "url": "https://www.derbyshirelife.co.uk/", "description": "Lifestyle magazine covering Peak District and Derbyshire"}
         ],
         "miscellaneous": [
             {"name": "Forward2Me", "url": "https://www.forward2me.com/", "description": "UK parcel forwarding service"},
