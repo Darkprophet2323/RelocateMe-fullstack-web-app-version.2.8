@@ -358,6 +358,20 @@ const Navigation = ({ user, onLogout, currentPath }) => {
                 </Link>
               ))}
             </div>
+            
+            {/* Mobile Mission Console Button */}
+            <div className="mb-3">
+              <button
+                onClick={() => {
+                  handleMissionConsole();
+                  setIsMobileMenuOpen(false);
+                }}
+                className="hoverable w-full text-center py-3 px-2 text-xs font-mono border rounded-md transition-all duration-300 bg-red-900 text-red-200 border-red-700 hover:bg-red-800 hover:border-red-600 hover:text-red-100"
+              >
+                <div className="font-semibold">[X] MISSION CONSOLE</div>
+                <div className="text-xs opacity-75 mt-1">EXTERNAL MISSION DEBRIEF</div>
+              </button>
+            </div>
             <div className="flex justify-center">
               <button
                 onClick={onLogout}
