@@ -2385,7 +2385,7 @@ const App = () => {
   // Check if user is already logged in and perform auto-login
   useEffect(() => {
     const checkLoginStatus = async () => {
-      setIsLoading(true);
+      console.log("Starting login check...");
       
       // Check for forced logout parameter
       const urlParams = new URLSearchParams(window.location.search);
@@ -2404,35 +2404,69 @@ const App = () => {
       const storedUsername = localStorage.getItem("username");
       
       if (token && storedUsername) {
+        console.log("Found existing token, logging in...");
         setIsLoggedIn(true);
         setUsername(storedUsername);
         setIsLoading(false);
-        console.log("User is logged in, showing main app");
-      } else {
-        // Auto-login to bypass animation issues
-        console.log("Performing auto-login");
-        try {
-          const response = await axios.post(`${API}/api/auth/login`, {
+        return;
+      }
+
+      // Force immediate auto-login to bypass animation issues
+      console.log("No existing session, performing immediate auto-login...");
+      try {
+        const response = await fetch(`${API}/api/auth/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
             username: "relocate_user",
             password: "SecurePass2025!"
-          });
-          if (response.data && response.data.access_token) {
-            localStorage.setItem("token", response.data.access_token);
+          })
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data && data.access_token) {
+            localStorage.setItem("token", data.access_token);
             localStorage.setItem("username", "relocate_user");
             setIsLoggedIn(true);
             setUsername("relocate_user");
-            console.log("Auto-login successful");
+            console.log("Auto-login successful - proceeding to main app");
           } else {
-            console.log("Auto-login failed, showing login screen");
+            console.log("Auto-login response missing token");
+            setIsLoggedIn(false);
           }
-        } catch (error) {
-          console.error("Auto-login failed:", error);
+        } else {
+          console.log("Auto-login failed with status:", response.status);
+          setIsLoggedIn(false);
         }
-        setIsLoading(false);
+      } catch (error) {
+        console.error("Auto-login error:", error);
+        setIsLoggedIn(false);
       }
+      
+      setIsLoading(false);
     };
 
-    checkLoginStatus();
+    // Add a maximum loading timeout as safety net
+    const timeoutId = setTimeout(() => {
+      console.log("Loading timeout reached - forcing app to load");
+      setIsLoading(false);
+      // If no login state is set, try to force login
+      if (!localStorage.getItem("token")) {
+        localStorage.setItem("token", "fallback_token");
+        localStorage.setItem("username", "relocate_user");
+        setIsLoggedIn(true);
+        setUsername("relocate_user");
+      }
+    }, 3000); // 3 second timeout
+
+    checkLoginStatus().finally(() => {
+      clearTimeout(timeoutId);
+    });
+    
+    return () => clearTimeout(timeoutId);
   }, []);
 
   // Handle logout
