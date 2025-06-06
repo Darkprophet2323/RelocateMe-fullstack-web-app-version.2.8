@@ -2271,6 +2271,7 @@ const ResourcesPage = () => {
     const [currentPhase, setCurrentPhase] = useState('initial');
     const [terminalLines, setTerminalLines] = useState([]);
     const [showForm, setShowForm] = useState(false);
+    const [animationTimeoutId, setAnimationTimeoutId] = useState(null);
     const hackingCommands = [
       "root@kali-linux:~# nmap -sS -A -O 192.168.1.15",
       "Starting Nmap 7.93 ( https://nmap.org ) at 2025-03-15 14:23:44 UTC",
