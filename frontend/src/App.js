@@ -682,7 +682,10 @@ const TimelinePage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        console.log('Fetching timeline from:', `${API}/api/timeline/public`);
         const response = await axios.get(`${API}/api/timeline/public`);
+        console.log('Timeline response:', response.data);
+        
         setTimelineData({
           timeline: response.data.timeline || [],
           categories: {}
@@ -691,6 +694,7 @@ const TimelinePage = () => {
         // Count completed steps
         const completed = (response.data.timeline || []).filter(step => step.is_completed).length;
         setCompletedCount(completed);
+        console.log('Timeline loaded:', response.data.timeline?.length, 'steps');
       } catch (error) {
         console.error('Error fetching timeline data:', error);
         // Use fallback data
