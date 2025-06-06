@@ -199,8 +199,24 @@ class RelocateMeAPITester:
             200
         )
 
-    def print_summary(self):
-        """Print test summary"""
+    def test_password_reset_request(self, username):
+        """Test requesting a password reset"""
+        return self.run_test(
+            "Request Password Reset",
+            "POST",
+            "auth/reset-password",
+            200,
+            data={"username": username}
+        )
+        
+    def test_visa_requirement_details(self, visa_type):
+        """Test getting specific visa requirement details"""
+        return self.run_test(
+            "Get Visa Requirement Details",
+            "GET",
+            f"visa/requirements/{visa_type}",
+            200
+        )
         print("\n" + "="*50)
         print(f"📊 TEST SUMMARY: {self.tests_passed}/{self.tests_run} tests passed")
         print("="*50)
