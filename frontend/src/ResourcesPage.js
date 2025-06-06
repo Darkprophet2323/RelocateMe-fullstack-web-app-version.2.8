@@ -44,14 +44,31 @@ const ResourcesPage = () => {
     }
     
     setSearching(true);
-    try {
-      const response = await axios.get(`${API}/api/resources/search?q=${encodeURIComponent(query)}`);
-      setSearchResults(response.data.results);
-      setSearching(false);
-    } catch (error) {
-      console.error('Error searching resources:', error);
-      setSearching(false);
-    }
+    
+    // Implement client-side search since backend search endpoint might not be available
+    const searchResults = [];
+    const queryLower = query.toLowerCase();
+    
+    // Search through all resource categories
+    Object.entries(resources).forEach(([categoryKey, categoryResources]) => {
+      if (Array.isArray(categoryResources)) {
+        categoryResources.forEach((resource) => {
+          if (
+            resource.name.toLowerCase().includes(queryLower) ||
+            resource.description.toLowerCase().includes(queryLower) ||
+            resource.url.toLowerCase().includes(queryLower)
+          ) {
+            searchResults.push({
+              ...resource,
+              category: categoryKey.replace('_', ' ').toUpperCase()
+            });
+          }
+        });
+      }
+    });
+    
+    setSearchResults(searchResults);
+    setSearching(false);
   };
 
   const resetAnalytics = async () => {
