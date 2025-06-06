@@ -6,7 +6,7 @@ import { gsap } from "gsap";
 
 const API = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
-// Enhanced Spy Cursor Component - Fixed for all pages
+// Enhanced Spy Cursor Component - Fixed hover functionality
 const SpyCursor = () => {
   const bigBallRef = useRef(null);
   const smallBallRef = useRef(null);
@@ -14,6 +14,13 @@ const SpyCursor = () => {
   const animationFrame = useRef(null);
 
   useEffect(() => {
+    // Only enable cursor on desktop devices
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (isMobile) {
+      console.log('SpyCursor: Mobile device detected, skipping custom cursor');
+      return;
+    }
+
     const bigBall = bigBallRef.current;
     const smallBall = smallBallRef.current;
 
@@ -26,7 +33,6 @@ const SpyCursor = () => {
     // Smooth mouse move handler with requestAnimationFrame
     const updateCursorPosition = () => {
       if (bigBall && smallBall) {
-        // Smooth following animation
         const bigX = mousePos.current.x - 15;
         const bigY = mousePos.current.y - 15;
         const smallX = mousePos.current.x - 5;
@@ -35,32 +41,33 @@ const SpyCursor = () => {
         bigBall.style.transform = `translate3d(${bigX}px, ${bigY}px, 0)`;
         smallBall.style.transform = `translate3d(${smallX}px, ${smallY}px, 0)`;
       }
-      animationFrame.current = requestAnimationFrame(updateCursorPosition);
     };
 
     const handleMouseMove = (e) => {
       mousePos.current = { x: e.clientX, y: e.clientY };
+      updateCursorPosition();
     };
 
-    // Enhanced hover handlers
+    // Enhanced hover handlers with proper scaling
     const handleMouseEnter = (e) => {
       if (bigBall) {
-        bigBall.style.transform += ' scale(4)';
+        bigBall.style.transform = bigBall.style.transform + ' scale(3)';
         bigBall.style.transition = 'transform 0.3s ease';
         bigBall.style.mixBlendMode = 'difference';
+        
+        // Add glow effect
+        bigBall.style.boxShadow = '0 0 20px rgba(247, 248, 250, 0.5)';
       }
     };
 
     const handleMouseLeave = (e) => {
       if (bigBall) {
-        const currentTransform = bigBall.style.transform.replace(' scale(4)', '');
+        const currentTransform = bigBall.style.transform.replace(/ scale\([^)]*\)/g, '');
         bigBall.style.transform = currentTransform + ' scale(1)';
         bigBall.style.transition = 'transform 0.3s ease';
+        bigBall.style.boxShadow = 'none';
       }
     };
-
-    // Start animation loop
-    updateCursorPosition();
 
     // Add event listeners
     document.addEventListener('mousemove', handleMouseMove, { passive: true });
@@ -68,40 +75,48 @@ const SpyCursor = () => {
     // Function to add hover listeners to all interactive elements
     const addHoverListeners = () => {
       // Remove existing listeners first
-      document.querySelectorAll('.cursor-interactive').forEach(element => {
+      document.querySelectorAll('.cursor-enhanced').forEach(element => {
         element.removeEventListener('mouseenter', handleMouseEnter);
         element.removeEventListener('mouseleave', handleMouseLeave);
-        element.classList.remove('cursor-interactive');
+        element.classList.remove('cursor-enhanced');
       });
 
-      // Add to all interactive elements with better selectors
+      // Add to all interactive elements with comprehensive selectors
       const selectors = [
         'button:not([disabled])',
-        'a[href]',
-        'input:not([disabled])',
+        'a[href]:not([disabled])',
+        'input:not([disabled]):not([type="hidden"])',
         'textarea:not([disabled])',
         'select:not([disabled])',
         '[role="button"]:not([disabled])',
-        '[onclick]',
-        'label',
-        '.hoverable',
-        '[data-interactive]',
-        'nav a',
-        '.primary-button',
-        '.mission-debrief-button'
+        '[onclick]:not([disabled])',
+        'label:not([disabled])',
+        '.hoverable:not([disabled])',
+        '[data-interactive]:not([disabled])',
+        'nav a:not([disabled])',
+        '.primary-button:not([disabled])',
+        '.mission-debrief-button:not([disabled])',
+        '[tabindex]:not([tabindex="-1"]):not([disabled])',
+        '.cursor-target:not([disabled])'
       ];
 
+      let elementCount = 0;
       selectors.forEach(selector => {
-        document.querySelectorAll(selector).forEach(element => {
-          if (!element.classList.contains('cursor-interactive')) {
-            element.classList.add('cursor-interactive');
-            element.addEventListener('mouseenter', handleMouseEnter, { passive: true });
-            element.addEventListener('mouseleave', handleMouseLeave, { passive: true });
-          }
-        });
+        try {
+          document.querySelectorAll(selector).forEach(element => {
+            if (!element.classList.contains('cursor-enhanced') && element.offsetParent !== null) {
+              element.classList.add('cursor-enhanced');
+              element.addEventListener('mouseenter', handleMouseEnter, { passive: true });
+              element.addEventListener('mouseleave', handleMouseLeave, { passive: true });
+              elementCount++;
+            }
+          });
+        } catch (error) {
+          console.warn('SpyCursor: Error with selector', selector, error);
+        }
       });
 
-      console.log('SpyCursor: Added hover listeners to', document.querySelectorAll('.cursor-interactive').length, 'elements');
+      console.log('SpyCursor: Enhanced', elementCount, 'interactive elements');
     };
 
     // Initial setup
@@ -111,7 +126,7 @@ const SpyCursor = () => {
     let debounceTimer;
     const debouncedUpdate = () => {
       clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(addHoverListeners, 100);
+      debounceTimer = setTimeout(addHoverListeners, 200);
     };
 
     const observer = new MutationObserver(debouncedUpdate);
@@ -119,7 +134,7 @@ const SpyCursor = () => {
       childList: true,
       subtree: true,
       attributes: true,
-      attributeFilter: ['class', 'href', 'onclick']
+      attributeFilter: ['class', 'href', 'onclick', 'disabled']
     });
 
     // Cleanup
@@ -128,17 +143,13 @@ const SpyCursor = () => {
       document.body.style.cursor = '';
       document.removeEventListener('mousemove', handleMouseMove);
       
-      if (animationFrame.current) {
-        cancelAnimationFrame(animationFrame.current);
-      }
-      
       observer.disconnect();
       clearTimeout(debounceTimer);
       
-      document.querySelectorAll('.cursor-interactive').forEach(element => {
+      document.querySelectorAll('.cursor-enhanced').forEach(element => {
         element.removeEventListener('mouseenter', handleMouseEnter);
         element.removeEventListener('mouseleave', handleMouseLeave);
-        element.classList.remove('cursor-interactive');
+        element.classList.remove('cursor-enhanced');
       });
     };
   }, []);
@@ -157,7 +168,8 @@ const SpyCursor = () => {
           pointerEvents: 'none',
           zIndex: 10000,
           mixBlendMode: 'difference',
-          willChange: 'transform'
+          willChange: 'transform',
+          borderRadius: '50%'
         }}
       >
         <svg height="30" width="30" style={{ display: 'block' }}>
@@ -177,7 +189,8 @@ const SpyCursor = () => {
           pointerEvents: 'none',
           zIndex: 10000,
           mixBlendMode: 'difference',
-          willChange: 'transform'
+          willChange: 'transform',
+          borderRadius: '50%'
         }}
       >
         <svg height="10" width="10" style={{ display: 'block' }}>
