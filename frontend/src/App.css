@@ -702,3 +702,65 @@ body::before {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--noir-light-grey);
 }
+
+/* MISSION DEBRIEF BUTTON STYLES */
+.mission-debrief-button {
+  font-family: 'Cinzel', serif !important;
+  background: linear-gradient(135deg, #e0e0e0 0%, #c0c0c0 100%) !important;
+  background-size: 20px 20px, 100% 100% !important;
+  border: none !important;
+  color: #000000 !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1.5px !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.mission-debrief-button:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4) !important;
+}
+
+.mission-debrief-button:active {
+  transform: translateY(-1px) scale(0.98) !important;
+}
+
+@keyframes fadeInDebrief {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.9);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateY(-5px) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Mobile responsiveness for Mission Debrief button */
+@media (max-width: 768px) {
+  .mission-debrief-button {
+    font-size: 12px !important;
+    padding: 12px 20px !important;
+    letter-spacing: 1px !important;
+    bottom: 80px !important;
+    right: 20px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .mission-debrief-button {
+    font-size: 10px !important;
+    padding: 10px 16px !important;
+    letter-spacing: 0.8px !important;
+    bottom: 60px !important;
+    right: 15px !important;
+  }
+}
