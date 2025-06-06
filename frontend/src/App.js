@@ -149,146 +149,6 @@ const SpyCursor = () => {
   );
 };
 
-// MISSION DEBRIEF CONSOLE Noir Button Component
-const MissionDebriefButton = () => {
-  const handleClick = () => {
-    window.open('https://os-theme-verify.emergent.host/', '_blank');
-  };
-
-  return (
-    <button
-      onClick={handleClick}
-      className="mission-debrief-button"
-      style={{
-        position: 'fixed',
-        bottom: '120px',
-        right: '30px',
-        zIndex: 100,
-        backgroundColor: '#e0e0e0',
-        color: '#000',
-        border: 'none',
-        padding: '12px 20px',
-        fontSize: '13px',
-        fontFamily: 'Cinzel, serif',
-        fontWeight: 'bold',
-        letterSpacing: '1.2px',
-        textTransform: 'uppercase',
-        cursor: 'pointer',
-        borderRadius: '0',
-        minHeight: '48px',
-        background: `
-          linear-gradient(45deg, transparent 49%, rgba(255,255,255,0.1) 50%, transparent 51%),
-          linear-gradient(rgba(240,240,240,1) 0%, rgba(200,200,200,1) 100%)
-        `,
-        backgroundSize: '20px 20px, 100% 100%',
-        transition: 'all 0.3s ease',
-        animation: 'fadeInDebrief 1.2s ease-out',
-        boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)',
-        overflow: 'hidden',
-        position: 'relative'
-      }}
-      onMouseEnter={(e) => {
-        e.target.style.transform = 'translateY(-2px)';
-        e.target.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.4)';
-        e.target.querySelector('.arrow').style.transform = 'translateX(3px)';
-        
-        // Add sweep effect
-        const sweep = e.target.querySelector('.sweep-effect');
-        if (sweep) {
-          sweep.style.transform = 'translateX(100%)';
-        }
-      }}
-      onMouseLeave={(e) => {
-        e.target.style.transform = 'translateY(0)';
-        e.target.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.3)';
-        e.target.querySelector('.arrow').style.transform = 'translateX(0)';
-        
-        // Reset sweep effect
-        const sweep = e.target.querySelector('.sweep-effect');
-        if (sweep) {
-          sweep.style.transform = 'translateX(-100%)';
-        }
-      }}
-      onMouseDown={(e) => {
-        e.target.style.transform = 'translateY(-1px) scale(0.98)';
-      }}
-      onMouseUp={(e) => {
-        e.target.style.transform = 'translateY(-2px) scale(1)';
-      }}
-    >
-      <div 
-        className="sweep-effect"
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          background: 'linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.4) 50%, transparent 70%)',
-          transform: 'translateX(-100%)',
-          transition: 'transform 0.6s ease',
-          pointerEvents: 'none'
-        }}
-      />
-      <span style={{ position: 'relative', zIndex: 1 }}>
-        MISSION DEBRIEF CONSOLE
-      </span>
-      <span 
-        className="arrow"
-        style={{
-          marginLeft: '8px',
-          transition: 'transform 0.3s ease',
-          position: 'relative',
-          zIndex: 1
-        }}
-      >
-        →
-      </span>
-      
-      <style jsx>{`
-        @keyframes fadeInDebrief {
-          0% {
-            opacity: 0;
-            transform: translateY(20px) scale(0.9);
-          }
-          50% {
-            opacity: 0.7;
-            transform: translateY(-5px) scale(1.02);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-        }
-        
-        .mission-debrief-button {
-          font-family: 'Cinzel', serif !important;
-        }
-        
-        @media (max-width: 768px) {
-          .mission-debrief-button {
-            fontSize: '11px !important';
-            padding: '10px 16px !important';
-            letterSpacing: '0.8px !important';
-            bottom: '80px !important';
-            right: '20px !important';
-          }
-        }
-        
-        @media (max-width: 480px) {
-          .mission-debrief-button {
-            fontSize: '9px !important';
-            padding: '8px 12px !important';
-            letterSpacing: '0.6px !important';
-            bottom: '60px !important';
-            right: '15px !important';
-          }
-        }
-      `}</style>
-    </button>
-  );
-};
-
 // Enhanced Progress Wizard Component with Noir Theme
 const ProgressWizard = ({ currentStep, totalSteps, completedSteps }) => {
   const progressPercentage = (completedSteps / totalSteps) * 100;
@@ -2105,81 +1965,200 @@ const ResourcesPage = () => {
   );
 };
 
-// Simple Login Page without complex animations
+// Hacking Animation Login Component
 const LoginPage = () => {
-  const [loginData, setLoginData] = useState({
-    username: "relocate_user",
-    password: "SecurePass2025!"
-  });
+  const [currentPhase, setCurrentPhase] = useState('initial'); // initial, hacking, backdoor, authenticating, success
+  const [terminalLines, setTerminalLines] = useState([]);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [loginUsername, setLoginUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [animationTimeoutId, setAnimationTimeoutId] = useState(null);
 
-  const handleSimpleLogin = async (e) => {
+  const hackingCommands = [
+    "root@relocation-system:~# nmap -sS 192.168.1.1",
+    "Starting Nmap scan...",
+    "Host is up (0.023s latency)",
+    "PORT     STATE SERVICE",
+    "22/tcp   open  ssh",
+    "443/tcp  open  https",
+    "8001/tcp open  unknown",
+    "",
+    "root@relocation-system:~# hydra -l admin -P wordlist.txt ssh://192.168.1.1",
+    "Hydra v9.4 starting...",
+    "[SSH] host: 192.168.1.1   login: admin   password: relocate2025",
+    "[SSH] Valid credentials found!",
+    "",
+    "root@relocation-system:~# ssh admin@192.168.1.1",
+    "Welcome to RelocateMe Secure Terminal",
+    "Last login: Thu Jun  6 02:15:42 2025 from 10.0.0.1",
+    "",
+    "admin@relocate-server:~$ sudo -l",
+    "User admin may run the following commands:",
+    "    (ALL : ALL) ALL",
+    "",
+    "admin@relocate-server:~$ cat /etc/shadow | grep relocate_user",
+    "relocate_user:$6$salt$hash:19834:0:99999:7:::",
+    "",
+    "admin@relocate-server:~$ john --wordlist=passwords.txt shadow.txt",
+    "John the Ripper 1.9.0-jumbo-1",
+    "Loaded 1 password hash",
+    "Press 'q' or Ctrl-C to abort...",
+    "SecurePass2025!  (relocate_user)",
+    "",
+    "admin@relocate-server:~$ echo 'Backdoor installed successfully'",
+    "Backdoor installed successfully",
+    "",
+    "admin@relocate-server:~$ ./backdoor_auth.sh",
+    "Initializing backdoor authentication...",
+    "Bypassing security protocols...",
+    "Injecting authentication tokens...",
+    "AUTHENTICATION BYPASS: SUCCESS",
+    "",
+    "ACCESS GRANTED - WELCOME TO RELOCATE SYSTEM"
+  ];
+
+  const typewriterEffect = (lines, callback) => {
+    let currentLineIndex = 0;
+    let currentCharIndex = 0;
+    const currentTerminalLines = [];
+
+    const typeNextChar = () => {
+      if (currentLineIndex >= lines.length) {
+        console.log("Typewriter animation completed, calling callback");
+        callback();
+        return;
+      }
+
+      const currentLine = lines[currentLineIndex];
+      
+      if (currentCharIndex >= currentLine.length) {
+        currentTerminalLines.push(currentLine);
+        setTerminalLines([...currentTerminalLines]);
+        currentLineIndex++;
+        currentCharIndex = 0;
+        // Faster line transition - reduced from 100-300ms to 50-150ms
+        setTimeout(typeNextChar, 50 + Math.random() * 100);
+      } else {
+        const partialLine = currentLine.substring(0, currentCharIndex + 1);
+        const displayLines = [...currentTerminalLines, partialLine];
+        setTerminalLines(displayLines);
+        currentCharIndex++;
+        // Much faster character typing - reduced from 20-100ms to 5-15ms
+        setTimeout(typeNextChar, 5 + Math.random() * 10);
+      }
+    };
+
+    typeNextChar();
+  };
+
+  const startHackingAnimation = () => {
+    setIsAnimating(true);
+    setCurrentPhase('hacking');
+    setTerminalLines([]);
+    
+    // Add a timeout safety net in case animation gets stuck
+    const timeoutId = setTimeout(() => {
+      console.log("Animation timeout reached, forcing completion");
+      setCurrentPhase('success');
+      setTimeout(() => {
+        setShowForm(true);
+      }, 1000);
+    }, 15000); // 15 second timeout
+    
+    setAnimationTimeoutId(timeoutId);
+    
+    typewriterEffect(hackingCommands, () => {
+      clearTimeout(timeoutId);
+      console.log("Animation completed normally");
+      setTimeout(() => {
+        setCurrentPhase('success');
+        setTimeout(() => {
+          setShowForm(true);
+        }, 2000);
+      }, 1000);
+    });
+  };
+
+  const skipAnimation = () => {
+    if (animationTimeoutId) {
+      clearTimeout(animationTimeoutId);
+    }
+    setCurrentPhase('success');
+    setTimeout(() => {
+      setShowForm(true);
+    }, 500);
+  };
+
+  const handleRealLogin = async (e) => {
     e.preventDefault();
+    setCurrentPhase('authenticating');
+
+    // Use the credentials that were "discovered" by the hack
+    const hackUsername = "relocate_user";
+    const hackPassword = "SecurePass2025!";
+
     try {
-      const response = await axios.post(`${API}/api/auth/login`, loginData);
+      const response = await axios.post(`${API}/api/auth/login`, {
+        username: hackUsername,
+        password: hackPassword
+      });
+
       if (response.data && response.data.access_token) {
         localStorage.setItem("token", response.data.access_token);
-        localStorage.setItem("username", loginData.username);
-        setIsLoggedIn(true);
-        setUsername(loginData.username);
-        console.log("Login successful");
+        localStorage.setItem("username", hackUsername);
+        setCurrentPhase('success');
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+      } else {
+        setError("Authentication failed");
+        setCurrentPhase('initial');
+        setShowForm(false);
       }
-    } catch (error) {
-      console.error("Login failed:", error);
-      alert("Login failed. Please try again.");
+    } catch (err) {
+      setError("System breach unsuccessful");
+      console.error("Login error:", err);
+      setCurrentPhase('initial');
+      setShowForm(false);
     }
   };
 
-  return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-serif text-white mb-2">RELOCATE.SYS</h1>
-          <p className="text-gray-400 font-mono">[ SECURE ACCESS PORTAL ]</p>
-        </div>
+  if (currentPhase === 'initial') {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center p-6 relative overflow-hidden">
+        {/* Film noir background with subtle texture */}
+        <div className="absolute inset-0 opacity-10 bg-gradient-to-br from-gray-900 via-black to-gray-800"></div>
         
-        <div className="bg-gray-900 border border-gray-700 p-8 rounded-lg">
-          <form onSubmit={handleSimpleLogin} className="space-y-6">
-            <div>
-              <label className="block text-gray-300 mb-2 font-mono text-sm">USERNAME</label>
-              <input
-                type="text"
-                value={loginData.username}
-                onChange={(e) => setLoginData({...loginData, username: e.target.value})}
-                className="w-full bg-black border border-gray-600 p-3 text-white font-mono"
-                autoComplete="username"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-gray-300 mb-2 font-mono text-sm">PASSWORD</label>
-              <input
-                type="password"
-                value={loginData.password}
-                onChange={(e) => setLoginData({...loginData, password: e.target.value})}
-                className="w-full bg-black border border-gray-600 p-3 text-white font-mono"
-                autoComplete="current-password"
-              />
-            </div>
-            
-            <button
-              type="submit"
-              className="w-full bg-white text-black py-3 px-6 font-mono font-bold hover:bg-gray-200 transition-colors"
-            >
-              [ ACCESS SYSTEM ]
-            </button>
-          </form>
-        </div>
-      </div>
-    </div>
-  );
-};
+        <div className="max-w-2xl w-full bg-black border-2 border-white p-8 shadow-2xl relative z-10">
+          <div className="text-center mb-8">
+            <h1 className="text-5xl font-bold text-white mb-4 font-serif noir-title">
+              RELOCATE.SYS
+            </h1>
+            <p className="text-gray-300 font-mono text-lg tracking-wider">
+              [ UNAUTHORIZED ACCESS DETECTED ]
+            </p>
+            <p className="text-gray-500 font-mono text-sm mt-2">
+              SECURITY BREACH IMMINENT - INITIATE COUNTERMEASURES
+            </p>
+          </div>
 
-// Complex hacking simulation login page  
-const LoginPage = () => {
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [currentPhase, setCurrentPhase] = useState('initial');
-  const [terminalLines, setTerminalLines] = useState([]);
-  const [showForm, setShowForm] = useState(false);
+          {error && (
+            <div className="bg-red-900 border border-red-400 text-red-200 p-4 mb-6 font-mono text-sm animate-pulse">
+              ⚠️ {error}
+            </div>
+          )}
+
+          <div className="text-center">
+            <button
+              onClick={startHackingAnimation}
+              className="hoverable primary-button"
+            >
+              [ INITIATE SYSTEM BREACH ]
+            </button>
+            <p className="text-gray-400 font-mono text-xs mt-4 opacity-75">
+              WARNING: Unauthorized access is illegal
             </p>
           </div>
         </div>
@@ -2310,59 +2289,32 @@ const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState("");
   const [currentPath, setCurrentPath] = useState("/dashboard");
-  const [isLoading, setIsLoading] = useState(true);
 
   // Check if user is already logged in
   useEffect(() => {
-    const checkLoginStatus = async () => {
-      setIsLoading(true);
-      // Check for forced parameter to bypass login
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get('logout') === 'true') {
-        localStorage.removeItem('token');
-        localStorage.removeItem('username');
-        setIsLoggedIn(false);
-        setUsername("");
-        setIsLoading(false);
-        console.log("Forced logout via URL parameter");
-        window.history.replaceState({}, document.title, window.location.pathname);
-        return;
-      }
+    // Check for logout parameter in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('logout') === 'true') {
+      localStorage.removeItem("token");
+      localStorage.removeItem("username");
+      setIsLoggedIn(false);
+      setUsername("");
+      console.log("Forced logout via URL parameter");
+      // Remove the parameter from URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+      return;
+    }
 
-      const token = localStorage.getItem("token");
-      const storedUsername = localStorage.getItem("username");
-      
-      if (token && storedUsername) {
-        setIsLoggedIn(true);
-        setUsername(storedUsername);
-        setIsLoading(false);
-        console.log("User is logged in, showing main app");
-      } else {
-        // Auto-login immediately to bypass animation issues
-        console.log("No existing session, performing auto-login");
-        try {
-          const response = await axios.post(`${API}/api/auth/login`, {
-            username: "relocate_user",
-            password: "SecurePass2025!"
-          });
-          if (response.data && response.data.access_token) {
-            localStorage.setItem("token", response.data.access_token);
-            localStorage.setItem("username", "relocate_user");
-            setIsLoggedIn(true);
-            setUsername("relocate_user");
-            setIsLoading(false);
-            console.log("Auto-login successful - main app loading");
-          } else {
-            setIsLoading(false);
-          }
-        } catch (error) {
-          console.error("Auto-login failed, showing login screen:", error);
-          setIsLoading(false);
-        }
-      }
-    };
-
-    checkLoginStatus();
+    const token = localStorage.getItem("token");
+    const storedUsername = localStorage.getItem("username");
+    console.log("Checking login status:", { token: !!token, username: storedUsername });
+    if (token && storedUsername) {
+      setIsLoggedIn(true);
+      setUsername(storedUsername);
+      console.log("User is logged in, showing main app");
+    } else {
+      console.log("User is not logged in, showing login animation");
+    }
   }, []);
 
   // Handle logout
@@ -2403,26 +2355,7 @@ const App = () => {
 
   return (
     <Router>
-      {isLoading ? (
-        <div className="min-h-screen bg-black flex items-center justify-center">
-          <div className="text-center">
-            <div className="text-white text-4xl font-serif mb-4">RELOCATE.SYS</div>
-            <div className="text-gray-400 font-mono text-lg mb-8">[ INITIALIZING SECURE CONNECTION ]</div>
-            <div className="flex justify-center space-x-1">
-              <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-              <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
-              <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
-            </div>
-          </div>
-        </div>
-      ) : isLoggedIn ? (
-        <>
-          <AppContent />
-          <MissionDebriefButton />
-        </>
-      ) : (
-        <LoginPage />
-      )}
+      {isLoggedIn ? <AppContent /> : <LoginPage />}
     </Router>
   );
 };
