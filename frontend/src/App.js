@@ -2447,62 +2447,49 @@ const App = () => {
 
   // Check if user is already logged in
   useEffect(() => {
-    // Check for forced parameter to bypass login
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('logout') === 'true') {
-      localStorage.removeItem('token');
-      localStorage.removeItem('username');
-      setIsLoggedIn(false);
-      setUsername("");
-      console.log("Forced logout via URL parameter");
-      // Remove the parameter from URL
-      window.history.replaceState({}, document.title, window.location.pathname);
-      return;
-    }
+    const checkLoginStatus = async () => {
+      // Check for forced parameter to bypass login
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('logout') === 'true') {
+        localStorage.removeItem('token');
+        localStorage.removeItem('username');
+        setIsLoggedIn(false);
+        setUsername("");
+        console.log("Forced logout via URL parameter");
+        window.history.replaceState({}, document.title, window.location.pathname);
+        return;
+      }
 
-    // Check for direct access parameter to bypass animation
-    if (urlParams.get('direct') === 'true') {
-      console.log("Direct access mode - bypassing animation");
       const token = localStorage.getItem("token");
       const storedUsername = localStorage.getItem("username");
+      
       if (token && storedUsername) {
         setIsLoggedIn(true);
         setUsername(storedUsername);
         console.log("User is logged in, showing main app");
       } else {
-        // Auto-login for direct access
-        const autoLogin = async () => {
-          try {
-            const response = await axios.post(`${API}/api/auth/login`, {
-              username: "relocate_user",
-              password: "SecurePass2025!"
-            });
-            if (response.data && response.data.access_token) {
-              localStorage.setItem("token", response.data.access_token);
-              localStorage.setItem("username", "relocate_user");
-              setIsLoggedIn(true);
-              setUsername("relocate_user");
-              console.log("Auto-login successful");
-            }
-          } catch (error) {
-            console.error("Auto-login failed:", error);
+        // Auto-login immediately to bypass animation issues
+        console.log("No existing session, performing auto-login");
+        try {
+          const response = await axios.post(`${API}/api/auth/login`, {
+            username: "relocate_user",
+            password: "SecurePass2025!"
+          });
+          if (response.data && response.data.access_token) {
+            localStorage.setItem("token", response.data.access_token);
+            localStorage.setItem("username", "relocate_user");
+            setIsLoggedIn(true);
+            setUsername("relocate_user");
+            console.log("Auto-login successful - main app loading");
           }
-        };
-        autoLogin();
+        } catch (error) {
+          console.error("Auto-login failed, showing login screen:", error);
+          // If auto-login fails, show the login interface
+        }
       }
-      return;
-    }
+    };
 
-    const token = localStorage.getItem("token");
-    const storedUsername = localStorage.getItem("username");
-    console.log("Checking login status:", { token: !!token, username: storedUsername });
-    if (token && storedUsername) {
-      setIsLoggedIn(true);
-      setUsername(storedUsername);
-      console.log("User is logged in, showing main app");
-    } else {
-      console.log("User is not logged in, showing login animation");
-    }
+    checkLoginStatus();
   }, []);
 
   // Handle logout
