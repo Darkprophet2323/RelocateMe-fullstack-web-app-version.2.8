@@ -304,20 +304,20 @@ const ResourcesPage = () => {
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="resource-grid">
                     {categoryResources.map((resource, index) => (
                       <a
                         key={index}
                         href={resource.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="hoverable bg-gray-900 border border-gray-700 p-4 hover:border-white transition-all duration-300 block"
+                        className="hoverable bg-gray-900 border border-gray-700 p-4 hover:border-white transition-all duration-300 block no-overflow"
                       >
-                        <h3 className="font-bold text-white mb-2 font-mono tracking-wide text-sm md:text-base">
+                        <h3 className="font-bold text-white mb-2 font-mono tracking-wide text-sm md:text-base break-words">
                           {resource.name}
                         </h3>
-                        <p className="text-gray-400 text-xs md:text-sm font-mono mb-2">{resource.description}</p>
-                        <div className="text-xs text-gray-500 font-mono break-all">→ {resource.url}</div>
+                        <p className="text-gray-400 text-xs md:text-sm font-mono mb-2 break-words">{resource.description}</p>
+                        <div className="text-xs text-gray-500 font-mono resource-url url-display">→ {resource.url}</div>
                       </a>
                     ))}
                   </div>
