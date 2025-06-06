@@ -148,6 +148,72 @@ const JobsPage = () => {
           </p>
         </div>
 
+        {/* Job Search Sites */}
+        <div className="mb-6 md:mb-8 bg-black border border-gray-600 p-4 md:p-8 hover:border-white transition-all duration-300">
+          <h2 className="text-xl md:text-2xl font-bold text-white mb-4 md:mb-6 font-mono tracking-wider text-center">
+            EXTERNAL JOB SEARCH PLATFORMS
+          </h2>
+          <p className="text-gray-400 font-mono text-center mb-6">
+            Find additional hospitality and tourism opportunities on these specialized job platforms
+          </p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <a
+              href="https://aiapply.co"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hoverable bg-gray-900 border border-gray-700 p-4 hover:border-white transition-all duration-300 text-center group"
+            >
+              <div className="text-2xl mb-2">🤖</div>
+              <h3 className="font-bold text-white mb-2 font-mono text-sm">AI APPLY</h3>
+              <p className="text-gray-400 text-xs font-mono">AI-powered job application platform</p>
+              <div className="text-xs text-gray-500 mt-2 font-mono break-all">→ aiapply.co</div>
+            </a>
+            
+            <a
+              href="https://uk.indeed.com/jobs?q=hospitality&l=Peak+District"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hoverable bg-gray-900 border border-gray-700 p-4 hover:border-white transition-all duration-300 text-center group"
+            >
+              <div className="text-2xl mb-2">🔍</div>
+              <h3 className="font-bold text-white mb-2 font-mono text-sm">INDEED UK</h3>
+              <p className="text-gray-400 text-xs font-mono">Largest UK job search platform</p>
+              <div className="text-xs text-gray-500 mt-2 font-mono break-all">→ uk.indeed.com</div>
+            </a>
+            
+            <a
+              href="https://www.caterer.com/jobs"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hoverable bg-gray-900 border border-gray-700 p-4 hover:border-white transition-all duration-300 text-center group"
+            >
+              <div className="text-2xl mb-2">🍽️</div>
+              <h3 className="font-bold text-white mb-2 font-mono text-sm">CATERER.COM</h3>
+              <p className="text-gray-400 text-xs font-mono">Hospitality industry specialists</p>
+              <div className="text-xs text-gray-500 mt-2 font-mono break-all">→ caterer.com/jobs</div>
+            </a>
+            
+            <a
+              href="https://www.leisurejobs.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hoverable bg-gray-900 border border-gray-700 p-4 hover:border-white transition-all duration-300 text-center group"
+            >
+              <div className="text-2xl mb-2">🏨</div>
+              <h3 className="font-bold text-white mb-2 font-mono text-sm">LEISURE JOBS</h3>
+              <p className="text-gray-400 text-xs font-mono">Tourism & hospitality careers</p>
+              <div className="text-xs text-gray-500 mt-2 font-mono break-all">→ leisurejobs.com</div>
+            </a>
+          </div>
+          
+          <div className="text-center mt-6">
+            <p className="text-gray-500 font-mono text-xs">
+              These platforms specialize in hospitality, tourism, and travel industry positions with visa sponsorship options
+            </p>
+          </div>
+        </div>
+
         {/* Search and Filter */}
         <div className="mb-6 md:mb-8 bg-black border border-gray-600 p-4 md:p-8 hover:border-white transition-all duration-300">
           <h2 className="text-xl md:text-2xl font-bold text-white mb-4 md:mb-6 font-mono tracking-wider">JOB SEARCH</h2>
