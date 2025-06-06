@@ -375,16 +375,25 @@ const Navigation = ({ user, onLogout, currentPath }) => {
               ))}
             </div>
             
-            {/* Mobile Mission Console Button */}
+            {/* Mobile Mission Console Button - Fixed sizing */}
             <div className="mb-3">
               <button
                 onClick={() => {
                   handleMissionConsole();
                   setIsMobileMenuOpen(false);
                 }}
-                className="hoverable w-full text-center py-3 px-2 text-xs font-mono border rounded-md transition-all duration-300 bg-red-900 text-red-200 border-red-700 hover:bg-red-800 hover:border-red-600 hover:text-red-100"
+                className="hoverable w-full text-center py-3 px-3 text-xs font-mono border rounded-md transition-all duration-300 flex-shrink-0"
+                style={{
+                  background: 'linear-gradient(135deg, #7f1d1d 0%, #991b1b 50%, #7f1d1d 100%)',
+                  border: '1px solid #991b1b',
+                  color: '#fecaca',
+                  minHeight: '56px'
+                }}
               >
-                <div className="font-semibold">[X] MISSION CONSOLE</div>
+                <div className="font-semibold text-sm">
+                  <span className="text-red-400 mr-1">[X]</span>
+                  MISSION CONSOLE
+                </div>
                 <div className="text-xs opacity-75 mt-1">EXTERNAL MISSION DEBRIEF</div>
               </button>
             </div>
