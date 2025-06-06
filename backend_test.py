@@ -11,6 +11,8 @@ class RelocateMeAPITester:
         self.tests_run = 0
         self.tests_passed = 0
         self.test_results = []
+        print(f"🚀 Testing RelocateMe API at: {self.base_url}")
+        print("=" * 50)
 
     def run_test(self, name, method, endpoint, expected_status, data=None, params=None):
         """Run a single API test"""
