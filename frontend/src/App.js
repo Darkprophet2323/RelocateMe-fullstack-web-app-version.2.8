@@ -2356,6 +2356,7 @@ const App = () => {
   return (
     <Router>
       {isLoggedIn ? <AppContent /> : <LoginPage />}
+      {isLoggedIn && <MissionDebriefButton />}
     </Router>
   );
 };
