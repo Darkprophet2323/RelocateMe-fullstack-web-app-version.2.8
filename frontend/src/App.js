@@ -320,12 +320,14 @@ const Navigation = ({ user, onLogout, currentPath }) => {
 
           {/* Desktop User Controls */}
           <div className="hidden md:flex items-center space-x-3">
-            <span className="text-gray-300 text-xs font-mono">USER: {user.toUpperCase()}</span>
+            <span className="text-gray-300 text-xs font-mono tracking-wider">
+              CODENAME: <span className="text-white font-bold">PHOENIX</span>
+            </span>
             <button
               onClick={onLogout}
-              className="hoverable logout-button"
+              className="hoverable bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white px-3 py-1 text-xs font-mono border border-gray-600 hover:border-gray-400 transition-all duration-300"
             >
-              [LOGOUT]
+              [ LOGOUT ]
             </button>
           </div>
 
