@@ -46,6 +46,11 @@ db = client.relocateme
 from fastapi import APIRouter
 api_router = APIRouter(prefix="/api")
 
+# Add a simple root endpoint
+@api_router.get("/")
+async def root():
+    return {"message": "RelocateMe API v2.8", "status": "operational"}
+
 # Models
 class User(BaseModel):
     id: Optional[str] = Field(default_factory=lambda: str(uuid.uuid4()))
