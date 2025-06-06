@@ -686,27 +686,77 @@ const TimelinePage = () => {
         const response = await axios.get(`${API}/api/timeline/public`);
         console.log('Timeline response:', response.data);
         
-        setTimelineData({
-          timeline: response.data.timeline || [],
-          categories: {}
-        });
-        
-        // Count completed steps
-        const completed = (response.data.timeline || []).filter(step => step.is_completed).length;
-        setCompletedCount(completed);
-        console.log('Timeline loaded:', response.data.timeline?.length, 'steps');
+        if (response.data && response.data.timeline && response.data.timeline.length > 0) {
+          setTimelineData({
+            timeline: response.data.timeline || [],
+            categories: {}
+          });
+          
+          // Count completed steps
+          const completed = (response.data.timeline || []).filter(step => step.is_completed).length;
+          setCompletedCount(completed);
+          console.log('Timeline loaded:', response.data.timeline?.length, 'steps');
+        } else {
+          console.log('Empty timeline response, using fallback data');
+          setFallbackTimeline();
+        }
       } catch (error) {
         console.error('Error fetching timeline data:', error);
-        // Use fallback data
-        setTimelineData({
-          timeline: [
-            { id: 1, title: "Initial Research & Decision", description: "Research Peak District areas, cost of living, and lifestyle", category: "Planning", is_completed: false },
-            { id: 2, title: "Create Relocation Budget", description: "Calculate moving costs, visa fees, initial living expenses", category: "Planning", is_completed: false },
-            { id: 3, title: "Visa Research", description: "Determine visa type needed (work, skilled worker, family, etc.)", category: "Visa & Legal", is_completed: false }
-          ],
-          categories: {}
-        });
+        console.log('Timeline API call failed, using fallback data');
+        setFallbackTimeline();
       }
+    };
+
+    const setFallbackTimeline = () => {
+      const fallbackTimeline = [
+        { id: 1, title: "Decide on motivation and timeline", description: "Determine your reasons for moving and establish a realistic timeline for relocation", category: "Planning", is_completed: false },
+        { id: 2, title: "Research UK visa options", description: "Investigate different visa types available for US citizens moving to UK", category: "Visa & Legal", is_completed: false },
+        { id: 3, title: "Check UK visa eligibility and requirements", description: "Verify your eligibility for chosen visa type and understand all requirements", category: "Visa & Legal", is_completed: false },
+        { id: 4, title: "Apply for the most suitable visa", description: "Submit your visa application with all required documentation", category: "Visa & Legal", is_completed: false },
+        { id: 5, title: "Gather necessary documents", description: "Collect passport, proof of funds, certificates, and other required documents", category: "Documentation", is_completed: false },
+        { id: 6, title: "Schedule medical exams if required", description: "Book TB test and other medical examinations as required for visa", category: "Visa & Legal", is_completed: false },
+        { id: 7, title: "Book biometrics appointment", description: "Schedule appointment for fingerprints and photograph collection", category: "Visa & Legal", is_completed: false },
+        { id: 8, title: "Submit visa application", description: "Complete online application and submit all documentation", category: "Visa & Legal", is_completed: false },
+        { id: 9, title: "Wait for visa approval", description: "Processing time varies by visa type - track application status", category: "Visa & Legal", is_completed: false },
+        { id: 10, title: "Receive visa vignette or BRP collection details", description: "Obtain visa approval and collection instructions", category: "Visa & Legal", is_completed: false },
+        { id: 11, title: "Notify Arizona landlord or list property for sale", description: "Handle Arizona property arrangements - notice or sale preparation", category: "US Exit", is_completed: false },
+        { id: 12, title: "Start decluttering and selling/donating items", description: "Reduce belongings to essential items for international move", category: "Logistics", is_completed: false },
+        { id: 13, title: "Get quotes from international movers", description: "Research and compare international moving company services and costs", category: "Logistics", is_completed: false },
+        { id: 14, title: "Arrange sea/air shipment of belongings", description: "Book shipping service for household goods and personal items", category: "Logistics", is_completed: false },
+        { id: 15, title: "Research currency exchange and transfer methods", description: "Find best rates for transferring funds from USD to GBP", category: "Financial", is_completed: false },
+        { id: 16, title: "Open UK bank account", description: "Set up UK banking before arrival or arrange digital account", category: "Financial", is_completed: false },
+        { id: 17, title: "Sell Arizona car or arrange export", description: "Dispose of Arizona vehicle or arrange international shipping", category: "US Exit", is_completed: false },
+        { id: 18, title: "Cancel Arizona utilities and services", description: "Terminate utilities, memberships, insurance, and local services", category: "US Exit", is_completed: false },
+        { id: 19, title: "Book one-way flight to UK", description: "Purchase flight to Manchester or East Midlands Airport", category: "Travel", is_completed: false },
+        { id: 20, title: "Shortlist housing options in Peak District", description: "Research and identify potential rental or purchase properties", category: "Housing", is_completed: false },
+        { id: 21, title: "Arrange short-term accommodation", description: "Book temporary housing for initial weeks in UK", category: "Housing", is_completed: false },
+        { id: 22, title: "Arrange airport transport on arrival", description: "Plan transportation from airport to temporary accommodation", category: "Travel", is_completed: false },
+        { id: 23, title: "Register with local GP", description: "Sign up with General Practitioner for NHS healthcare access", category: "UK Registration", is_completed: false },
+        { id: 24, title: "Finalize UK bank account setup", description: "Complete in-person bank account verification and setup", category: "UK Settlement", is_completed: false },
+        { id: 25, title: "View and secure long-term housing", description: "Visit properties and sign lease or purchase agreement", category: "UK Settlement", is_completed: false },
+        { id: 26, title: "Arrange broadband and utilities", description: "Set up internet, electricity, gas, and water services", category: "UK Settlement", is_completed: false },
+        { id: 27, title: "Familiarize with transport and driving rules", description: "Learn UK driving laws and public transport systems", category: "UK Settlement", is_completed: false },
+        { id: 28, title: "Exchange driving license or obtain UK license", description: "Convert US license or apply for new UK driving license", category: "UK Settlement", is_completed: false },
+        { id: 29, title: "Purchase car or arrange UK car rental", description: "Buy vehicle or set up long-term car rental arrangement", category: "UK Settlement", is_completed: false },
+        { id: 30, title: "Register for NHS and council tax", description: "Complete NHS number application and local council registration", category: "UK Registration", is_completed: false },
+        { id: 31, title: "Transfer personal documents", description: "Move medical, education, and legal documents to UK systems", category: "Documentation", is_completed: false },
+        { id: 32, title: "Register children in local school", description: "Enroll children in Peak District area schools if applicable", category: "UK Settlement", is_completed: false },
+        { id: 33, title: "Update address with institutions", description: "Notify US and UK institutions of address change", category: "UK Settlement", is_completed: false },
+        { id: 34, title: "File US and UK tax paperwork", description: "Complete tax obligations in both countries correctly", category: "Financial", is_completed: false },
+        { id: 35, title: "Join local community groups", description: "Connect with Peak District communities and expat networks", category: "UK Integration", is_completed: false },
+        { id: 36, title: "Explore Peak District area", description: "Discover local attractions, services, and amenities", category: "UK Integration", is_completed: false },
+        { id: 37, title: "Meet neighbors and attend local events", description: "Build social connections in your new community", category: "UK Integration", is_completed: false },
+        { id: 38, title: "Continue learning about UK systems", description: "Develop understanding of UK culture, laws, and systems", category: "UK Integration", is_completed: false },
+        { id: 39, title: "Enjoy your new life in Peak District", description: "Celebrate successful relocation and embrace your new lifestyle", category: "UK Integration", is_completed: false }
+      ];
+
+      setTimelineData({
+        timeline: fallbackTimeline,
+        categories: {}
+      });
+      
+      setCompletedCount(0);
+      console.log('Fallback timeline set with 39 steps');
     };
     fetchData();
   }, []);
