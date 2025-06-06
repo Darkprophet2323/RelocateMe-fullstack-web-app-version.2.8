@@ -866,37 +866,81 @@ const ProgressPage = () => {
 
   const fetchProgressItems = async () => {
     try {
+      console.log('Fetching progress items from:', `${API}/api/progress/items`);
       const response = await axios.get(`${API}/api/progress/items`);
+      console.log('Progress response:', response.data);
       setProgressItems(response.data.items || []);
     } catch (error) {
       console.error('Error fetching progress items:', error);
-      // Use fallback data
+      // Use fallback data with user-provided timeline steps converted to progress items
+      console.log('Using fallback progress data based on timeline steps');
       setProgressItems([
         {
           id: '1',
-          title: 'Gather Birth Certificate',
-          description: 'Obtain certified copy of birth certificate for visa application',
-          status: 'completed',
-          category: 'Documentation',
+          title: 'Decide on motivation and timeline',
+          description: 'Determine your reasons for moving and establish a realistic timeline for relocation',
+          status: 'not_started',
+          category: 'Planning',
           subtasks: [
-            { task: 'Request birth certificate online', completed: true },
-            { task: 'Pay processing fee', completed: true },
-            { task: 'Receive by mail', completed: true }
+            { task: 'Research Peak District areas and lifestyle', completed: false },
+            { task: 'Set target moving date', completed: false },
+            { task: 'Create initial budget framework', completed: false }
           ],
-          notes: 'Received certified copy from state office. Cost $25.'
+          notes: 'Starting point for relocation planning.'
         },
         {
           id: '2',
-          title: 'Complete Visa Application Form',
-          description: 'Fill out UK Skilled Worker visa application online',
-          status: 'in_progress',
-          category: 'Visa Application',
+          title: 'Research UK visa options',
+          description: 'Investigate different visa types available for US citizens moving to UK',
+          status: 'not_started',
+          category: 'Visa & Legal',
           subtasks: [
-            { task: 'Create UK government account', completed: true },
-            { task: 'Fill application form', completed: false },
-            { task: 'Upload documents', completed: false }
+            { task: 'Compare visa types (skilled worker, family, etc.)', completed: false },
+            { task: 'Check eligibility requirements', completed: false },
+            { task: 'Estimate visa processing times', completed: false }
           ],
-          notes: 'Application 70% complete.'
+          notes: 'Critical first step for legal entry.'
+        },
+        {
+          id: '3',
+          title: 'Gather necessary documents',
+          description: 'Collect passport, proof of funds, certificates, and other required documents',
+          status: 'not_started',
+          category: 'Documentation',
+          subtasks: [
+            { task: 'Renew passport if needed', completed: false },
+            { task: 'Gather birth/marriage certificates', completed: false },
+            { task: 'Collect financial documents', completed: false },
+            { task: 'Get educational certificates', completed: false }
+          ],
+          notes: 'Essential documentation for visa application.'
+        },
+        {
+          id: '4',
+          title: 'Book one-way flight to UK',
+          description: 'Purchase flight to Manchester or East Midlands Airport',
+          status: 'not_started',
+          category: 'Travel',
+          subtasks: [
+            { task: 'Compare flight prices and routes', completed: false },
+            { task: 'Book flight with appropriate baggage allowance', completed: false },
+            { task: 'Arrange airport transfer', completed: false }
+          ],
+          notes: 'Once visa is approved, book travel.'
+        },
+        {
+          id: '5',
+          title: 'Secure Peak District housing',
+          description: 'Find and secure long-term rental or purchase property in Peak District',
+          status: 'not_started',
+          category: 'Housing',
+          subtasks: [
+            { task: 'Research Peak District neighborhoods', completed: false },
+            { task: 'Arrange virtual property viewings', completed: false },
+            { task: 'Submit rental applications', completed: false },
+            { task: 'Sign lease or purchase agreement', completed: false }
+          ],
+          notes: 'Focus on areas close to hospitality opportunities.'
         }
       ]);
     }
