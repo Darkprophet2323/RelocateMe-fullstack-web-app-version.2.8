@@ -883,6 +883,86 @@ def get_current_phase(completed_steps):
     else:
         return "Settlement"
 
+@api_router.get("/jobs/search-platforms")
+async def get_job_search_platforms():
+    return {
+        "platforms": [
+            {
+                "name": "AI Apply",
+                "url": "https://aiapply.co",
+                "description": "AI-powered job application platform that automates applications",
+                "specialty": "General AI job matching",
+                "visa_support": True,
+                "icon": "🤖"
+            },
+            {
+                "name": "Indeed UK",
+                "url": "https://uk.indeed.com/jobs?q=hospitality&l=Peak+District",
+                "description": "UK's largest job search platform with hospitality filter",
+                "specialty": "General job search",
+                "visa_support": True,
+                "icon": "🔍"
+            },
+            {
+                "name": "Caterer.com",
+                "url": "https://www.caterer.com/jobs",
+                "description": "Hospitality industry specialist job board",
+                "specialty": "Hospitality & catering",
+                "visa_support": True,
+                "icon": "🍽️"
+            },
+            {
+                "name": "Leisure Jobs",
+                "url": "https://www.leisurejobs.com",
+                "description": "Tourism & hospitality career specialists",
+                "specialty": "Tourism & leisure",
+                "visa_support": True,
+                "icon": "🏨"
+            },
+            {
+                "name": "Hospo Jobs",
+                "url": "https://hospojobs.com",
+                "description": "Hospitality recruitment platform",
+                "specialty": "Hospitality recruitment",
+                "visa_support": True,
+                "icon": "👨‍🍳"
+            },
+            {
+                "name": "CV-Library",
+                "url": "https://www.cv-library.co.uk/search-jobs/hospitality",
+                "description": "CV and job matching for hospitality roles",
+                "specialty": "CV matching system",
+                "visa_support": True,
+                "icon": "📋"
+            },
+            {
+                "name": "Reed Hospitality",
+                "url": "https://www.reed.co.uk/jobs/hospitality",
+                "description": "UK recruitment website hospitality section",
+                "specialty": "Professional recruitment",
+                "visa_support": True,
+                "icon": "🏢"
+            },
+            {
+                "name": "Hotel Jobs UK",
+                "url": "https://www.hoteljobs.co.uk",
+                "description": "Dedicated hotel and restaurant job platform",
+                "specialty": "Hotels & restaurants",
+                "visa_support": True,
+                "icon": "🏨"
+            }
+        ],
+        "total_platforms": 8,
+        "visa_support_platforms": 8,
+        "categories": [
+            "AI-Powered Applications",
+            "General Job Search",
+            "Hospitality Specialists",
+            "Tourism & Leisure",
+            "Hotel & Restaurant Focus"
+        ]
+    }
+
 # Enhanced Jobs endpoints - Hospitality, Travel & Tourism with Visa Support
 @api_router.get("/jobs/hospitality")
 async def get_hospitality_jobs():
