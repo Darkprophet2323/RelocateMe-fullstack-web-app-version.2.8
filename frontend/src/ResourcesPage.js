@@ -17,7 +17,9 @@ const ResourcesPage = () => {
 
   const fetchResources = async () => {
     try {
+      console.log('Fetching resources from:', `${API}/api/resources/all`);
       const response = await axios.get(`${API}/api/resources/all`);
+      console.log('Resources response:', response.data);
       setResources(response.data);
       
       // Count total resources
@@ -26,6 +28,7 @@ const ResourcesPage = () => {
         total += category.length;
       });
       setTotalResources(total);
+      console.log('Total resources counted:', total);
       
       setLoading(false);
     } catch (error) {
