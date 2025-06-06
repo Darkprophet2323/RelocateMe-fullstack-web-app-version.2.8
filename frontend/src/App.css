@@ -1,4 +1,36 @@
-/* CURSOR STYLES - SIMPLIFIED AND WORKING */
+/* Enhanced App.css with stable checkboxes and cursor fixes */
+
+.App {
+  text-align: center;
+  background-color: #000;
+  color: #fff;
+  min-height: 100vh;
+}
+
+/* Checkbox Stability - Prevent Movement */
+input[type="checkbox"] {
+  transform: none !important;
+  transition: background-color 0.2s ease, border-color 0.2s ease !important;
+  flex-shrink: 0 !important;
+  margin: 0 !important;
+  vertical-align: top !important;
+}
+
+input[type="checkbox"]:hover {
+  transform: none !important;
+  border-color: #ffffff !important;
+}
+
+/* Prevent label movement on hover */
+label {
+  align-items: flex-start !important;
+}
+
+label:hover input[type="checkbox"] {
+  transform: none !important;
+}
+
+/* SpyCursor Enhancements */
 .spy-cursor-active {
   cursor: none !important;
 }
@@ -7,271 +39,124 @@
   cursor: none !important;
 }
 
-.cursor {
-  pointer-events: none;
-  z-index: 10000;
+.cursor-enhanced {
+  position: relative;
+  z-index: 1;
 }
 
-.cursor__ball {
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  pointer-events: none !important;
-  z-index: 10000 !important;
+.cursor-enhanced:hover {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.8) !important;
 }
 
-.cursor__ball svg {
-  display: block !important;
+/* Stable hover effects */
+.hoverable {
+  transition: all 0.3s ease;
+  position: relative;
 }
 
-.cursor__ball svg circle {
-  fill: #ffffff !important;
+.hoverable:hover {
+  transform: none; /* Prevent any transforms that might affect layout */
 }
 
-/* NOIR THEME BUTTON STYLES - ENHANCED SPECIFICITY */
-button, 
-input[type="submit"], 
-input[type="button"], 
-.button,
-button.hoverable,
-.hoverable button,
-nav button,
-form button {
-  background: #000000 !important;
-  color: #ffffff !important;
-  border: 2px solid #ffffff !important;
-  padding: 12px 24px !important;
-  font-family: monospace !important;
-  font-weight: bold !important;
-  text-transform: uppercase !important;
-  letter-spacing: 1px !important;
-  transition: all 0.3s ease !important;
-  cursor: none !important;
-  border-radius: 0 !important;
-  box-shadow: 2px 2px 0px #ffffff !important;
+/* Timeline specific fixes */
+.timeline-step label {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
 }
 
-button:hover, 
-input[type="submit"]:hover, 
-input[type="button"]:hover, 
-.button:hover,
-button.hoverable:hover,
-.hoverable button:hover,
-nav button:hover,
-form button:hover {
-  background: #ffffff !important;
-  color: #000000 !important;
-  border: 2px solid #000000 !important;
-  box-shadow: 2px 2px 0px #000000 !important;
-  transform: translate(-1px, -1px) !important;
+.timeline-step input[type="checkbox"] {
+  margin-top: 2px;
+  flex-shrink: 0;
 }
 
-button:active, 
-input[type="submit"]:active, 
-input[type="button"]:active, 
-.button:active,
-button.hoverable:active,
-.hoverable button:active,
-nav button:active,
-form button:active {
-  transform: translate(1px, 1px) !important;
-  box-shadow: 0px 0px 0px #000000 !important;
+/* Progress page fixes */
+.progress-item label {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
 }
 
-/* Override any existing button classes */
-.bg-white,
-.bg-gray-200,
-.bg-gray-300,
-.bg-red-900,
-.bg-green-500,
-button.bg-white,
-button.bg-gray-200,
-button.bg-gray-300,
-button.bg-red-900,
-button.bg-green-500 {
-  background: #000000 !important;
-  color: #ffffff !important;
-  border: 2px solid #ffffff !important;
+.progress-item input[type="checkbox"] {
+  margin-top: 1px;
+  flex-shrink: 0;
 }
 
-.bg-white:hover,
-.bg-gray-200:hover,
-.bg-gray-300:hover,
-.bg-red-900:hover,
-.bg-green-500:hover,
-button.bg-white:hover,
-button.bg-gray-200:hover,
-button.bg-gray-300:hover,
-button.bg-red-900:hover,
-button.bg-green-500:hover {
-  background: #ffffff !important;
-  color: #000000 !important;
-  border: 2px solid #000000 !important;
+/* Visa page document checklist fixes */
+.document-checkbox-container {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  width: 100%;
 }
 
-/* Special button variants */
-.logout-button,
-button.logout-button {
-  background: #000000 !important;
-  color: #ff0000 !important;
-  border: 2px solid #ff0000 !important;
-  box-shadow: 2px 2px 0px #ff0000 !important;
+.document-checkbox-container input[type="checkbox"] {
+  margin-top: 4px;
+  flex-shrink: 0;
 }
 
-.logout-button:hover,
-button.logout-button:hover {
-  background: #ff0000 !important;
-  color: #ffffff !important;
-  border: 2px solid #ffffff !important;
-  box-shadow: 2px 2px 0px #ffffff !important;
+/* Global stability */
+* {
+  box-sizing: border-box;
 }
 
-.primary-button,
-button.primary-button {
-  background: #000000 !important;
-  color: #00ff00 !important;
-  border: 2px solid #00ff00 !important;
-  box-shadow: 2px 2px 0px #00ff00 !important;
+/* Enhanced cursor visibility */
+.cursor-highlight {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border: 2px solid rgba(255, 255, 255, 0.3) !important;
+  z-index: 10;
 }
 
-.primary-button:hover,
-button.primary-button:hover {
-  background: #00ff00 !important;
-  color: #000000 !important;
-  border: 2px solid #000000 !important;
-  box-shadow: 2px 2px 0px #000000 !important;
+/* Custom scrollbar for noir theme */
+::-webkit-scrollbar {
+  width: 8px;
 }
 
-/* Override Tailwind button classes specifically */
-.text-black {
-  color: #ffffff !important;
+::-webkit-scrollbar-track {
+  background: #000;
 }
 
-.text-white {
-  color: #ffffff !important;
+::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 4px;
 }
 
-button.text-black {
-  color: #ffffff !important;
+::-webkit-scrollbar-thumb:hover {
+  background: #777;
 }
 
-button.text-white {
-  color: #ffffff !important;
+/* Animation classes */
+.fade-in {
+  animation: fadeIn 0.8s ease-in-out;
 }
 
-button.text-black:hover {
-  color: #000000 !important;
+.slide-in-left {
+  animation: slideInLeft 0.8s ease-in-out;
 }
 
-button.text-white:hover {
-  color: #000000 !important;
-}
-
-/* Hoverable link styling from example */
-a.hoverable, a {
-  border-bottom: 2px solid #fff;
-  padding: 10px 0;
-  margin-top: 25px;
-  color: #fff !important;
-  text-decoration: none !important;
-  transition: all 0.3s ease !important;
-}
-
-a.hoverable:hover, a:hover {
-  background: #ffffff !important;
-  color: #000000 !important;
-  padding: 12px 8px !important;
-  border-bottom: 2px solid #000000 !important;
-}
-
-/* Input field styling */
-input[type="text"], 
-input[type="email"], 
-input[type="password"], 
-input[type="number"], 
-textarea, 
-select {
-  background: #000000 !important;
-  color: #ffffff !important;
-  border: 2px solid #ffffff !important;
-  padding: 12px !important;
-  font-family: monospace !important;
-  transition: all 0.3s ease !important;
-  cursor: none !important;
-  border-radius: 0 !important;
-}
-
-input[type="text"]:focus, 
-input[type="email"]:focus, 
-input[type="password"]:focus, 
-input[type="number"]:focus, 
-textarea:focus, 
-select:focus {
-  outline: none !important;
-  border: 2px solid #00ff00 !important;
-  box-shadow: 0 0 0 2px #00ff00 !important;
-}
-
-input[type="text"]:hover, 
-input[type="email"]:hover, 
-input[type="password"]:hover, 
-input[type="number"]:hover, 
-textarea:hover, 
-select:hover {
-  border: 2px solid #cccccc !important;
-}
-
-/* Enhanced mobile responsiveness */
-@media (max-width: 768px) {
-  /* Ensure text is readable on mobile */
-  body {
-    font-size: 16px !important;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
-  
-  /* Mobile-friendly button sizes */
-  button {
-    min-height: 44px !important;
-    min-width: 44px !important;
-  }
-  
-  /* Mobile-friendly link padding */
-  a {
-    min-height: 44px !important;
-    display: inline-flex !important;
-    align-items: center !important;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-/* Mobile touch support - show normal cursor on touch devices */
-@media (hover: none) and (pointer: coarse) {
-  .spy-cursor-active {
-    cursor: auto !important;
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
   }
-  
-  .spy-cursor-active * {
-    cursor: auto !important;
-  }
-  
-  .cursor {
-    display: none !important;
-  }
-  
-  /* Enhanced touch targets for mobile */
-  .hoverable {
-    min-height: 44px !important;
-    min-width: 44px !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-  }
-  
-  /* Restore normal cursors on mobile */
-  button, input, textarea, select, a {
-    cursor: pointer !important;
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
 }
 
-/* Mobile animations and responsiveness */
 @keyframes slideDown {
   from {
     opacity: 0;
@@ -287,529 +172,92 @@ select:hover {
   animation: slideDown 0.3s ease-out;
 }
 
-/* Ensure links are always visible and functional */
-a {
-  text-decoration: none !important;
-  color: inherit !important;
-  cursor: pointer !important;
-}
-
-a:hover {
-  text-decoration: none !important;
-}
-
-/* Ensure navigation is always visible */
-nav {
-  visibility: visible !important;
-  display: block !important;
-}
-
-/* NOIR HACKING ANIMATION STYLES */
-
-/* Mission Debrief button specific styling */
-.mission-debrief-button,
-a.bg-red-900 {
-  background-color: #800020 !important; /* Burgundy color */
-  color: #000000 !important; /* Black text */
-  border: 2px solid #000000 !important;
-}
-
-.mission-debrief-button:hover,
-a.bg-red-900:hover {
-  background-color: #a0002a !important; /* Lighter burgundy on hover */
-  color: #000000 !important; /* Keep black text */
-  border: 2px solid #000000 !important;
-}
-
-/* FINAL BUTTON OVERRIDE - HIGHEST SPECIFICITY */
-* button,
-* input[type="submit"],
-* input[type="button"],
-* .button,
-html button,
-html input[type="submit"],
-html input[type="button"],
-html .button {
-  background-color: #000000 !important;
-  color: #ffffff !important;
-  border: 2px solid #ffffff !important;
-  font-family: monospace !important;
-  font-weight: bold !important;
-  text-transform: uppercase !important;
-  letter-spacing: 1px !important;
-  padding: 12px 24px !important;
-  border-radius: 0 !important;
-  box-shadow: 2px 2px 0px #ffffff !important;
-  transition: all 0.3s ease !important;
-  cursor: none !important;
-}
-
-* button:hover,
-* input[type="submit"]:hover,
-* input[type="button"]:hover,
-* .button:hover,
-html button:hover,
-html input[type="submit"]:hover,
-html input[type="button"]:hover,
-html .button:hover {
-  background-color: #ffffff !important;
-  color: #000000 !important;
-  border: 2px solid #000000 !important;
-  box-shadow: 2px 2px 0px #000000 !important;
-  transform: translate(-1px, -1px) !important;
-}
-
-/* Special variants with highest specificity */
-* .logout-button,
-html .logout-button {
-  background-color: #000000 !important;
-  color: #ff0000 !important;
-  border: 2px solid #ff0000 !important;
-  box-shadow: 2px 2px 0px #ff0000 !important;
-}
-
-* .logout-button:hover,
-html .logout-button:hover {
-  background-color: #ff0000 !important;
-  color: #ffffff !important;
-  border: 2px solid #ffffff !important;
-  box-shadow: 2px 2px 0px #ffffff !important;
-}
-
-* .primary-button,
-html .primary-button {
-  background-color: #000000 !important;
-  color: #00ff00 !important;
-  border: 2px solid #00ff00 !important;
-  box-shadow: 2px 2px 0px #00ff00 !important;
-}
-
-* .primary-button:hover,
-html .primary-button:hover {
-  background-color: #00ff00 !important;
-  color: #000000 !important;
-  border: 2px solid #000000 !important;
-  box-shadow: 2px 2px 0px #000000 !important;
-}
-.film-grain {
-  background: 
-    radial-gradient(circle, transparent 1px, rgba(255,255,255,0.01) 1px),
-    linear-gradient(45deg, transparent 24%, rgba(255,255,255,0.02) 25%, rgba(255,255,255,0.02) 26%, transparent 27%);
-  background-size: 4px 4px, 8px 8px;
-  animation: grain-drift 3s linear infinite;
-}
-
-@keyframes grain-drift {
-  0% { background-position: 0 0, 0 0; }
-  100% { background-position: 4px 4px, 8px 8px; }
-}
-
-.noir-title {
-  position: relative;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-}
-
-.noir-title::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%);
-  animation: shine 3s ease-in-out infinite;
-}
-
-@keyframes shine {
-  0%, 100% { transform: translateX(-100%); }
-  50% { transform: translateX(100%); }
-}
-
-/* Terminal cursor animation */
-.terminal-cursor {
-  animation: blink 1s infinite;
-}
-
-@keyframes blink {
-  0%, 50% { opacity: 1; }
-  51%, 100% { opacity: 0; }
-}
-
-/* Noir button effects */
-.noir-button {
-  position: relative;
-  overflow: hidden;
-  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
-}
-
-.noir-button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-  transition: left 0.5s;
-}
-
-.noir-button:hover::before {
-  left: 100%;
-}
-
-/* Success checkmark animation */
-.success-check {
-  animation: checkmark 0.6s ease-in-out;
-  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
-}
-
-@keyframes checkmark {
-  0% { transform: scale(0); }
-  50% { transform: scale(1.2); }
-  100% { transform: scale(1); }
-}
-
-/* Console text effects */
-.console-text {
-  text-shadow: 0 0 3px currentColor;
-}
-
-.console-text.success {
-  color: #ffffff;
-  text-shadow: 0 0 8px #ffffff;
-}
-
-.console-text.error {
-  color: #ff6b6b;
-  text-shadow: 0 0 8px #ff6b6b;
-}
-
-.console-text.warning {
-  color: #ffa500;
-  text-shadow: 0 0 8px #ffa500;
-}
-
-.console-text.discovery {
-  color: #ff6b6b;
-  text-shadow: 0 0 8px #ff6b6b;
-  font-weight: bold;
-}
-
-/* Film noir scanlines */
-.noir-scanlines {
-  position: relative;
-}
-
-.noir-scanlines::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  pointer-events: none;
-  background: linear-gradient(transparent 50%, rgba(255, 255, 255, 0.02) 50%);
-  background-size: 100% 2px;
-  animation: scanline 0.1s linear infinite;
-}
-
-@keyframes scanline {
-  0% { background-position: 0 0; }
-  100% { background-position: 0 2px; }
-}
-
-/* Vintage CRT flicker */
-.crt-flicker {
-  animation: flicker 0.15s infinite linear;
-}
-
-@keyframes flicker {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.98; }
-}
-
-/* Typewriter glow effect for discovered text */
-.discovery-glow {
-  animation: discovery-pulse 2s infinite;
-}
-
-@keyframes discovery-pulse {
-  0%, 100% { 
-    color: #ff6b6b;
-    text-shadow: 0 0 5px #ff6b6b;
-  }
-  50% { 
-    color: #ff9999;
-    text-shadow: 0 0 15px #ff6b6b, 0 0 25px #ff6b6b;
-  }
-}
-
-/* NOIR RELOCATION APP - BRUTAL MINIMALIST THEME */
-
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Source+Code+Pro:wght@400;600;700&family=Inter:wght@300;400;500;600;700&family=Cinzel:wght@400;600&display=swap');
-
-/* CSS RESET & BASE */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-/* ROOT VARIABLES - NOIR PALETTE */
-:root {
-  /* Noir Color Palette */
-  --noir-black: #000000;
-  --noir-charcoal: #1a1a1a;
-  --noir-dark-grey: #2d2d2d;
-  --noir-medium-grey: #4a4a4a;
-  --noir-light-grey: #a0a0a0;
-  --noir-off-white: #f5f5f5;
-  --noir-pure-white: #ffffff;
-  
-  /* Accent Colors (Sparingly Used) */
-  --noir-blood-red: #8b0000;
-  --noir-burgundy: #4d1f1f;
-  --noir-muted-red: #654545;
-  
-  /* Typography */
-  --font-serif: 'Playfair Display', serif;
-  --font-mono: 'Source Code Pro', monospace;
-  --font-sans: 'Inter', sans-serif;
-  
-  /* Shadows & Effects */
-  --shadow-harsh: 0 8px 32px rgba(0, 0, 0, 0.8);
-  --shadow-subtle: 0 4px 16px rgba(0, 0, 0, 0.4);
-  --shadow-text: 2px 2px 4px rgba(0, 0, 0, 0.8);
-  
-  /* Animation Timings */
-  --transition-fast: 0.2s ease-out;
-  --transition-smooth: 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
-  --transition-dramatic: 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
-}
-
-/* GLOBAL STYLES */
-body {
-  font-family: var(--font-sans);
-  background: linear-gradient(135deg, var(--noir-black) 0%, var(--noir-charcoal) 100%);
-  color: var(--noir-off-white);
-  line-height: 1.6;
-  overflow-x: hidden;
-  min-height: 100vh;
-}
-
-/* Add subtle film grain texture */
-body::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: 
-    radial-gradient(circle, transparent 1px, rgba(255,255,255,0.02) 1px);
-  background-size: 4px 4px;
-  pointer-events: none;
-  z-index: -1;
-  opacity: 0.3;
-}
-
-/* TYPOGRAPHY CLASSES */
-.noir-title {
-  font-family: var(--font-serif);
-  font-weight: 900;
-  letter-spacing: -0.02em;
-  text-shadow: var(--shadow-text);
-  background: linear-gradient(135deg, var(--noir-pure-white) 0%, var(--noir-light-grey) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  position: relative;
-}
-
-.noir-subtitle {
-  font-family: var(--font-sans);
-  font-weight: 300;
-  letter-spacing: 0.05em;
-  color: var(--noir-light-grey);
-  text-transform: uppercase;
-}
-
-.noir-mono {
-  font-family: var(--font-mono);
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  color: var(--noir-off-white);
-}
-
-/* TYPEWRITER EFFECT */
+/* Typewriter effect */
 .typewriter {
   overflow: hidden;
-  border-right: 2px solid var(--noir-off-white);
+  border-right: 3px solid rgba(255, 255, 255, 0.75);
   white-space: nowrap;
-  animation: typewriter 3s steps(40, end), blink-caret 0.75s step-end infinite;
+  margin: 0 auto;
+  letter-spacing: 0.1em;
+  animation: 
+    typing 3.5s steps(30, end),
+    blink-caret 0.5s step-end infinite;
 }
 
-@keyframes typewriter {
-  from { width: 0; }
-  to { width: 100%; }
+@keyframes typing {
+  from { width: 0 }
+  to { width: 100% }
 }
 
 @keyframes blink-caret {
-  from, to { border-color: transparent; }
-  50% { border-color: var(--noir-off-white); }
+  from, to { border-color: transparent }
+  50% { border-color: rgba(255, 255, 255, 0.75) }
 }
 
-/* NOIR ANIMATIONS */
-.fade-in {
-  animation: fadeIn 1s ease-out;
+/* Logout button styling */
+.logout-button {
+  background: #1f2937;
+  color: #d1d5db;
+  border: 1px solid #4b5563;
+  padding: 8px 16px;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  letter-spacing: 0.05em;
+  transition: all 0.3s ease;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+.logout-button:hover {
+  background: #374151;
+  color: #f9fafb;
+  border-color: #9ca3af;
 }
 
-.slide-in-left {
-  animation: slideInLeft 0.8s ease-out;
+/* Resource card hover effects */
+.resource-card {
+  transition: all 0.3s ease;
 }
 
-@keyframes slideInLeft {
-  from { opacity: 0; transform: translateX(-50px); }
-  to { opacity: 1; transform: translateX(0); }
+.resource-card:hover {
+  border-color: #ffffff !important;
+  background-color: #1f2937 !important;
 }
 
-/* RESPONSIVE DESIGN */
+/* Noir theme classes */
+.noir-title {
+  font-family: serif;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* Fix for mobile responsiveness */
 @media (max-width: 768px) {
-  .noir-hero-title {
-    font-size: clamp(2rem, 6vw, 4rem);
+  .timeline-step label {
+    gap: 8px;
+  }
+  
+  .progress-item label {
+    gap: 12px;
+  }
+  
+  .document-checkbox-container {
+    gap: 12px;
   }
 }
 
-/* NOIR SCROLLBAR */
-::-webkit-scrollbar {
-  width: 8px;
+/* Ensure stable layout for all interactive elements */
+button, a, input, select, textarea {
+  position: relative;
 }
 
-::-webkit-scrollbar-track {
-  background: var(--noir-black);
+button:hover, a:hover {
+  transform: none !important;
 }
 
-::-webkit-scrollbar-thumb {
-  background: var(--noir-medium-grey);
-  border-radius: 0;
+/* Fix any unwanted transforms */
+.group:hover .group-hover\:scale-105 {
+  transform: none !important;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--noir-light-grey);
-}
-
-/* MISSION DEBRIEF CONSOLE BUTTON STYLES */
-.mission-debrief-button {
-  font-family: 'Cinzel', serif !important;
-  background: linear-gradient(135deg, #e0e0e0 0%, #c0c0c0 100%) !important;
-  background-size: 20px 20px, 100% 100% !important;
-  border: none !important;
-  color: #000000 !important;
-  font-weight: 600 !important;
-  text-transform: uppercase !important;
-  letter-spacing: 1.2px !important;
-  font-size: 13px !important;
-  cursor: pointer !important;
-  transition: all 0.3s ease !important;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
-  position: relative !important;
-  overflow: hidden !important;
-  padding: 12px 20px !important;
-}
-
-.mission-debrief-button:hover {
-  transform: translateY(-2px) !important;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4) !important;
-}
-
-.mission-debrief-button:active {
-  transform: translateY(-1px) scale(0.98) !important;
-}
-
-@keyframes fadeInDebrief {
-  0% {
-    opacity: 0;
-    transform: translateY(20px) scale(0.9);
-  }
-  50% {
-    opacity: 0.7;
-    transform: translateY(-5px) scale(1.02);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-/* Enhanced Transparent Cursor Styles */
-.spy-cursor-active {
-  cursor: none !important;
-}
-
-.spy-cursor-active * {
-  cursor: none !important;
-}
-
-.cursor-hover-target {
-  transition: all 0.2s ease !important;
-}
-
-.cursor-hover-highlight {
-  background-color: rgba(255, 255, 255, 0.1) !important;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.3) !important;
-  transform: scale(1.01) !important;
-}
-
-/* Transparent cursor animation */
-@keyframes cursorPulse {
-  0% {
-    opacity: 0.6;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.8;
-    transform: scale(1.1);
-  }
-  100% {
-    opacity: 0.6;
-    transform: scale(1);
-  }
-}
-
-.cursor__ball--big {
-  animation: cursorPulse 2s ease-in-out infinite;
-}
-
-/* Enhanced visibility for text under cursor */
-.cursor-text-visible {
-  text-shadow: 0 0 2px rgba(0, 0, 0, 0.8) !important;
-  background-color: rgba(255, 255, 255, 0.05) !important;
-  border-radius: 2px !important;
-  padding: 1px 2px !important;
-}
-
-/* Mobile responsiveness for Mission Debrief Console button */
-@media (max-width: 768px) {
-  .mission-debrief-button {
-    font-size: 11px !important;
-    padding: 10px 16px !important;
-    letter-spacing: 0.8px !important;
-    bottom: 80px !important;
-    right: 20px !important;
-  }
-}
-
-@media (max-width: 480px) {
-  .mission-debrief-button {
-    font-size: 9px !important;
-    padding: 8px 12px !important;
-    letter-spacing: 0.6px !important;
-    bottom: 60px !important;
-    right: 15px !important;
-  }
+.hover\:scale-105:hover {
+  transform: none !important;
 }
