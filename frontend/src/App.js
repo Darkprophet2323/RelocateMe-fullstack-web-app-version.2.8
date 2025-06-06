@@ -335,7 +335,9 @@ const Navigation = ({ user, onLogout, currentPath }) => {
           <div className="md:hidden flex items-center justify-between w-full">
             <span className="text-white text-sm font-mono font-bold">RELOCATE.SYS</span>
             <div className="flex items-center space-x-2">
-              <span className="text-gray-300 text-xs font-mono tracking-wider">CODENAME: <span className="text-white font-bold">PHOENIX</span></span>
+              <span className="text-gray-300 text-xs font-mono tracking-wider">
+                CODENAME: <span className="text-white font-bold">PHOENIX</span>
+              </span>
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 className="hoverable text-gray-400 hover:text-white p-2 rounded-md transition-colors duration-300"
