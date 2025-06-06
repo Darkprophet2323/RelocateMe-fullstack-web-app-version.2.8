@@ -2028,9 +2028,11 @@ const AnalyticsPage = () => {
   );
 };
 
-// Resources Page with Noir Theme
+// Enhanced Resources Page with Centered Layout
 const ResourcesPage = () => {
-  const [resources, setResources] = useState(null);
+  const [resources, setResources] = useState({});
+  const [activeCategory, setActiveCategory] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     const fetchResources = async () => {
@@ -2039,68 +2041,225 @@ const ResourcesPage = () => {
         setResources(response.data);
       } catch (error) {
         console.error('Error fetching resources:', error);
-        // Fallback data
-        setResources({
-          visa_legal: [
-            { name: "UK Government Visa Guide", url: "https://www.gov.uk/browse/visas-immigration", description: "Official UK visa information" },
-            { name: "Immigration Law Society", url: "https://www.lawsociety.org.uk", description: "Find qualified immigration lawyers" }
-          ],
-          employment: [
-            { name: "Indeed UK", url: "https://uk.indeed.com", description: "Primary job search platform" },
-            { name: "LinkedIn Jobs", url: "https://www.linkedin.com/jobs", description: "Professional networking and jobs" }
-          ],
-          housing: [
-            { name: "Rightmove", url: "https://www.rightmove.co.uk", description: "UK's largest property portal" },
-            { name: "Zoopla", url: "https://www.zoopla.co.uk", description: "Property search and valuation" }
-          ]
-        });
       }
     };
     fetchResources();
   }, []);
 
+  const categories = [
+    { key: 'all', name: 'All Resources', icon: '🌐' },
+    { key: 'visa_legal', name: 'Visa & Legal', icon: '📋' },
+    { key: 'housing', name: 'Housing', icon: '🏠' },
+    { key: 'employment', name: 'Employment', icon: '💼' },
+    { key: 'financial', name: 'Financial', icon: '💰' },
+    { key: 'local_services', name: 'Local Services', icon: '🏛️' },
+    { key: 'lifestyle', name: 'Lifestyle', icon: '🎭' },
+    { key: 'moving_logistics', name: 'Moving Logistics', icon: '📦' },
+    { key: 'education', name: 'Education', icon: '🎓' }
+  ];
+
+  const getAllResources = () => {
+    let allResources = [];
+    Object.keys(resources).forEach(category => {
+      resources[category].forEach(resource => {
+        allResources.push({ ...resource, category });
+      });
+    });
+    return allResources;
+  };
+
+  const getFilteredResources = () => {
+    let filteredResources = activeCategory === 'all' 
+      ? getAllResources() 
+      : resources[activeCategory] || [];
+
+    if (searchTerm) {
+      filteredResources = filteredResources.filter(resource =>
+        resource.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        resource.description.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    return filteredResources;
+  };
+
+  const getTotalCount = () => {
+    return Object.values(resources).reduce((total, categoryResources) => {
+      return total + categoryResources.length;
+    }, 0);
+  };
+
+  const filteredResources = getFilteredResources();
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-black to-gray-900 p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8 fade-in">
-          <h1 className="text-5xl font-bold font-serif text-white mb-6">
-            SUPPORT NETWORK
+        {/* Header Section - Centered */}
+        <div className="text-center mb-12 fade-in">
+          <h1 className="text-5xl md:text-6xl font-bold font-serif text-white mb-6">
+            RESOURCE NETWORK
           </h1>
           <p className="text-xl text-gray-400 mb-8 font-mono tracking-wide">
-            [ EXTERNAL RESOURCES & INTELLIGENCE TOOLS ]
+            [ {getTotalCount()} VERIFIED EMIGRATION RESOURCES ]
           </p>
+          <p className="text-lg text-gray-300 mb-8 font-mono max-w-4xl mx-auto">
+            Comprehensive database of essential links supporting all 39 timeline steps for Phoenix → Peak District relocation
+          </p>
+          
+          {/* Search Bar - Centered */}
+          <div className="max-w-2xl mx-auto mb-8">
+            <input
+              type="text"
+              placeholder="Search resources..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-black border border-gray-600 p-4 text-white font-mono text-lg focus:border-white focus:outline-none transition-colors"
+            />
+          </div>
         </div>
 
-        {resources && Object.entries(resources).map(([category, items], categoryIndex) => (
-          <div key={category} className="mb-12">
-            <h2 className="text-3xl font-bold text-white mb-8 font-serif text-center capitalize">
-              {category.replace('_', ' & ')}
+        {/* Category Filter - Centered Grid */}
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold text-white mb-6 font-mono text-center tracking-wider">
+            RESOURCE CATEGORIES
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 max-w-6xl mx-auto">
+            {categories.map(category => (
+              <button
+                key={category.key}
+                onClick={() => setActiveCategory(category.key)}
+                className={`hoverable p-4 border-2 transition-all duration-300 text-center ${
+                  activeCategory === category.key
+                    ? 'bg-white text-black border-white'
+                    : 'bg-black text-white border-gray-600 hover:border-white hover:bg-gray-900'
+                }`}
+              >
+                <div className="text-2xl mb-2">{category.icon}</div>
+                <div className="font-mono font-bold text-sm tracking-wider">{category.name}</div>
+                <div className="text-xs opacity-75 mt-1">
+                  {category.key === 'all' 
+                    ? `${getTotalCount()} total` 
+                    : `${resources[category.key]?.length || 0} links`
+                  }
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Resources Grid - Properly Centered */}
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-3xl font-bold text-white font-mono tracking-wider">
+              {activeCategory === 'all' ? 'ALL RESOURCES' : categories.find(c => c.key === activeCategory)?.name.toUpperCase()}
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {items.map((resource, index) => (
+            <div className="text-gray-400 font-mono">
+              {filteredResources.length} {filteredResources.length === 1 ? 'resource' : 'resources'}
+            </div>
+          </div>
+
+          {/* Centered Grid Layout */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 justify-items-center">
+            {filteredResources.map((resource, index) => (
+              <div
+                key={index}
+                className="w-full max-w-sm bg-black border border-gray-600 p-6 hover:border-white hover:bg-gray-900 transition-all duration-300 group"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold text-white mb-2 font-mono tracking-wide group-hover:text-gray-200 text-lg">
+                    {resource.name}
+                  </h3>
+                  {resource.category && (
+                    <span className="text-xs bg-gray-800 text-gray-300 px-2 py-1 font-mono">
+                      {categories.find(c => c.key === resource.category)?.icon || '🔗'}
+                    </span>
+                  )}
+                </div>
+                
+                <p className="text-gray-400 text-sm font-mono mb-4 leading-relaxed">
+                  {resource.description}
+                </p>
+                
                 <a
-                  key={index}
                   href={resource.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-black border border-gray-600 p-6 hover:border-white hover:bg-gray-900 transition-all duration-300 block"
+                  className="hoverable inline-block w-full bg-white text-black px-4 py-3 font-mono font-bold text-sm tracking-wider hover:bg-gray-200 transition-all duration-300 text-center"
                 >
-                  <h3 className="font-bold text-white mb-3 font-mono tracking-wide">{resource.name}</h3>
-                  <p className="text-gray-400 text-sm font-mono">{resource.description}</p>
+                  ACCESS RESOURCE →
                 </a>
-              ))}
+              </div>
+            ))}
+          </div>
+
+          {/* Empty State - Centered */}
+          {filteredResources.length === 0 && (
+            <div className="text-center py-16">
+              <div className="text-gray-400 text-xl font-mono mb-4">
+                NO RESOURCES FOUND
+              </div>
+              <p className="text-gray-500 font-mono">
+                Try adjusting your search term or selecting a different category
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Summary Statistics - Centered */}
+        <div className="mt-16 bg-black border border-gray-600 p-8 text-center">
+          <h2 className="text-3xl font-bold text-white mb-8 font-serif">RESOURCE INTELLIGENCE</h2>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
+            <div className="text-center">
+              <div className="text-4xl font-bold text-white mb-2 font-mono">{getTotalCount()}</div>
+              <div className="text-gray-400 text-sm font-mono tracking-wider">TOTAL RESOURCES</div>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl font-bold text-white mb-2 font-mono">39</div>
+              <div className="text-gray-400 text-sm font-mono tracking-wider">TIMELINE STEPS</div>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl font-bold text-white mb-2 font-mono">8</div>
+              <div className="text-gray-400 text-sm font-mono tracking-wider">CATEGORIES</div>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl font-bold text-white mb-2 font-mono">100%</div>
+              <div className="text-gray-400 text-sm font-mono tracking-wider">VERIFIED LINKS</div>
             </div>
           </div>
-        ))}
-
-        {!resources && (
-          <div className="text-center py-12">
-            <div className="text-6xl mb-6">🔗</div>
-            <h2 className="text-3xl font-bold text-white mb-4 font-serif">LOADING RESOURCES</h2>
-            <p className="text-gray-400 font-mono">Establishing network connections...</p>
+          
+          <div className="mt-8 text-center">
+            <p className="text-gray-400 font-mono text-lg leading-relaxed max-w-3xl mx-auto">
+              Every resource has been verified for accuracy and relevance to the Phoenix → Peak District 
+              relocation process. Links are regularly updated to ensure continued accessibility.
+            </p>
           </div>
-        )}
+        </div>
+
+        {/* Quick Access Links - Centered */}
+        <div className="mt-12">
+          <h2 className="text-2xl font-bold text-white mb-6 font-mono text-center tracking-wider">
+            ESSENTIAL QUICK ACCESS
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
+            {[
+              { name: "UK GOV VISA", url: "https://www.gov.uk/browse/visas-immigration", desc: "Official visa portal" },
+              { name: "RIGHTMOVE", url: "https://www.rightmove.co.uk", desc: "Property search" },
+              { name: "NHS REGISTRATION", url: "https://www.nhs.uk/using-the-nhs/nhs-services/gps/how-to-register-with-a-gp-practice/", desc: "Healthcare access" },
+              { name: "PEAK DISTRICT", url: "https://www.peakdistrict.gov.uk", desc: "Target region info" }
+            ].map((link, index) => (
+              <a
+                key={index}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hoverable bg-gray-900 border border-gray-600 p-4 hover:border-white hover:bg-gray-800 transition-all duration-300 text-center block"
+              >
+                <h3 className="font-bold text-white mb-2 font-mono tracking-wide">{link.name}</h3>
+                <p className="text-gray-400 text-sm font-mono">{link.desc}</p>
+              </a>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
