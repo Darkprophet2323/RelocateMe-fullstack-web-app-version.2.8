@@ -6,10 +6,12 @@ import { gsap } from "gsap";
 
 const API = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
-// Spy Cursor Component - Simple and Reliable Implementation
+// Enhanced Spy Cursor Component - Fixed for all pages
 const SpyCursor = () => {
   const bigBallRef = useRef(null);
   const smallBallRef = useRef(null);
+  const mousePos = useRef({ x: 0, y: 0 });
+  const animationFrame = useRef(null);
 
   useEffect(() => {
     const bigBall = bigBallRef.current;
@@ -19,95 +21,130 @@ const SpyCursor = () => {
 
     // Add custom cursor class to body
     document.body.classList.add('spy-cursor-active');
+    document.body.style.cursor = 'none';
 
-    // Simple mouse move handler
-    const handleMouseMove = (e) => {
+    // Smooth mouse move handler with requestAnimationFrame
+    const updateCursorPosition = () => {
       if (bigBall && smallBall) {
-        bigBall.style.left = (e.clientX - 15) + 'px';
-        bigBall.style.top = (e.clientY - 15) + 'px';
-        smallBall.style.left = (e.clientX - 5) + 'px';
-        smallBall.style.top = (e.clientY - 5) + 'px';
+        // Smooth following animation
+        const bigX = mousePos.current.x - 15;
+        const bigY = mousePos.current.y - 15;
+        const smallX = mousePos.current.x - 5;
+        const smallY = mousePos.current.y - 5;
+        
+        bigBall.style.transform = `translate3d(${bigX}px, ${bigY}px, 0)`;
+        smallBall.style.transform = `translate3d(${smallX}px, ${smallY}px, 0)`;
+      }
+      animationFrame.current = requestAnimationFrame(updateCursorPosition);
+    };
+
+    const handleMouseMove = (e) => {
+      mousePos.current = { x: e.clientX, y: e.clientY };
+    };
+
+    // Enhanced hover handlers
+    const handleMouseEnter = (e) => {
+      if (bigBall) {
+        bigBall.style.transform += ' scale(4)';
+        bigBall.style.transition = 'transform 0.3s ease';
+        bigBall.style.mixBlendMode = 'difference';
       }
     };
 
-    // Simple hover handlers
-    const handleMouseEnter = () => {
+    const handleMouseLeave = (e) => {
       if (bigBall) {
-        bigBall.style.transform = 'scale(4)';
+        const currentTransform = bigBall.style.transform.replace(' scale(4)', '');
+        bigBall.style.transform = currentTransform + ' scale(1)';
         bigBall.style.transition = 'transform 0.3s ease';
       }
     };
 
-    const handleMouseLeave = () => {
-      if (bigBall) {
-        bigBall.style.transform = 'scale(1)';
-        bigBall.style.transition = 'transform 0.3s ease';
-      }
-    };
+    // Start animation loop
+    updateCursorPosition();
 
-    // Add event listeners to document
-    document.addEventListener('mousemove', handleMouseMove);
+    // Add event listeners
+    document.addEventListener('mousemove', handleMouseMove, { passive: true });
 
     // Function to add hover listeners to all interactive elements
     const addHoverListeners = () => {
       // Remove existing listeners first
-      document.querySelectorAll('.hoverable').forEach(element => {
+      document.querySelectorAll('.cursor-interactive').forEach(element => {
         element.removeEventListener('mouseenter', handleMouseEnter);
         element.removeEventListener('mouseleave', handleMouseLeave);
-        element.classList.remove('hoverable');
+        element.classList.remove('cursor-interactive');
       });
 
-      // Add to all interactive elements
+      // Add to all interactive elements with better selectors
       const selectors = [
-        'button',
-        'a',
-        'input',
-        'textarea',
-        'select',
-        '[role="button"]',
+        'button:not([disabled])',
+        'a[href]',
+        'input:not([disabled])',
+        'textarea:not([disabled])',
+        'select:not([disabled])',
+        '[role="button"]:not([disabled])',
         '[onclick]',
-        'label'
+        'label',
+        '.hoverable',
+        '[data-interactive]',
+        'nav a',
+        '.primary-button',
+        '.mission-debrief-button'
       ];
 
       selectors.forEach(selector => {
         document.querySelectorAll(selector).forEach(element => {
-          element.classList.add('hoverable');
-          element.addEventListener('mouseenter', handleMouseEnter);
-          element.addEventListener('mouseleave', handleMouseLeave);
+          if (!element.classList.contains('cursor-interactive')) {
+            element.classList.add('cursor-interactive');
+            element.addEventListener('mouseenter', handleMouseEnter, { passive: true });
+            element.addEventListener('mouseleave', handleMouseLeave, { passive: true });
+          }
         });
       });
 
-      console.log('Added hover listeners to', document.querySelectorAll('.hoverable').length, 'elements');
+      console.log('SpyCursor: Added hover listeners to', document.querySelectorAll('.cursor-interactive').length, 'elements');
     };
 
     // Initial setup
     addHoverListeners();
 
-    // Re-add listeners when DOM changes
-    const observer = new MutationObserver(() => {
-      setTimeout(addHoverListeners, 100);
-    });
+    // Re-add listeners when DOM changes with debouncing
+    let debounceTimer;
+    const debouncedUpdate = () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(addHoverListeners, 100);
+    };
 
+    const observer = new MutationObserver(debouncedUpdate);
     observer.observe(document.body, {
       childList: true,
-      subtree: true
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['class', 'href', 'onclick']
     });
 
     // Cleanup
     return () => {
       document.body.classList.remove('spy-cursor-active');
+      document.body.style.cursor = '';
       document.removeEventListener('mousemove', handleMouseMove);
-      observer.disconnect();
       
-      document.querySelectorAll('.hoverable').forEach(element => {
+      if (animationFrame.current) {
+        cancelAnimationFrame(animationFrame.current);
+      }
+      
+      observer.disconnect();
+      clearTimeout(debounceTimer);
+      
+      document.querySelectorAll('.cursor-interactive').forEach(element => {
         element.removeEventListener('mouseenter', handleMouseEnter);
         element.removeEventListener('mouseleave', handleMouseLeave);
+        element.classList.remove('cursor-interactive');
       });
     };
   }, []);
 
   return (
-    <div className="cursor">
+    <div className="spy-cursor-container" style={{ pointerEvents: 'none', position: 'fixed', top: 0, left: 0, zIndex: 10000 }}>
       <div 
         ref={bigBallRef} 
         className="cursor__ball cursor__ball--big"
@@ -119,7 +156,8 @@ const SpyCursor = () => {
           height: '30px',
           pointerEvents: 'none',
           zIndex: 10000,
-          mixBlendMode: 'difference'
+          mixBlendMode: 'difference',
+          willChange: 'transform'
         }}
       >
         <svg height="30" width="30" style={{ display: 'block' }}>
@@ -138,7 +176,8 @@ const SpyCursor = () => {
           height: '10px',
           pointerEvents: 'none',
           zIndex: 10000,
-          mixBlendMode: 'difference'
+          mixBlendMode: 'difference',
+          willChange: 'transform'
         }}
       >
         <svg height="10" width="10" style={{ display: 'block' }}>
