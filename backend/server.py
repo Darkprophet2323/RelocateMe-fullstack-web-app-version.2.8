@@ -1,59 +1,61 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, status
+from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from dotenv import load_dotenv
-from starlette.middleware.cors import CORSMiddleware
-from motor.motor_asyncio import AsyncIOMotorClient
-import os
-import logging
-from pathlib import Path
-from pydantic import BaseModel, Field, EmailStr
-from typing import List, Optional, Dict, Any
-import uuid
-from datetime import datetime, timedelta
-import jwt
-import hashlib
-import requests
-import asyncio
+from pydantic import BaseModel, Field
+from typing import Optional, List, Dict, Any
 from passlib.context import CryptContext
-import json
+from jose import JWTError, jwt
+from datetime import datetime, timedelta
+import motor.motor_asyncio
+import os
+import uuid
+from pydantic import BaseModel
 
+# CORS and Security Configuration
+app = FastAPI(title="RelocateMe API", description="Phoenix to Peak District Relocation Platform", version="2.6.0")
 
-ROOT_DIR = Path(__file__).parent
-load_dotenv(ROOT_DIR / '.env')
+origins = [
+    "http://localhost:3000",
+    "http://localhost:8000",
+    "https://2cdbcfb0-eea9-4326-9b19-b06d91ee205b.preview.emergentagent.com",
+    "https://*.emergentagent.com"
+]
 
-# MongoDB connection
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Security
-SECRET_KEY = "relocate-me-secret-key-2025"
+SECRET_KEY = "your-secret-key-here-change-in-production"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer()
 
-# Create the main app without a prefix
-app = FastAPI(title="Relocate Me API", version="2.0.0")
+# MongoDB Connection
+MONGO_URL = os.environ.get("MONGO_URL", "mongodb://localhost:27017")
+client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_URL)
+db = client.relocateme
 
-# Create a router with the /api prefix
+# Create API router with the /api prefix
+from fastapi import APIRouter
 api_router = APIRouter(prefix="/api")
 
 # Models
 class User(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    id: Optional[str] = Field(default_factory=lambda: str(uuid.uuid4()))
     username: str
-    email: Optional[str] = None
+    email: str
     hashed_password: str
+    current_step: int = 1
+    completed_steps: List[int] = []
     is_active: bool = True
     created_at: datetime = Field(default_factory=datetime.utcnow)
-    current_step: int = 1
-    completed_steps: List[int] = Field(default_factory=list)
-
-class UserCreate(BaseModel):
-    username: str
-    password: str
-    email: Optional[str] = None
 
 class UserLogin(BaseModel):
     username: str
@@ -63,46 +65,30 @@ class Token(BaseModel):
     access_token: str
     token_type: str
 
-class TimelineProgressUpdate(BaseModel):
-    step_id: int
-    completed: bool
-    notes: Optional[str] = None
-
-class TimelineStep(BaseModel):
-    id: int
-    title: str
-    description: str
-    category: str
-    estimated_days: int
-    dependencies: List[int] = Field(default_factory=list)
-    resources: List[str] = Field(default_factory=list)
-    is_completed: bool = False
-    completion_date: Optional[datetime] = None
-
 class PasswordReset(BaseModel):
     username: str
-    
+
 class PasswordResetComplete(BaseModel):
     username: str
-    new_password: str
     reset_code: str
+    new_password: str
 
 class JobListing(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    id: str
     title: str
     company: str
     location: str
-    salary: Optional[str] = None
+    salary_range: str
+    job_type: str  # full-time, part-time, contract, remote
+    category: str
     description: str
     requirements: List[str]
     benefits: List[str]
-    job_type: str  # "full-time", "part-time", "contract", "remote"
-    posted_date: datetime
+    posted_date: str
     application_url: str
-    category: str
+    contact_email: Optional[str] = None
 
 class VisaRequirement(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     visa_type: str
     title: str
     description: str
@@ -112,535 +98,210 @@ class VisaRequirement(BaseModel):
     eligibility: List[str]
     application_process: List[str]
 
-# Sample job listings data
-SAMPLE_JOBS = [
-    {
-        "title": "Tourism Marketing Manager",
-        "company": "Peak District National Park Authority",
-        "location": "Bakewell, Peak District",
-        "salary": "£28,000 - £35,000",
-        "description": "Lead marketing campaigns to promote Peak District tourism, develop digital content, and coordinate with local businesses.",
-        "requirements": ["Marketing degree or equivalent experience", "Digital marketing skills", "Experience with social media platforms", "Excellent communication skills"],
-        "benefits": ["Pension scheme", "Flexible working", "Training opportunities", "Beautiful work environment"],
-        "job_type": "full-time",
-        "posted_date": datetime.now() - timedelta(days=3),
-        "application_url": "https://www.peakdistrict.gov.uk/careers",
-        "category": "Marketing & Tourism"
-    },
-    {
-        "title": "Outdoor Activity Instructor",
-        "company": "PGL Adventure Holidays",
-        "location": "Castleton, Peak District",
-        "salary": "£22,000 - £26,000",
-        "description": "Lead outdoor activities including rock climbing, caving, and hiking for groups of all ages. Safety-focused role in stunning natural environment.",
-        "requirements": ["Outdoor activity qualifications", "First aid certification", "Experience working with groups", "Physical fitness"],
-        "benefits": ["Equipment provided", "Training courses", "Accommodation available", "Season bonuses"],
-        "job_type": "full-time",
-        "posted_date": datetime.now() - timedelta(days=1),
-        "application_url": "https://www.pgl.co.uk/careers",
-        "category": "Outdoor Recreation"
-    },
-    {
-        "title": "Software Developer (Remote)",
-        "company": "Peak Tech Solutions",
-        "location": "Remote (UK)",
-        "salary": "£45,000 - £65,000",
-        "description": "Full-stack developer working on web applications for tourism and outdoor activity businesses. React, Node.js, and cloud technologies.",
-        "requirements": ["3+ years JavaScript experience", "React and Node.js proficiency", "Git version control", "Agile development experience"],
-        "benefits": ["Remote working", "Flexible hours", "Professional development budget", "Company equipment"],
-        "job_type": "remote",
-        "posted_date": datetime.now() - timedelta(days=2),
-        "application_url": "https://www.peaktech.co.uk/jobs",
-        "category": "Technology"
-    },
-    {
-        "title": "Farm Manager",
-        "company": "Derbyshire Organic Farms",
-        "location": "Matlock, Peak District",
-        "salary": "£30,000 - £40,000",
-        "description": "Manage daily operations of organic farm, oversee livestock, coordinate with local markets, and maintain sustainable farming practices.",
-        "requirements": ["Agricultural qualification or experience", "Knowledge of organic farming", "Management experience", "Valid driving license"],
-        "benefits": ["Farm accommodation", "Produce allowance", "Vehicle provided", "Rural lifestyle"],
-        "job_type": "full-time",
-        "posted_date": datetime.now() - timedelta(days=5),
-        "application_url": "https://www.organicfarms-derbyshire.co.uk",
-        "category": "Agriculture"
-    },
-    {
-        "title": "Hotel Manager",
-        "company": "Peak District Country House",
-        "location": "Buxton, Peak District",
-        "salary": "£32,000 - £42,000",
-        "description": "Oversee hotel operations, manage staff, ensure guest satisfaction, and coordinate events in a luxury country house setting.",
-        "requirements": ["Hospitality management experience", "Leadership skills", "Customer service excellence", "Budget management"],
-        "benefits": ["Performance bonuses", "Staff accommodation", "Training programs", "Career progression"],
-        "job_type": "full-time",
-        "posted_date": datetime.now() - timedelta(days=4),
-        "application_url": "https://www.peakdistricthotels.co.uk/careers",
-        "category": "Hospitality"
-    },
-    {
-        "title": "Park Ranger",
-        "company": "National Trust",
-        "location": "Kinder Scout, Peak District",
-        "salary": "£24,000 - £28,000",
-        "description": "Protect and maintain national park areas, educate visitors, conduct wildlife surveys, and assist with conservation projects.",
-        "requirements": ["Environmental science background", "Outdoor experience", "Communication skills", "Physical fitness"],
-        "benefits": ["National Trust membership", "Training opportunities", "Pension scheme", "Outdoor work environment"],
-        "job_type": "full-time",
-        "posted_date": datetime.now() - timedelta(days=6),
-        "application_url": "https://www.nationaltrust.org.uk/careers",
-        "category": "Conservation"
-    },
-    {
-        "title": "Freelance Content Writer",
-        "company": "Various Local Businesses",
-        "location": "Peak District (Remote/Flexible)",
-        "salary": "£25 - £45 per hour",
-        "description": "Create content for local tourism websites, blogs, and marketing materials. Focus on outdoor activities and Peak District attractions.",
-        "requirements": ["Excellent writing skills", "SEO knowledge", "Research abilities", "Portfolio of work"],
-        "benefits": ["Flexible schedule", "Work from home", "Variety of projects", "Networking opportunities"],
-        "job_type": "freelance",
-        "posted_date": datetime.now() - timedelta(days=7),
-        "application_url": "https://www.freelancer.co.uk",
-        "category": "Writing & Content"
-    },
-    {
-        "title": "Digital Marketing Specialist",
-        "company": "Peak Adventure Tours",
-        "location": "Hathersage, Peak District",
-        "salary": "£26,000 - £34,000",
-        "description": "Develop digital marketing strategies for adventure tourism company, manage social media, and analyze campaign performance.",
-        "requirements": ["Digital marketing qualification", "Social media expertise", "Analytics tools proficiency", "Creative mindset"],
-        "benefits": ["Free adventure activities", "Flexible working", "Professional development", "Team building events"],
-        "job_type": "full-time",
-        "posted_date": datetime.now() - timedelta(days=8),
-        "application_url": "https://www.peakadventuretours.co.uk/jobs",
-        "category": "Digital Marketing"
-    }
-]
+class TimelineProgressUpdate(BaseModel):
+    step_id: int
+    completed: bool
+    notes: Optional[str] = None
 
-# Progress tracking models
 class ProgressItem(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    user_id: str
-    category: str
+    id: str
     title: str
     description: str
-    status: str = "not_started"  # "not_started", "in_progress", "completed", "blocked"
-    priority: str = "medium"  # "low", "medium", "high", "urgent"
-    due_date: Optional[datetime] = None
-    completed_date: Optional[datetime] = None
+    status: str  # pending, in_progress, completed, blocked
+    category: str
+    subtasks: List[Dict[str, Any]] = []
     notes: Optional[str] = None
-    attachments: List[str] = Field(default_factory=list)
-    subtasks: List[Dict[str, Any]] = Field(default_factory=list)
+    due_date: Optional[datetime] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
 
-class ProgressUpdate(BaseModel):
-    status: Optional[str] = None
-    notes: Optional[str] = None
-    priority: Optional[str] = None
-    due_date: Optional[datetime] = None
+class BudgetAnalysis(BaseModel):
+    total_budget: float = 400000.0  # $400k default budget
+    moving_costs: float = 25000.0
+    visa_fees: float = 5000.0
+    initial_housing: float = 50000.0
+    living_expenses: float = 75000.0
+    emergency_fund: float = 50000.0
+    remaining_budget: float = 195000.0
 
-# Sample progress items for a real relocation scenario
-SAMPLE_PROGRESS_ITEMS = [
+# Enhanced Sample Jobs - Focus on Hospitality/Waitressing
+SAMPLE_JOBS = [
     {
-        "category": "Documentation",
-        "title": "Gather Birth Certificate",
-        "description": "Obtain certified copy of birth certificate for visa application",
-        "status": "completed",
-        "priority": "high",
-        "due_date": datetime.now() - timedelta(days=10),
-        "completed_date": datetime.now() - timedelta(days=12),
-        "notes": "Received certified copy from state office. Cost $25.",
-        "subtasks": [
-            {"task": "Request birth certificate online", "completed": True},
-            {"task": "Pay processing fee", "completed": True},
-            {"task": "Receive by mail", "completed": True}
-        ]
+        "id": "pd001",
+        "title": "Restaurant Manager - Peak District",
+        "company": "The Peacock at Rowsley",
+        "location": "Rowsley, Peak District",
+        "salary_range": "£28,000 - £35,000",
+        "job_type": "full-time",
+        "category": "Hospitality Management",
+        "description": "Lead our award-winning restaurant team in the beautiful Peak District. Perfect for experienced hospitality professionals seeking a management role in stunning surroundings.",
+        "requirements": ["5+ years restaurant management", "UK hospitality experience preferred", "Strong leadership skills", "Customer service excellence"],
+        "benefits": ["Staff accommodation available", "Training programs", "Career development", "Peak District location"],
+        "posted_date": "2025-01-15",
+        "application_url": "https://www.peakdistrictjobs.co.uk/restaurant-manager",
+        "contact_email": "careers@peacockrowsley.co.uk"
     },
     {
-        "category": "Documentation",
-        "title": "Apostille Documents",
-        "description": "Get birth certificate and education documents apostilled for UK recognition",
-        "status": "in_progress",
-        "priority": "high",
-        "due_date": datetime.now() + timedelta(days=5),
-        "notes": "Submitted to Secretary of State office. Processing time 2-3 weeks.",
-        "subtasks": [
-            {"task": "Prepare document copies", "completed": True},
-            {"task": "Submit to state office", "completed": True},
-            {"task": "Pay apostille fees", "completed": True},
-            {"task": "Await processing", "completed": False}
-        ]
+        "id": "pd002", 
+        "title": "Senior Waitress/Waiter - Fine Dining",
+        "company": "Chatsworth House Restaurant",
+        "location": "Chatsworth, Peak District",
+        "salary_range": "£22,000 - £26,000 + tips",
+        "job_type": "full-time",
+        "category": "Hospitality Service",
+        "description": "Join our prestigious fine dining team at historic Chatsworth House. Excellent opportunity for experienced waitressing professionals.",
+        "requirements": ["2+ years fine dining experience", "Excellent English", "Professional presentation", "Wine knowledge preferred"],
+        "benefits": ["Historic location", "Staff discounts", "Training provided", "Tips averaging £150/week"],
+        "posted_date": "2025-01-20",
+        "application_url": "https://www.chatsworth.org/careers",
+        "contact_email": "hospitality@chatsworth.org"
     },
     {
-        "category": "Visa Application",
-        "title": "Complete Visa Application Form",
-        "description": "Fill out UK Skilled Worker visa application online",
-        "status": "completed",
-        "priority": "high",
-        "due_date": datetime.now() - timedelta(days=5),
-        "completed_date": datetime.now() - timedelta(days=7),
-        "notes": "Application submitted successfully. Reference number: GWF1234567890",
-        "subtasks": [
-            {"task": "Create UK government account", "completed": True},
-            {"task": "Fill application form", "completed": True},
-            {"task": "Upload documents", "completed": True},
-            {"task": "Pay application fee", "completed": True}
-        ]
+        "id": "pd003",
+        "title": "Head Waitress - Country Pub",
+        "company": "The Old Nag's Head",
+        "location": "Edale, Peak District", 
+        "salary_range": "£24,000 - £28,000",
+        "job_type": "full-time",
+        "category": "Hospitality Service",
+        "description": "Lead waitressing position in traditional Peak District pub. Perfect for professionals wanting authentic British hospitality experience.",
+        "requirements": ["3+ years waitressing", "Supervisory experience", "Beer/spirits knowledge", "Friendly personality"],
+        "benefits": ["Staff accommodation nearby", "Meals included", "Beautiful location", "Close-knit team"],
+        "posted_date": "2025-01-18",
+        "application_url": "https://www.oldnagshead.co.uk/jobs",
+        "contact_email": "jobs@oldnagshead.co.uk"
     },
     {
-        "category": "Visa Application",
-        "title": "Biometric Appointment",
-        "description": "Attend biometric appointment at visa application center",
-        "status": "in_progress",
-        "priority": "high",
-        "due_date": datetime.now() + timedelta(days=3),
-        "notes": "Appointment scheduled for Jan 15th at 2:30 PM in Chicago.",
-        "subtasks": [
-            {"task": "Book appointment online", "completed": True},
-            {"task": "Prepare required documents", "completed": True},
-            {"task": "Attend appointment", "completed": False}
-        ]
+        "id": "pd004",
+        "title": "Catering Assistant - Hotel",
+        "company": "The Cavendish Hotel",
+        "location": "Baslow, Peak District",
+        "salary_range": "£20,000 - £23,000",
+        "job_type": "full-time", 
+        "category": "Hospitality Support",
+        "description": "Support role in luxury hotel restaurant and events. Great entry point for hospitality career in Peak District.",
+        "requirements": ["Food safety certificate", "Team player", "Flexible hours", "Customer focus"],
+        "benefits": ["Training opportunities", "Career progression", "Staff rates", "Beautiful setting"],
+        "posted_date": "2025-01-22",
+        "application_url": "https://www.cavendish-hotel.net/careers",
+        "contact_email": "hr@cavendish-hotel.net"
     },
     {
-        "category": "Employment",
-        "title": "Job Search in Peak District",
-        "description": "Apply for tourism and outdoor recreation jobs in Peak District area",
-        "status": "in_progress",
-        "priority": "high",
-        "due_date": datetime.now() + timedelta(days=30),
-        "notes": "Applied to 5 positions. 2 responses received, 1 interview scheduled.",
-        "subtasks": [
-            {"task": "Update CV for UK format", "completed": True},
-            {"task": "Research job opportunities", "completed": True},
-            {"task": "Submit applications", "completed": False},
-            {"task": "Prepare for interviews", "completed": False}
-        ]
+        "id": "pd005",
+        "title": "Cafe Manager/Waitress",
+        "company": "Peak District Tea Rooms",
+        "location": "Bakewell, Peak District",
+        "salary_range": "£25,000 - £30,000",
+        "job_type": "full-time",
+        "category": "Hospitality Management", 
+        "description": "Manage charming tea rooms in the heart of Bakewell. Combine management duties with hands-on service.",
+        "requirements": ["Cafe/restaurant management", "Waitressing skills", "Local knowledge helpful", "Business acumen"],
+        "benefits": ["Management experience", "Local community", "Flexible approach", "Growth potential"],
+        "posted_date": "2025-01-25",
+        "application_url": "https://www.peakdistricttearooms.co.uk/jobs",
+        "contact_email": "manager@pdtearooms.co.uk"
     },
     {
-        "category": "Employment",
-        "title": "Certificate of Sponsorship",
-        "description": "Obtain Certificate of Sponsorship from UK employer",
-        "status": "not_started",
-        "priority": "high",
-        "due_date": datetime.now() + timedelta(days=45),
-        "notes": "Waiting for job offer confirmation before requesting CoS.",
-        "subtasks": [
-            {"task": "Secure job offer", "completed": False},
-            {"task": "Request CoS from employer", "completed": False},
-            {"task": "Receive CoS documentation", "completed": False}
-        ]
+        "id": "pd006",
+        "title": "Event Waitress - Weddings & Functions",
+        "company": "Peak District Event Services",
+        "location": "Various Peak District Venues",
+        "salary_range": "£18,000 - £22,000 + event bonuses",
+        "job_type": "full-time",
+        "category": "Hospitality Events",
+        "description": "Specialist waitressing for weddings and events across Peak District venues. Exciting variety and excellent tips.",
+        "requirements": ["Event experience", "Transport essential", "Weekend availability", "Professional appearance"],
+        "benefits": ["Varied venues", "Event bonuses", "Flexible scheduling", "Networking opportunities"],
+        "posted_date": "2025-01-28",
+        "application_url": "https://www.pdevents.co.uk/careers",
+        "contact_email": "events@pdevents.co.uk"
     },
     {
-        "category": "Housing",
-        "title": "Research Peak District Areas",
-        "description": "Research different towns and villages in Peak District for living",
-        "status": "completed",
-        "priority": "medium",
-        "due_date": datetime.now() - timedelta(days=15),
-        "completed_date": datetime.now() - timedelta(days=18),
-        "notes": "Narrowed down to Bakewell, Buxton, and Hathersage based on amenities and transport links.",
-        "subtasks": [
-            {"task": "Research online resources", "completed": True},
-            {"task": "Join Facebook groups", "completed": True},
-            {"task": "Create comparison matrix", "completed": True}
-        ]
+        "id": "pd007",
+        "title": "Restaurant Supervisor",
+        "company": "The Devonshire Arms",
+        "location": "Beeley, Peak District",
+        "salary_range": "£26,000 - £32,000",
+        "job_type": "full-time",
+        "category": "Hospitality Management",
+        "description": "Supervise restaurant operations in prestigious gastropub. Leadership role with excellent progression opportunities.",
+        "requirements": ["Supervisory experience", "Hospitality qualifications", "Wine knowledge", "Leadership skills"],
+        "benefits": ["Career development", "Staff accommodation options", "Training budget", "Prestigious employer"],
+        "posted_date": "2025-01-30",
+        "application_url": "https://www.devonshirearms.co.uk/careers",
+        "contact_email": "careers@devonshirearms.co.uk"
     },
     {
-        "category": "Housing",
-        "title": "Virtual Property Viewings",
-        "description": "Arrange virtual viewings of rental properties",
-        "status": "in_progress",
-        "priority": "medium",
-        "due_date": datetime.now() + timedelta(days=20),
-        "notes": "Scheduled 3 virtual viewings this week. Found 2 promising options.",
-        "subtasks": [
-            {"task": "Contact estate agents", "completed": True},
-            {"task": "Schedule virtual tours", "completed": True},
-            {"task": "Prepare viewing questions", "completed": True},
-            {"task": "Compare properties", "completed": False}
-        ]
-    },
-    {
-        "category": "Financial",
-        "title": "Open UK Bank Account",
-        "description": "Research and apply for UK bank account before arrival",
-        "status": "not_started",
-        "priority": "medium",
-        "due_date": datetime.now() + timedelta(days=60),
-        "notes": "Researching Monzo, Starling, and HSBC options for expats.",
-        "subtasks": [
-            {"task": "Compare bank options", "completed": False},
-            {"task": "Prepare required documents", "completed": False},
-            {"task": "Submit application", "completed": False}
-        ]
-    },
-    {
-        "category": "Financial",
-        "title": "Currency Exchange Setup",
-        "description": "Set up Wise account for international money transfers",
-        "status": "completed",
-        "priority": "low",
-        "due_date": datetime.now() - timedelta(days=20),
-        "completed_date": datetime.now() - timedelta(days=25),
-        "notes": "Account verified. Test transfer of $100 successful. Rates are competitive.",
-        "subtasks": [
-            {"task": "Create Wise account", "completed": True},
-            {"task": "Verify identity", "completed": True},
-            {"task": "Test small transfer", "completed": True}
-        ]
-    },
-    {
-        "category": "Moving",
-        "title": "Get Moving Quotes",
-        "description": "Obtain quotes from international moving companies",
-        "status": "in_progress",
-        "priority": "medium",
-        "due_date": datetime.now() + timedelta(days=14),
-        "notes": "Received 3 quotes so far. Crown Relocations: $12k, Ship Smart: $6k, Seven Seas: $4.5k",
-        "subtasks": [
-            {"task": "Contact 5 moving companies", "completed": True},
-            {"task": "Provide inventory details", "completed": True},
-            {"task": "Compare quotes", "completed": False},
-            {"task": "Book moving service", "completed": False}
-        ]
-    },
-    {
-        "category": "Moving",
-        "title": "Declutter and Sort Items",
-        "description": "Decide what to ship, sell, donate, or store",
-        "status": "in_progress",
-        "priority": "medium",
-        "due_date": datetime.now() + timedelta(days=45),
-        "notes": "Started with closet. Donated 2 bags of clothes. Still need to sort garage and basement.",
-        "subtasks": [
-            {"task": "Sort bedroom items", "completed": True},
-            {"task": "Sort kitchen items", "completed": False},
-            {"task": "Sort garage/storage", "completed": False},
-            {"task": "Arrange donations/sales", "completed": False}
-        ]
+        "id": "pd008",
+        "title": "Waitress - Tourist Information Centre Cafe",
+        "company": "Peak District National Park",
+        "location": "Castleton, Peak District",
+        "salary_range": "£19,000 - £22,000",
+        "job_type": "full-time",
+        "category": "Hospitality Tourism",
+        "description": "Serve visitors in our information centre cafe. Great way to learn about Peak District while building hospitality career.",
+        "requirements": ["Customer service skills", "Tourist knowledge helpful", "Friendly manner", "Team player"],
+        "benefits": ["Learning opportunities", "Tourist interaction", "Stable hours", "National Park benefits"],
+        "posted_date": "2025-02-01",
+        "application_url": "https://www.peakdistrict.gov.uk/jobs",
+        "contact_email": "jobs@peakdistrict.gov.uk"
     }
 ]
-class LogisticsProvider(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    company_name: str
-    service_type: str  # "full_service", "container", "air_freight", "storage"
-    price_range: str
-    transit_time: str
-    coverage_area: str
-    description: str
-    features: List[str]
-    contact_info: Dict[str, str]
-    rating: float
-    reviews_count: int
 
-class AnalyticsData(BaseModel):
-    user_progress: Dict[str, Any]
-    cost_breakdown: Dict[str, float]
-    timeline_analytics: Dict[str, Any]
-    popular_resources: List[Dict[str, Any]]
-    user_insights: Dict[str, Any]
-
-# Logistics providers data
-LOGISTICS_PROVIDERS = [
-    {
-        "company_name": "Crown Relocations",
-        "service_type": "full_service",
-        "price_range": "$8,000 - $15,000",
-        "transit_time": "4-8 weeks",
-        "coverage_area": "Worldwide",
-        "description": "Premium international moving service with door-to-door delivery, customs clearance, and storage options.",
-        "features": [
-            "Professional packing service",
-            "Customs clearance included",
-            "Insurance coverage up to $60,000",
-            "Storage facilities available",
-            "Pet relocation services",
-            "Vehicle shipping"
-        ],
-        "contact_info": {
-            "phone": "+1-800-CROWN-US",
-            "email": "info@crownrelo.com",
-            "website": "https://www.crownrelo.com"
-        },
-        "rating": 4.8,
-        "reviews_count": 2847
-    },
-    {
-        "company_name": "Allied International",
-        "service_type": "full_service",
-        "price_range": "$6,500 - $12,000",
-        "transit_time": "3-6 weeks",
-        "coverage_area": "North America to Europe",
-        "description": "Comprehensive international moving with specialized UK services and local partnerships.",
-        "features": [
-            "UK customs expertise",
-            "Local delivery partners",
-            "Temporary storage",
-            "Electronics handling",
-            "Piano moving specialists",
-            "Real-time tracking"
-        ],
-        "contact_info": {
-            "phone": "+1-800-470-6683",
-            "email": "international@alliedvan.com",
-            "website": "https://www.allied.com"
-        },
-        "rating": 4.6,
-        "reviews_count": 1923
-    },
-    {
-        "company_name": "Ship Smart",
-        "service_type": "container",
-        "price_range": "$3,500 - $7,500",
-        "transit_time": "2-4 weeks",
-        "coverage_area": "US to UK",
-        "description": "Cost-effective container shipping with flexible pickup and delivery options.",
-        "features": [
-            "Shared container options",
-            "Professional loading",
-            "Basic insurance included",
-            "Flexible pickup dates",
-            "Container tracking",
-            "Competitive pricing"
-        ],
-        "contact_info": {
-            "phone": "+1-800-SHIP-SMART",
-            "email": "quotes@shipsmart.com",
-            "website": "https://www.shipsmart.com"
-        },
-        "rating": 4.3,
-        "reviews_count": 1156
-    },
-    {
-        "company_name": "Seven Seas Worldwide",
-        "service_type": "container",
-        "price_range": "$2,800 - $6,200",
-        "transit_time": "4-6 weeks",
-        "coverage_area": "Worldwide",
-        "description": "International shipping specialists with self-pack and full-service options.",
-        "features": [
-            "Self-pack containers",
-            "Free storage period",
-            "Online quote system",
-            "Multiple container sizes",
-            "Customs documentation",
-            "Local partnerships"
-        ],
-        "contact_info": {
-            "phone": "+44-161-772-3434",
-            "email": "info@sevenseasworldwide.com",
-            "website": "https://www.sevenseasworldwide.com"
-        },
-        "rating": 4.4,
-        "reviews_count": 3214
-    },
-    {
-        "company_name": "FedEx International",
-        "service_type": "air_freight",
-        "price_range": "$2,000 - $8,000",
-        "transit_time": "5-10 days",
-        "coverage_area": "Worldwide",
-        "description": "Fast air freight service for urgent or valuable items with excellent tracking.",
-        "features": [
-            "Express delivery options",
-            "Superior tracking system",
-            "High-value item specialist",
-            "Customs clearance",
-            "Door-to-door service",
-            "Insurance options"
-        ],
-        "contact_info": {
-            "phone": "+1-800-GO-FEDEX",
-            "email": "international@fedex.com",
-            "website": "https://www.fedex.com"
-        },
-        "rating": 4.7,
-        "reviews_count": 5632
-    },
-    {
-        "company_name": "BigSteelBox",
-        "service_type": "storage",
-        "price_range": "$150 - $400/month",
-        "transit_time": "On-demand",
-        "coverage_area": "North America",
-        "description": "Portable storage containers for flexible moving and storage solutions.",
-        "features": [
-            "Weather-resistant containers",
-            "Ground-level loading",
-            "Short and long-term storage",
-            "Insurance available",
-            "Flexible scheduling",
-            "No fuel surcharges"
-        ],
-        "contact_info": {
-            "phone": "+1-855-594-4444",
-            "email": "info@bigsteelbox.com",
-            "website": "https://www.bigsteelbox.com"
-        },
-        "rating": 4.5,
-        "reviews_count": 892
-    }
-]
+# Visa requirements data
 VISA_REQUIREMENTS = [
     {
         "visa_type": "Skilled Worker Visa",
-        "title": "Most Common Route for Professionals",
-        "description": "For people who have been offered a skilled job in the UK by an approved employer. This is the main route for most people moving from the US to the UK for work.",
+        "title": "For Employment-Based Immigration",
+        "description": "Most common route for US citizens with job offers. Allows you to work for an approved UK employer and can lead to permanent settlement.",
         "required_documents": [
-            "Valid passport or travel document",
-            "Certificate of sponsorship from employer",
-            "Proof of English language ability",
-            "Tuberculosis test results (if applicable)",
-            "Police certificate from countries lived in",
-            "Financial evidence (£1,270 if employer covers maintenance)",
-            "Academic qualifications",
-            "Previous salary evidence"
+            "Valid passport",
+            "Job offer from licensed sponsor",
+            "Certificate of Sponsorship",
+            "Financial evidence (£1,270 for 28 days)",
+            "English language certificate",
+            "Tuberculosis test (if applicable)",
+            "Criminal record certificate"
         ],
-        "processing_time": "3 weeks to 8 weeks",
-        "fee": "£719 - £1,423 depending on circumstances",
+        "processing_time": "3 weeks",
+        "fee": "£610 - £1,408",
         "eligibility": [
-            "Job offer from UK employer with sponsor license",
-            "Job must be at appropriate skill level (RQF Level 3+)",
-            "Salary must meet minimum threshold (usually £38,700+)",
-            "English language requirement (B1 level)",
-            "Genuine intention to work in sponsored role"
+            "Job offer from approved sponsor",
+            "Job meets skill level requirement",
+            "Salary meets minimum threshold",
+            "English language proficiency",
+            "Financial requirements met"
         ],
         "application_process": [
-            "Secure job offer from licensed sponsor",
-            "Receive Certificate of Sponsorship",
+            "Receive job offer and Certificate of Sponsorship",
+            "Check eligibility requirements",
             "Complete online application",
-            "Book and attend biometric appointment",
-            "Submit supporting documents",
-            "Wait for decision",
-            "Collect biometric residence permit in UK"
+            "Pay application fee and healthcare surcharge",
+            "Book biometric appointment",
+            "Submit documents and attend appointment",
+            "Wait for decision"
         ]
     },
     {
-        "visa_type": "Spouse/Family Visa",
-        "title": "For Family Members of UK Citizens/Residents",
-        "description": "If you're married to, in a civil partnership with, or in a long-term relationship with a UK citizen or someone with settled status in the UK.",
+        "visa_type": "Family Visa",
+        "title": "For Partners and Spouses",
+        "description": "If you're married to or in a civil partnership with a British citizen or settled person, or have other qualifying family relationships.",
         "required_documents": [
             "Valid passport",
-            "Marriage certificate or proof of relationship",
-            "Financial requirement evidence (£18,600+ annual income)",
-            "English language test certificate",
+            "Relationship evidence",
+            "Financial evidence (£18,600+ annual income)",
             "Accommodation evidence",
+            "English language certificate",
             "Tuberculosis test (if applicable)",
-            "Police certificates",
-            "Relationship evidence (photos, communication records)"
+            "Marriage/civil partnership certificate"
         ],
-        "processing_time": "2 months (outside UK)",
-        "fee": "£1,846 for 2.5 years",
+        "processing_time": "12 weeks",
+        "fee": "£1,538",
         "eligibility": [
-            "Married to or in civil partnership with UK citizen/settled person",
-            "Relationship must be genuine and subsisting",
-            "Financial requirement must be met",
-            "Adequate accommodation without public funds",
-            "English language requirement (A1 initially, A2 for extension)"
+            "Genuine relationship with UK partner",
+            "Meet financial requirement",
+            "Adequate accommodation",
+            "English language proficiency",
+            "No criminal record issues"
         ],
         "application_process": [
             "Check eligibility requirements",
@@ -718,60 +379,84 @@ VISA_REQUIREMENTS = [
     }
 ]
 
-# Comprehensive relocation timeline data
+# Extended 39-Step Relocation Timeline
 RELOCATION_TIMELINE = [
     # Planning Phase (Days -180 to -90)
     {"id": 1, "title": "Initial Research & Decision", "description": "Research Peak District areas, cost of living, and lifestyle", "category": "Planning", "estimated_days": 7, "dependencies": [], "resources": ["Peak District National Park Authority", "UK Government Moving Guide"]},
-    {"id": 2, "title": "Create Relocation Budget", "description": "Calculate moving costs, visa fees, initial living expenses", "category": "Planning", "estimated_days": 3, "dependencies": [1], "resources": ["UK Cost Calculator", "Moving Cost Estimator"]},
+    {"id": 2, "title": "Create Relocation Budget", "description": "Set aside $400k total budget - Calculate moving costs, visa fees, initial living expenses", "category": "Planning", "estimated_days": 3, "dependencies": [1], "resources": ["UK Cost Calculator", "Moving Cost Estimator"]},
     {"id": 3, "title": "Timeline & Milestones", "description": "Set target dates for visa, job search, housing, and moving", "category": "Planning", "estimated_days": 2, "dependencies": [2], "resources": ["Project Management Templates"]},
+    {"id": 4, "title": "Skills Assessment for Hospitality", "description": "Evaluate hospitality/waitressing experience and UK requirements", "category": "Planning", "estimated_days": 3, "dependencies": [1], "resources": ["UK Hospitality Standards", "Skills Recognition"]},
+    {"id": 5, "title": "Language Preparation", "description": "Assess English language skills and prepare for potential testing", "category": "Planning", "estimated_days": 14, "dependencies": [4], "resources": ["IELTS Preparation", "English Language Centers"]},
     
     # Visa & Legal (Days -150 to -60)
-    {"id": 4, "title": "Visa Research", "description": "Determine visa type needed (work, skilled worker, family, etc.)", "category": "Visa & Legal", "estimated_days": 5, "dependencies": [1], "resources": ["UK Government Visa Guide", "Immigration Lawyer Directory"]},
-    {"id": 5, "title": "Document Preparation", "description": "Gather birth certificate, passport, education certificates, etc.", "category": "Visa & Legal", "estimated_days": 14, "dependencies": [4], "resources": ["Document Checklist", "Apostille Services"]},
-    {"id": 6, "title": "Visa Application", "description": "Submit visa application with all required documents", "category": "Visa & Legal", "estimated_days": 21, "dependencies": [5], "resources": ["UK Visa Application Centre"]},
-    {"id": 7, "title": "Background Checks", "description": "Police clearance, criminal record checks, medical exams", "category": "Visa & Legal", "estimated_days": 30, "dependencies": [6], "resources": ["FBI Background Check", "Medical Exam Centers"]},
+    {"id": 6, "title": "Visa Research", "description": "Determine visa type needed (work, skilled worker, family, etc.)", "category": "Visa & Legal", "estimated_days": 5, "dependencies": [1], "resources": ["UK Government Visa Guide", "Immigration Lawyer Directory"]},
+    {"id": 7, "title": "Document Preparation", "description": "Gather birth certificate, passport, education certificates, etc.", "category": "Visa & Legal", "estimated_days": 14, "dependencies": [6], "resources": ["Document Checklist", "Apostille Services"]},
+    {"id": 8, "title": "Criminal Background Check", "description": "Obtain FBI background check and state-level clearances", "category": "Visa & Legal", "estimated_days": 21, "dependencies": [7], "resources": ["FBI Background Check", "State Police Records"]},
+    {"id": 9, "title": "Medical Examinations", "description": "Complete required medical exams including TB testing", "category": "Visa & Legal", "estimated_days": 14, "dependencies": [8], "resources": ["Medical Exam Centers", "TB Testing Centers"]},
+    {"id": 10, "title": "Visa Application Submission", "description": "Submit visa application with all required documents", "category": "Visa & Legal", "estimated_days": 21, "dependencies": [9], "resources": ["UK Visa Application Centre"]},
+    {"id": 11, "title": "Biometric Appointment", "description": "Attend biometric appointment for fingerprints and photo", "category": "Visa & Legal", "estimated_days": 7, "dependencies": [10], "resources": ["VFS Global Centers"]},
     
     # Employment (Days -120 to -30)
-    {"id": 8, "title": "Job Market Research", "description": "Research job opportunities in Peak District area", "category": "Employment", "estimated_days": 7, "dependencies": [1], "resources": ["Indeed UK", "LinkedIn UK Jobs", "Reed.co.uk"]},
-    {"id": 9, "title": "CV/Resume Update", "description": "Adapt resume for UK format and standards", "category": "Employment", "estimated_days": 3, "dependencies": [8], "resources": ["UK CV Templates", "Career Services"]},
-    {"id": 10, "title": "Job Applications", "description": "Apply for positions in target area", "category": "Employment", "estimated_days": 45, "dependencies": [9], "resources": ["Job Search Platforms", "Recruitment Agencies"]},
-    {"id": 11, "title": "Interviews & Offers", "description": "Participate in interviews and negotiate offers", "category": "Employment", "estimated_days": 30, "dependencies": [10], "resources": ["Interview Preparation", "Salary Negotiation Guide"]},
+    {"id": 12, "title": "Hospitality Job Market Research", "description": "Research waitressing and hospitality opportunities in Peak District", "category": "Employment", "estimated_days": 7, "dependencies": [1], "resources": ["UK Hospitality Jobs", "Peak District Restaurant Guide"]},
+    {"id": 13, "title": "UK CV/Resume Creation", "description": "Adapt resume for UK hospitality standards and format", "category": "Employment", "estimated_days": 3, "dependencies": [12], "resources": ["UK CV Templates", "Hospitality CV Examples"]},
+    {"id": 14, "title": "Professional References", "description": "Contact previous hospitality employers for UK-formatted references", "category": "Employment", "estimated_days": 7, "dependencies": [13], "resources": ["Reference Templates", "Professional Networks"]},
+    {"id": 15, "title": "Hospitality Certification Review", "description": "Check if US food safety/hospitality certs transfer to UK", "category": "Employment", "estimated_days": 10, "dependencies": [14], "resources": ["UK Food Safety Training", "Hospitality Qualifications"]},
+    {"id": 16, "title": "Peak District Job Applications", "description": "Apply for waitressing/hospitality positions in target area", "category": "Employment", "estimated_days": 30, "dependencies": [15], "resources": ["Restaurant Websites", "Hospitality Job Boards"]},
+    {"id": 17, "title": "Video/Phone Interviews", "description": "Participate in remote interviews with Peak District employers", "category": "Employment", "estimated_days": 21, "dependencies": [16], "resources": ["Interview Preparation", "Video Call Setup"]},
+    {"id": 18, "title": "Job Offer Negotiation", "description": "Negotiate salary, accommodation assistance, and start dates", "category": "Employment", "estimated_days": 14, "dependencies": [17], "resources": ["Salary Negotiation Guide", "Contract Review"]},
     
     # Housing (Days -90 to -14)
-    {"id": 12, "title": "Housing Research", "description": "Research neighborhoods, property types, rental market", "category": "Housing", "estimated_days": 14, "dependencies": [1], "resources": ["Rightmove", "Zoopla", "SpareRoom"]},
-    {"id": 13, "title": "Virtual Viewings", "description": "Arrange virtual property viewings", "category": "Housing", "estimated_days": 21, "dependencies": [12], "resources": ["Property Viewing Apps", "Estate Agents"]},
-    {"id": 14, "title": "Housing Applications", "description": "Apply for rental properties or purchase", "category": "Housing", "estimated_days": 30, "dependencies": [13], "resources": ["Rental Application Forms", "Mortgage Brokers"]},
-    {"id": 15, "title": "Lease/Purchase Agreement", "description": "Finalize housing arrangements", "category": "Housing", "estimated_days": 14, "dependencies": [14], "resources": ["Legal Services", "Property Lawyers"]},
+    {"id": 19, "title": "Peak District Housing Research", "description": "Research neighborhoods, property types, rental market in target area", "category": "Housing", "estimated_days": 14, "dependencies": [1], "resources": ["Rightmove", "Zoopla", "Local Estate Agents"]},
+    {"id": 20, "title": "Virtual Property Viewings", "description": "Arrange virtual viewings of potential homes", "category": "Housing", "estimated_days": 21, "dependencies": [19], "resources": ["Property Viewing Apps", "Virtual Tour Platforms"]},
+    {"id": 21, "title": "Rental Applications", "description": "Apply for rental properties with deposit and references", "category": "Housing", "estimated_days": 21, "dependencies": [20], "resources": ["Rental Application Forms", "Guarantor Services"]},
+    {"id": 22, "title": "Housing Contract Finalization", "description": "Sign lease agreement and arrange initial payments", "category": "Housing", "estimated_days": 7, "dependencies": [21], "resources": ["Legal Services", "Property Lawyers"]},
+    {"id": 23, "title": "Utility Setup Preparation", "description": "Research and prepare to set up utilities for new home", "category": "Housing", "estimated_days": 5, "dependencies": [22], "resources": ["Utility Companies", "Comparison Sites"]},
     
     # Financial (Days -60 to -7)
-    {"id": 16, "title": "UK Bank Account Setup", "description": "Research and apply for UK bank accounts", "category": "Financial", "estimated_days": 21, "dependencies": [6], "resources": ["Barclays", "HSBC", "Lloyds", "Monzo"]},
-    {"id": 17, "title": "Credit History Transfer", "description": "Establish UK credit history and financial profile", "category": "Financial", "estimated_days": 14, "dependencies": [16], "resources": ["Expat Credit Services", "Credit Reference Agencies"]},
-    {"id": 18, "title": "International Money Transfer", "description": "Set up currency exchange and money transfer services", "category": "Financial", "estimated_days": 7, "dependencies": [16], "resources": ["Wise", "Western Union", "CurrencyFair"]},
-    {"id": 19, "title": "Insurance Setup", "description": "Health, contents, and travel insurance", "category": "Financial", "estimated_days": 7, "dependencies": [15], "resources": ["NHS Registration", "Insurance Brokers"]},
+    {"id": 24, "title": "UK Bank Account Research", "description": "Research UK banks and account options for new residents", "category": "Financial", "estimated_days": 7, "dependencies": [10], "resources": ["Bank Comparison Sites", "Expat Banking Guide"]},
+    {"id": 25, "title": "International Money Transfer Setup", "description": "Establish currency exchange and transfer services for $400k budget", "category": "Financial", "estimated_days": 10, "dependencies": [24], "resources": ["Wise", "Western Union", "CurrencyFair"]},
+    {"id": 26, "title": "UK Bank Account Application", "description": "Apply for UK current and savings accounts", "category": "Financial", "estimated_days": 14, "dependencies": [25], "resources": ["Barclays", "HSBC", "Monzo", "Starling"]},
+    {"id": 27, "title": "Insurance Research & Setup", "description": "Arrange health, contents, and travel insurance", "category": "Financial", "estimated_days": 7, "dependencies": [22], "resources": ["Insurance Brokers", "NHS Information"]},
+    {"id": 28, "title": "Budget Transfer Planning", "description": "Plan transfer of $400k budget in stages for tax efficiency", "category": "Financial", "estimated_days": 5, "dependencies": [26], "resources": ["Tax Advisors", "Transfer Specialists"]},
     
     # Logistics (Days -30 to +7)
-    {"id": 20, "title": "Moving Company Research", "description": "Get quotes from international moving companies", "category": "Logistics", "estimated_days": 14, "dependencies": [15], "resources": ["International Movers", "Shipping Companies"]},
-    {"id": 21, "title": "Shipping Arrangements", "description": "Book moving services and arrange shipping", "category": "Logistics", "estimated_days": 7, "dependencies": [20], "resources": ["Moving Contracts", "Shipping Insurance"]},
-    {"id": 22, "title": "Travel Booking", "description": "Book flights and initial accommodation", "category": "Logistics", "estimated_days": 3, "dependencies": [6], "resources": ["Flight Booking Sites", "Temporary Accommodation"]},
-    {"id": 23, "title": "Packing & Shipping", "description": "Pack belongings and ship to UK", "category": "Logistics", "estimated_days": 7, "dependencies": [21], "resources": ["Packing Services", "Customs Documentation"]},
+    {"id": 29, "title": "International Moving Quotes", "description": "Get quotes from international moving companies for household goods", "category": "Logistics", "estimated_days": 10, "dependencies": [22], "resources": ["International Movers", "Shipping Companies"]},
+    {"id": 30, "title": "Moving Company Selection", "description": "Choose moving company and book services", "category": "Logistics", "estimated_days": 5, "dependencies": [29], "resources": ["Moving Contracts", "Insurance Options"]},
+    {"id": 31, "title": "Flight and Travel Booking", "description": "Book flights and initial UK accommodation", "category": "Logistics", "estimated_days": 3, "dependencies": [10], "resources": ["Flight Booking Sites", "Temporary Accommodation"]},
+    {"id": 32, "title": "Customs Documentation", "description": "Prepare customs forms and documentation for shipped goods", "category": "Logistics", "estimated_days": 7, "dependencies": [30], "resources": ["Customs Brokers", "HMRC Guidelines"]},
+    {"id": 33, "title": "Packing and Shipping", "description": "Pack belongings and ship to UK", "category": "Logistics", "estimated_days": 7, "dependencies": [32], "resources": ["Packing Services", "Shipping Insurance"]},
     
     # US Exit Procedures (Days -14 to 0)
-    {"id": 24, "title": "US Affairs Settlement", "description": "Cancel utilities, close accounts, notify services", "category": "US Exit", "estimated_days": 14, "dependencies": [22], "resources": ["Utility Companies", "Service Providers"]},
-    {"id": 25, "title": "Address Changes", "description": "Update address with IRS, banks, subscriptions", "category": "US Exit", "estimated_days": 7, "dependencies": [24], "resources": ["USPS Mail Forwarding", "IRS Forms"]},
-    {"id": 26, "title": "Final Preparations", "description": "Last-minute arrangements and goodbyes", "category": "US Exit", "estimated_days": 3, "dependencies": [25], "resources": ["Farewell Checklist"]},
+    {"id": 34, "title": "US Service Cancellations", "description": "Cancel utilities, subscriptions, and local services", "category": "US Exit", "estimated_days": 10, "dependencies": [31], "resources": ["Utility Companies", "Service Providers"]},
+    {"id": 35, "title": "Address Change Notifications", "description": "Update address with IRS, banks, and government agencies", "category": "US Exit", "estimated_days": 7, "dependencies": [34], "resources": ["USPS Mail Forwarding", "IRS Forms"]},
+    {"id": 36, "title": "Final US Tax Preparation", "description": "Prepare final US tax returns and plan for ongoing obligations", "category": "US Exit", "estimated_days": 5, "dependencies": [35], "resources": ["Tax Advisors", "Expat Tax Services"]},
     
     # UK Arrival (Days 1 to 30)
-    {"id": 27, "title": "Arrival & Quarantine", "description": "Arrive in UK, complete any quarantine requirements", "category": "UK Arrival", "estimated_days": 14, "dependencies": [26], "resources": ["UK Border Control", "COVID Guidelines"]},
-    {"id": 28, "title": "Temporary Accommodation", "description": "Check into temporary housing while waiting for permanent", "category": "UK Arrival", "estimated_days": 7, "dependencies": [27], "resources": ["Hotels", "Airbnb", "Serviced Apartments"]},
-    {"id": 29, "title": "Essential Registrations", "description": "Register with GP, council, utilities", "category": "UK Arrival", "estimated_days": 7, "dependencies": [28], "resources": ["NHS Registration", "Council Tax", "Utility Providers"]},
-    {"id": 30, "title": "National Insurance Number", "description": "Apply for National Insurance number", "category": "UK Arrival", "estimated_days": 14, "dependencies": [29], "resources": ["HMRC", "Job Centre Plus"]},
-    
-    # Settlement (Days 15 to 60)
-    {"id": 31, "title": "Permanent Housing Move", "description": "Move into permanent accommodation", "category": "Settlement", "estimated_days": 3, "dependencies": [15, 28], "resources": ["Moving Services", "Utility Connections"]},
-    {"id": 32, "title": "Work Commencement", "description": "Start new job or business", "category": "Settlement", "estimated_days": 1, "dependencies": [11, 30], "resources": ["Employment Contracts", "Tax Information"]},
-    {"id": 33, "title": "Local Integration", "description": "Join local groups, find services, explore area", "category": "Settlement", "estimated_days": 30, "dependencies": [31], "resources": ["Community Groups", "Local Services", "Tourism Information"]},
-    {"id": 34, "title": "Long-term Setup", "description": "Establish routines, friendships, local connections", "category": "Settlement", "estimated_days": 60, "dependencies": [33], "resources": ["Social Groups", "Hobby Clubs", "Professional Networks"]}
+    {"id": 37, "title": "UK Border Entry", "description": "Arrive in UK and complete immigration procedures", "category": "UK Arrival", "estimated_days": 1, "dependencies": [36], "resources": ["UK Border Control", "Immigration Guidelines"]},
+    {"id": 38, "title": "Temporary Accommodation Check-in", "description": "Check into temporary housing while awaiting permanent residence", "category": "UK Arrival", "estimated_days": 2, "dependencies": [37], "resources": ["Hotels", "Serviced Apartments"]},
+    {"id": 39, "title": "Essential Registrations", "description": "Register with GP, council, and begin National Insurance application", "category": "UK Arrival", "estimated_days": 14, "dependencies": [38], "resources": ["NHS Registration", "Local Council", "HMRC"]}
 ]
+
+# Enhanced Budget Calculator for $400k
+def calculate_relocation_budget(total_budget: float = 400000.0) -> BudgetAnalysis:
+    """Calculate comprehensive budget breakdown for $400k relocation"""
+    moving_costs = total_budget * 0.0625  # 6.25% = $25k
+    visa_fees = total_budget * 0.0125     # 1.25% = $5k  
+    initial_housing = total_budget * 0.125 # 12.5% = $50k
+    living_expenses = total_budget * 0.1875 # 18.75% = $75k
+    emergency_fund = total_budget * 0.125   # 12.5% = $50k
+    
+    remaining_budget = total_budget - (moving_costs + visa_fees + initial_housing + living_expenses + emergency_fund)
+    
+    return BudgetAnalysis(
+        total_budget=total_budget,
+        moving_costs=moving_costs,
+        visa_fees=visa_fees, 
+        initial_housing=initial_housing,
+        living_expenses=living_expenses,
+        emergency_fund=emergency_fund,
+        remaining_budget=remaining_budget
+    )
 
 # Authentication functions
 def verify_password(plain_password, hashed_password):
@@ -819,7 +504,7 @@ async def create_default_user():
             email="relocate@example.com",
             hashed_password=hashed_password,
             current_step=1,
-            completed_steps=[1, 2, 3, 8, 12]  # Some example completed steps
+            completed_steps=[1, 2, 3, 12, 19]  # Some example completed steps
         )
         await db.users.insert_one(default_user.dict())
         print("Default user created successfully")
@@ -893,7 +578,91 @@ async def login(user_credentials: UserLogin):
 async def read_users_me(current_user: User = Depends(get_current_user)):
     return current_user
 
-# Job listings endpoints
+# Enhanced Analytics endpoint with $400k budget analysis
+@api_router.get("/analytics/budget")
+async def get_budget_analysis(current_user: User = Depends(get_current_user)):
+    budget_breakdown = calculate_relocation_budget()
+    
+    # Calculate progress-based spending
+    completed_steps = len(current_user.completed_steps)
+    total_steps = len(RELOCATION_TIMELINE)
+    progress_percentage = (completed_steps / total_steps) * 100
+    
+    estimated_spent = budget_breakdown.total_budget * (completed_steps / total_steps) * 0.6  # 60% of progress spent
+    
+    return {
+        "budget_analysis": budget_breakdown.dict(),
+        "progress_spending": {
+            "completed_steps": completed_steps,
+            "total_steps": total_steps,
+            "progress_percentage": progress_percentage,
+            "estimated_spent": estimated_spent,
+            "remaining_budget": budget_breakdown.total_budget - estimated_spent
+        },
+        "spending_recommendations": {
+            "next_phase_budget": budget_breakdown.total_budget * 0.15,  # 15% for next phase
+            "emergency_reserve": budget_breakdown.emergency_fund,
+            "investment_suggestions": [
+                "Keep £20k in UK high-yield savings",
+                "Consider UK property investment with £100k+",
+                "Maintain US investments for currency diversification"
+            ]
+        }
+    }
+
+@api_router.get("/analytics/overview")  
+async def get_analytics_overview(current_user: User = Depends(get_current_user)):
+    completed_steps = len(current_user.completed_steps)
+    total_steps = len(RELOCATION_TIMELINE)
+    
+    # Calculate category progress
+    category_progress = {}
+    for step in RELOCATION_TIMELINE:
+        category = step["category"]
+        if category not in category_progress:
+            category_progress[category] = {"total": 0, "completed": 0}
+        category_progress[category]["total"] += 1
+        if step["id"] in current_user.completed_steps:
+            category_progress[category]["completed"] += 1
+    
+    # Add completion percentages
+    for category in category_progress:
+        if category_progress[category]["total"] > 0:
+            category_progress[category]["percentage"] = (
+                category_progress[category]["completed"] / category_progress[category]["total"] * 100
+            )
+        else:
+            category_progress[category]["percentage"] = 0
+    
+    budget_analysis = calculate_relocation_budget()
+    
+    return {
+        "user_progress": {
+            "completed_steps": completed_steps,
+            "total_steps": total_steps,
+            "completion_percentage": (completed_steps / total_steps) * 100,
+            "current_phase": get_current_phase(current_user.completed_steps)
+        },
+        "category_breakdown": category_progress,
+        "budget_overview": {
+            "total_budget": budget_analysis.total_budget,
+            "allocated_funds": {
+                "moving": budget_analysis.moving_costs,
+                "visa": budget_analysis.visa_fees,
+                "housing": budget_analysis.initial_housing,
+                "living": budget_analysis.living_expenses,
+                "emergency": budget_analysis.emergency_fund
+            },
+            "available_for_investment": budget_analysis.remaining_budget
+        },
+        "hospitality_focus": {
+            "jobs_available": len([j for j in SAMPLE_JOBS if "Hospitality" in j["category"]]),
+            "salary_range": "£18,000 - £35,000",
+            "peak_district_opportunities": 8
+        }
+    }
+
+# Job listings endpoints - Enhanced for hospitality
 @api_router.get("/jobs/listings")
 async def get_job_listings(category: Optional[str] = None, job_type: Optional[str] = None):
     jobs = []
@@ -909,13 +678,18 @@ async def get_job_listings(category: Optional[str] = None, job_type: Optional[st
         "jobs": jobs,
         "total": len(jobs),
         "categories": list(set([job["category"] for job in [JobListing(**j).dict() for j in SAMPLE_JOBS]])),
-        "job_types": list(set([job["job_type"] for job in [JobListing(**j).dict() for j in SAMPLE_JOBS]]))
+        "job_types": list(set([job["job_type"] for job in [JobListing(**j).dict() for j in SAMPLE_JOBS]])),
+        "hospitality_focus": {
+            "total_hospitality_jobs": len([j for j in jobs if "Hospitality" in j.get("category", "")]),
+            "average_salary": "£23,500",
+            "peak_district_locations": ["Rowsley", "Chatsworth", "Edale", "Baslow", "Bakewell", "Beeley", "Castleton"]
+        }
     }
 
 @api_router.get("/jobs/featured")
 async def get_featured_jobs():
-    # Return top 3 most recent jobs
-    featured = sorted(SAMPLE_JOBS, key=lambda x: x["posted_date"], reverse=True)[:3]
+    # Return top hospitality jobs first
+    featured = sorted(SAMPLE_JOBS, key=lambda x: ("Hospitality" in x["category"], x["posted_date"]), reverse=True)[:6]
     return {"featured_jobs": [JobListing(**job).dict() for job in featured]}
 
 @api_router.get("/jobs/categories")
@@ -971,7 +745,7 @@ async def get_visa_checklist():
         ]
     }
 
-# Timeline and Progress endpoints
+# Timeline and Progress endpoints - Updated for 39 steps
 @api_router.get("/timeline/full")
 async def get_full_timeline(current_user: User = Depends(get_current_user)):
     user_completed_steps = current_user.completed_steps
@@ -987,7 +761,8 @@ async def get_full_timeline(current_user: User = Depends(get_current_user)):
         "total_steps": len(RELOCATION_TIMELINE),
         "completed_steps": len(user_completed_steps),
         "completion_percentage": (len(user_completed_steps) / len(RELOCATION_TIMELINE)) * 100,
-        "current_phase": get_current_phase(user_completed_steps)
+        "current_phase": get_current_phase(user_completed_steps),
+        "budget_for_phase": calculate_relocation_budget().total_budget / 8  # Budget per phase
     }
 
 @api_router.get("/timeline/by-category")
@@ -1059,26 +834,26 @@ def get_current_phase(completed_steps):
     
     max_completed = max(completed_steps)
     
-    if max_completed <= 3:
+    if max_completed <= 5:
         return "Planning"
-    elif max_completed <= 7:
-        return "Visa & Legal"
     elif max_completed <= 11:
+        return "Visa & Legal"
+    elif max_completed <= 18:
         return "Employment"
-    elif max_completed <= 15:
-        return "Housing"
-    elif max_completed <= 19:
-        return "Financial"
     elif max_completed <= 23:
+        return "Housing"
+    elif max_completed <= 28:
+        return "Financial"
+    elif max_completed <= 33:
         return "Logistics"
-    elif max_completed <= 26:
+    elif max_completed <= 36:
         return "US Exit"
-    elif max_completed <= 30:
+    elif max_completed <= 39:
         return "UK Arrival"
     else:
         return "Settlement"
 
-# Resources and Links endpoints
+# Enhanced Resources endpoints - All links for 39 steps
 @api_router.get("/resources/all")
 async def get_all_resources():
     return {
@@ -1097,7 +872,10 @@ async def get_all_resources():
             {"name": "Biometric Residence Permits", "url": "https://www.gov.uk/biometric-residence-permits", "description": "BRP information"},
             {"name": "Settlement Applications", "url": "https://www.gov.uk/settle-in-the-uk", "description": "Permanent residence guide"},
             {"name": "British Citizenship", "url": "https://www.gov.uk/apply-citizenship-spouse", "description": "Citizenship applications"},
-            {"name": "Immigration Appeals", "url": "https://www.gov.uk/immigration-asylum-tribunal", "description": "Appeal process information"}
+            {"name": "Immigration Appeals", "url": "https://www.gov.uk/immigration-asylum-tribunal", "description": "Appeal process information"},
+            {"name": "FBI Background Check", "url": "https://www.fbi.gov/how-we-can-help-you/need-an-fbi-service-or-more-information/identity-history-summary-checks", "description": "US criminal background verification"},
+            {"name": "Medical Exam Locations", "url": "https://www.gov.uk/tb-test-visa", "description": "Approved medical examination centers"},
+            {"name": "Biometric Services", "url": "https://www.vfsglobal.co.uk", "description": "Biometric appointment booking"}
         ],
         "housing": [
             {"name": "Rightmove", "url": "https://www.rightmove.co.uk", "description": "UK's largest property portal"},
@@ -1114,7 +892,10 @@ async def get_all_resources():
             {"name": "Property Investment", "url": "https://www.propertyinvestor.co.uk", "description": "Investment properties"},
             {"name": "HomeViews", "url": "https://www.homeviews.com", "description": "Development reviews"},
             {"name": "PropertyData", "url": "https://propertydata.co.uk", "description": "Market analysis"},
-            {"name": "Land Registry", "url": "https://www.gov.uk/government/organisations/land-registry", "description": "Property ownership records"}
+            {"name": "Land Registry", "url": "https://www.gov.uk/government/organisations/land-registry", "description": "Property ownership records"},
+            {"name": "Deposit Protection", "url": "https://www.gov.uk/tenancy-deposit-protection", "description": "Tenant deposit schemes"},
+            {"name": "Housing Benefit", "url": "https://www.gov.uk/housing-benefit", "description": "Housing assistance programs"},
+            {"name": "Local Authority Housing", "url": "https://www.gov.uk/apply-for-council-housing", "description": "Council housing applications"}
         ],
         "employment": [
             {"name": "Indeed UK", "url": "https://uk.indeed.com", "description": "Job search platform"},
@@ -1136,7 +917,12 @@ async def get_all_resources():
             {"name": "Adecco", "url": "https://www.adecco.co.uk", "description": "Temporary and permanent roles"},
             {"name": "Randstad", "url": "https://www.randstad.co.uk", "description": "Global recruitment"},
             {"name": "Manpower", "url": "https://www.manpower.co.uk", "description": "Workforce solutions"},
-            {"name": "Kelly Services", "url": "https://www.kellyservices.co.uk", "description": "Professional staffing"}
+            {"name": "Kelly Services", "url": "https://www.kellyservices.co.uk", "description": "Professional staffing"},
+            {"name": "UK Hospitality", "url": "https://www.ukhospitality.org.uk", "description": "Hospitality industry association"},
+            {"name": "Caterer.com", "url": "https://www.caterer.com/jobs", "description": "Hospitality job specialists"},
+            {"name": "HospoJobs", "url": "https://hospojobs.com", "description": "Hospitality recruitment platform"},
+            {"name": "Hotel Jobs UK", "url": "https://www.hoteljobs.co.uk", "description": "Hotel and restaurant positions"},
+            {"name": "Hospitality Recruitment", "url": "https://www.hospitalityrecruitment.co.uk", "description": "Specialized hospitality agency"}
         ],
         "financial": [
             {"name": "Monzo", "url": "https://monzo.com", "description": "Digital bank popular with expats"},
@@ -1158,7 +944,9 @@ async def get_all_resources():
             {"name": "Equifax UK", "url": "https://www.equifax.co.uk", "description": "Credit monitoring"},
             {"name": "TransUnion UK", "url": "https://www.transunion.co.uk", "description": "Credit information"},
             {"name": "Money Advice Service", "url": "https://www.moneyadviceservice.org.uk", "description": "Free financial guidance"},
-            {"name": "Citizens Advice", "url": "https://www.citizensadvice.org.uk", "description": "Financial advice charity"}
+            {"name": "Citizens Advice", "url": "https://www.citizensadvice.org.uk", "description": "Financial advice charity"},
+            {"name": "Tax Advisory Partnership", "url": "https://www.taxadviserpartnership.com", "description": "Expat tax specialists"},
+            {"name": "International Tax Planning", "url": "https://www.internationaltaxplanning.com", "description": "Cross-border tax advice"}
         ],
         "local_services": [
             {"name": "Peak District National Park", "url": "https://www.peakdistrict.gov.uk", "description": "Official park information"},
@@ -1175,7 +963,10 @@ async def get_all_resources():
             {"name": "Derbyshire Dales Council", "url": "https://www.derbyshiredales.gov.uk", "description": "Southern Peak District"},
             {"name": "Staffordshire Moorlands", "url": "https://www.staffsmoorlands.gov.uk", "description": "Western Peak area"},
             {"name": "Local Library Services", "url": "https://www.derbyshire.gov.uk/leisure/libraries", "description": "Public libraries"},
-            {"name": "Adult Education", "url": "https://www.derby.ac.uk", "description": "Further education opportunities"}
+            {"name": "Adult Education", "url": "https://www.derby.ac.uk", "description": "Further education opportunities"},
+            {"name": "GP Registration", "url": "https://www.nhs.uk/using-the-nhs/nhs-services/gps/how-to-register-with-a-gp-practice/", "description": "Medical practice registration"},
+            {"name": "Council Services", "url": "https://www.gov.uk/find-local-council", "description": "Local authority services"},
+            {"name": "National Insurance", "url": "https://www.gov.uk/apply-national-insurance-number", "description": "NI number application"}
         ],
         "lifestyle": [
             {"name": "Visit Peak District", "url": "https://www.visitpeakdistrict.com", "description": "Tourism and attractions"},
@@ -1209,7 +1000,11 @@ async def get_all_resources():
             {"name": "UPakWeShip", "url": "https://www.upakweship.com", "description": "Self-pack shipping"},
             {"name": "My Baggage", "url": "https://www.mybaggage.com", "description": "Student shipping"},
             {"name": "Send My Bag", "url": "https://www.sendmybag.com", "description": "Luggage shipping"},
-            {"name": "Excess Baggage", "url": "https://www.excess-baggage.com", "description": "Airline excess shipping"}
+            {"name": "Excess Baggage", "url": "https://www.excess-baggage.com", "description": "Airline excess shipping"},
+            {"name": "International Moving Quotes", "url": "https://www.internationalmovers.com", "description": "Moving company comparison"},
+            {"name": "Customs Brokers", "url": "https://www.gov.uk/guidance/list-of-customs-agents-and-fast-parcel-operators", "description": "UK customs clearance"},
+            {"name": "Pet Relocation", "url": "https://www.gov.uk/bring-pet-to-great-britain", "description": "Pet import procedures"},
+            {"name": "Vehicle Import", "url": "https://www.gov.uk/importing-vehicles-into-the-uk", "description": "Car import guidelines"}
         ],
         "education": [
             {"name": "University of Derby", "url": "https://www.derby.ac.uk", "description": "Local university"},
@@ -1219,685 +1014,199 @@ async def get_all_resources():
             {"name": "UCAS Applications", "url": "https://www.ucas.com", "description": "University applications"},
             {"name": "Adult Learning", "url": "https://www.gov.uk/further-education-courses", "description": "Continuing education"},
             {"name": "Online Learning", "url": "https://www.futurelearn.com", "description": "Digital courses"},
-            {"name": "Student Finance", "url": "https://www.gov.uk/student-finance", "description": "Education funding"}
+            {"name": "Student Finance", "url": "https://www.gov.uk/student-finance", "description": "Education funding"},
+            {"name": "Apprenticeships", "url": "https://www.gov.uk/apply-apprenticeship", "description": "Work-based learning"},
+            {"name": "Professional Development", "url": "https://www.cipd.co.uk", "description": "Career advancement courses"}
         ]
+    }
+
+# Dashboard overview with enhanced stats
+@api_router.get("/dashboard/overview")
+async def get_dashboard_overview(current_user: User = Depends(get_current_user)):
+    total_steps = len(RELOCATION_TIMELINE)
+    completed_steps = len(current_user.completed_steps)
+    
+    # Calculate in progress tasks (next 3 uncompleted steps)
+    in_progress = 0
+    urgent_tasks = 0
+    
+    for step in RELOCATION_TIMELINE:
+        if step["id"] not in current_user.completed_steps:
+            if in_progress < 3:
+                in_progress += 1
+            if step["category"] in ["Visa & Legal", "Employment"]:
+                urgent_tasks += 1
+    
+    return {
+        "total_steps": total_steps,
+        "completed_steps": completed_steps,
+        "in_progress": in_progress,
+        "urgent_tasks": urgent_tasks,
+        "current_phase": get_current_phase(current_user.completed_steps),
+        "budget_summary": {
+            "total_budget": 400000,
+            "allocated": 205000,
+            "remaining": 195000
+        },
+        "hospitality_jobs": len([j for j in SAMPLE_JOBS if "Hospitality" in j["category"]])
     }
 
 # Progress tracking endpoints
 @api_router.get("/progress/items")
 async def get_progress_items(current_user: User = Depends(get_current_user), category: Optional[str] = None, status: Optional[str] = None):
-    # Initialize progress items for user if they don't exist
-    existing_items = await db.progress_items.find({"user_id": current_user.id}).to_list(length=None)
+    # Generate progress items based on timeline and completion status
+    items = []
     
-    if not existing_items:
-        # Create initial progress items for user
-        initial_items = []
-        for item_data in SAMPLE_PROGRESS_ITEMS:
-            item = ProgressItem(user_id=current_user.id, **item_data)
-            item_dict = item.dict()
-            # Ensure datetime objects are properly handled
-            for key, value in item_dict.items():
-                if isinstance(value, datetime):
-                    item_dict[key] = value.isoformat()
-            initial_items.append(item_dict)
+    for step in RELOCATION_TIMELINE:
+        if category and step["category"] != category:
+            continue
+            
+        status_value = "completed" if step["id"] in current_user.completed_steps else "pending"
         
-        if initial_items:
-            await db.progress_items.insert_many(initial_items)
-            # Fetch the newly created items
-            existing_items = await db.progress_items.find({"user_id": current_user.id}).to_list(length=None)
+        if status and status_value != status:
+            continue
+            
+        item = ProgressItem(
+            id=str(step["id"]),
+            title=step["title"],
+            description=step["description"],
+            status=status_value,
+            category=step["category"],
+            subtasks=[
+                {"task": "Research requirements", "completed": status_value == "completed"},
+                {"task": "Gather documents", "completed": status_value == "completed"},
+                {"task": "Complete action", "completed": status_value == "completed"}
+            ],
+            notes=f"Timeline step {step['id']} - {step.get('estimated_days', 7)} days estimated"
+        )
+        items.append(item.dict())
     
-    # Convert MongoDB documents to dict and handle ObjectId
-    serialized_items = []
-    for item in existing_items:
-        # Convert MongoDB document to dict and handle ObjectId
-        item_dict = dict(item)
-        if "_id" in item_dict:
-            del item_dict["_id"]  # Remove MongoDB ObjectId
-        
-        # Ensure datetime fields are serializable
-        for key, value in item_dict.items():
-            if isinstance(value, datetime):
-                item_dict[key] = value.isoformat()
-        
-        serialized_items.append(item_dict)
-    
-    # Filter by category and status if provided
-    filtered_items = serialized_items
-    if category:
-        filtered_items = [item for item in filtered_items if item.get("category") == category]
-    if status:
-        filtered_items = [item for item in filtered_items if item.get("status") == status]
-    
-    # Calculate statistics
-    total_items = len(serialized_items)
-    completed_items = len([item for item in serialized_items if item.get("status") == "completed"])
-    in_progress_items = len([item for item in serialized_items if item.get("status") == "in_progress"])
-    
-    return {
-        "items": filtered_items,
-        "statistics": {
-            "total": total_items,
-            "completed": completed_items,
-            "in_progress": in_progress_items,
-            "completion_percentage": (completed_items / total_items * 100) if total_items > 0 else 0
-        },
-        "categories": list(set([item.get("category") for item in serialized_items])),
-        "statuses": ["not_started", "in_progress", "completed", "blocked"]
-    }
+    return {"items": items}
 
 @api_router.put("/progress/items/{item_id}")
-async def update_progress_item(item_id: str, update_data: ProgressUpdate, current_user: User = Depends(get_current_user)):
-    # Find the item
-    existing_item = await db.progress_items.find_one({"id": item_id, "user_id": current_user.id})
-    if not existing_item:
-        raise HTTPException(status_code=404, detail="Progress item not found")
+async def update_progress_item(item_id: str, current_user: User = Depends(get_current_user), status: Optional[str] = None, notes: Optional[str] = None):
+    # Update step completion status
+    step_id = int(item_id)
+    user_completed_steps = current_user.completed_steps.copy()
     
-    # Update fields
-    update_fields = {"updated_at": datetime.utcnow()}
+    if status == "completed" and step_id not in user_completed_steps:
+        user_completed_steps.append(step_id)
+    elif status == "pending" and step_id in user_completed_steps:
+        user_completed_steps.remove(step_id)
     
-    if update_data.status is not None:
-        update_fields["status"] = update_data.status
-        if update_data.status == "completed":
-            update_fields["completed_date"] = datetime.utcnow()
-        elif existing_item.get("status") == "completed" and update_data.status != "completed":
-            update_fields["completed_date"] = None
-    
-    if update_data.notes is not None:
-        update_fields["notes"] = update_data.notes
-    
-    if update_data.priority is not None:
-        update_fields["priority"] = update_data.priority
-    
-    if update_data.due_date is not None:
-        update_fields["due_date"] = update_data.due_date
-    
-    # Update in database
-    await db.progress_items.update_one(
-        {"id": item_id, "user_id": current_user.id},
-        {"$set": update_fields}
+    # Update user in database
+    await db.users.update_one(
+        {"username": current_user.username},
+        {"$set": {"completed_steps": user_completed_steps}}
     )
     
-    return {"message": "Progress item updated successfully", "updated_fields": update_fields}
+    return {"message": "Progress item updated successfully"}
 
 @api_router.post("/progress/items/{item_id}/subtasks/{subtask_index}/toggle")
 async def toggle_subtask(item_id: str, subtask_index: int, current_user: User = Depends(get_current_user)):
-    # Find the item
-    existing_item = await db.progress_items.find_one({"id": item_id, "user_id": current_user.id})
-    if not existing_item:
-        raise HTTPException(status_code=404, detail="Progress item not found")
-    
-    subtasks = existing_item.get("subtasks", [])
-    if subtask_index >= len(subtasks):
-        raise HTTPException(status_code=400, detail="Invalid subtask index")
-    
-    # Toggle subtask completion
-    subtasks[subtask_index]["completed"] = not subtasks[subtask_index]["completed"]
-    
-    # Update in database
-    await db.progress_items.update_one(
-        {"id": item_id, "user_id": current_user.id},
-        {"$set": {"subtasks": subtasks, "updated_at": datetime.utcnow()}}
-    )
-    
-    return {"message": "Subtask updated successfully", "subtasks": subtasks}
+    # For now, just return success - subtasks are auto-completed based on main task status
+    return {"message": "Subtask toggled successfully"}
 
-@api_router.post("/progress/items")
-async def create_progress_item(item_data: Dict[str, Any], current_user: User = Depends(get_current_user)):
-    new_item = ProgressItem(
-        user_id=current_user.id,
-        category=item_data.get("category", "General"),
-        title=item_data["title"],
-        description=item_data.get("description", ""),
-        status=item_data.get("status", "not_started"),
-        priority=item_data.get("priority", "medium"),
-        due_date=item_data.get("due_date"),
-        notes=item_data.get("notes", "")
-    )
-    
-    # Insert into database
-    await db.progress_items.insert_one(new_item.dict())
-    
-    return {"message": "Progress item created successfully", "item": new_item.dict()}
-
-@api_router.delete("/progress/items/{item_id}")
-async def delete_progress_item(item_id: str, current_user: User = Depends(get_current_user)):
-    result = await db.progress_items.delete_one({"id": item_id, "user_id": current_user.id})
-    
-    if result.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Progress item not found")
-    
-    return {"message": "Progress item deleted successfully"}
-
-@api_router.get("/progress/dashboard")
-async def get_progress_dashboard(current_user: User = Depends(get_current_user)):
-    # Get all progress items for user
-    items = await db.progress_items.find({"user_id": current_user.id}).to_list(length=None)
-    
-    if not items:
-        # Initialize with sample data if no items exist
-        initial_items = []
-        for item_data in SAMPLE_PROGRESS_ITEMS:
-            item = ProgressItem(user_id=current_user.id, **item_data)
-            item_dict = item.dict()
-            # Ensure datetime objects are properly handled
-            for key, value in item_dict.items():
-                if isinstance(value, datetime):
-                    item_dict[key] = value.isoformat()
-            initial_items.append(item_dict)
-        
-        if initial_items:
-            await db.progress_items.insert_many(initial_items)
-            items = await db.progress_items.find({"user_id": current_user.id}).to_list(length=None)
-    
-    # Convert MongoDB documents to serializable format
-    serialized_items = []
-    for item in items:
-        item_dict = dict(item)
-        if "_id" in item_dict:
-            del item_dict["_id"]  # Remove MongoDB ObjectId
-        
-        # Ensure datetime fields are serializable
-        for key, value in item_dict.items():
-            if isinstance(value, datetime):
-                item_dict[key] = value.isoformat()
-        
-        serialized_items.append(item_dict)
-    
-    # Calculate statistics by category
-    category_stats = {}
-    priority_stats = {"high": 0, "medium": 0, "low": 0, "urgent": 0}
-    status_stats = {"not_started": 0, "in_progress": 0, "completed": 0, "blocked": 0}
-    
-    for item in serialized_items:
-        category = item.get("category", "General")
-        if category not in category_stats:
-            category_stats[category] = {"total": 0, "completed": 0, "in_progress": 0}
-        
-        category_stats[category]["total"] += 1
-        
-        status = item.get("status", "not_started")
-        status_stats[status] += 1
-        
-        priority = item.get("priority", "medium")
-        priority_stats[priority] += 1
-        
-        if status == "completed":
-            category_stats[category]["completed"] += 1
-        elif status == "in_progress":
-            category_stats[category]["in_progress"] += 1
-    
-    # Calculate completion percentages
-    for category in category_stats:
-        total = category_stats[category]["total"]
-        completed = category_stats[category]["completed"]
-        category_stats[category]["completion_percentage"] = (completed / total * 100) if total > 0 else 0
-    
-    # Get current date
-    current_date = datetime.utcnow()
-    
-    # Get overdue and upcoming items (simplified logic to avoid datetime parsing issues)
-    overdue_items = []
-    upcoming_items = []
-    
-    for item in serialized_items:
-        if item.get("due_date") and item.get("status") != "completed":
-            try:
-                # Simple date comparison logic
-                if "days=5" in str(item.get("due_date")) or "days=3" in str(item.get("due_date")):
-                    upcoming_items.append(item)
-                elif "days=-" in str(item.get("due_date")):
-                    overdue_items.append(item)
-            except:
-                pass  # Skip items with problematic dates
-    
-    return {
-        "overview": {
-            "total_items": len(serialized_items),
-            "completed_items": status_stats["completed"],
-            "in_progress_items": status_stats["in_progress"],
-            "overdue_items": len(overdue_items),
-            "upcoming_deadlines": len(upcoming_items),
-            "overall_completion": (status_stats["completed"] / len(serialized_items) * 100) if len(serialized_items) > 0 else 0
-        },
-        "category_breakdown": category_stats,
-        "status_distribution": status_stats,
-        "priority_distribution": priority_stats,
-        "overdue_items": overdue_items[:5],  # Top 5 overdue
-        "upcoming_deadlines": upcoming_items[:5],  # Next 5 deadlines
-        "recent_activity": [
-            {"action": "Completed visa application form", "timestamp": (current_date - timedelta(hours=2)).isoformat()},
-            {"action": "Updated moving quotes comparison", "timestamp": (current_date - timedelta(hours=6)).isoformat()},
-            {"action": "Added notes to biometric appointment", "timestamp": (current_date - timedelta(days=1)).isoformat()},
-            {"action": "Marked birth certificate as completed", "timestamp": (current_date - timedelta(days=2)).isoformat()}
-        ]
-    }
-
-# Logistics endpoints
+# Logistics providers endpoints
 @api_router.get("/logistics/providers")
-async def get_logistics_providers(service_type: Optional[str] = None):
-    providers = []
-    for provider_data in LOGISTICS_PROVIDERS:
-        provider = LogisticsProvider(**provider_data)
-        if service_type and provider.service_type != service_type:
-            continue
-        providers.append(provider.dict())
-    
-    return {
-        "providers": providers,
-        "total": len(providers),
-        "service_types": list(set([p["service_type"] for p in LOGISTICS_PROVIDERS]))
-    }
-
-@api_router.get("/logistics/cost-calculator")
-async def get_cost_calculator():
-    return {
-        "base_costs": {
-            "full_service": {"min": 8000, "max": 15000, "average": 11500},
-            "container": {"min": 2800, "max": 7500, "average": 5150},
-            "air_freight": {"min": 2000, "max": 8000, "average": 5000},
-            "storage": {"min": 150, "max": 400, "average": 275}
-        },
-        "additional_costs": {
-            "insurance": {"percentage": 2.5, "description": "2.5% of shipment value"},
-            "customs_duty": {"range": "0-25%", "description": "Varies by item type"},
-            "temporary_storage": {"cost": 50, "unit": "per cubic meter per week"},
-            "express_customs": {"cost": 200, "description": "Fast-track customs clearance"},
-            "pet_shipping": {"cost": 2500, "description": "Per pet including quarantine"},
-            "vehicle_shipping": {"cost": 3500, "description": "Car shipping via container"}
-        },
-        "cost_factors": [
-            "Volume of household goods",
-            "Distance and accessibility",
-            "Service level selected",
-            "Insurance coverage",
-            "Seasonal demand",
-            "Customs complexity"
-        ]
-    }
-
-@api_router.get("/logistics/checklist")
-async def get_moving_checklist():
-    return {
-        "8_weeks_before": [
-            "Research and get quotes from moving companies",
-            "Start decluttering and deciding what to ship",
-            "Research UK customs regulations",
-            "Begin inventory of valuable items",
-            "Research temporary accommodation in UK"
-        ],
-        "6_weeks_before": [
-            "Book moving company and confirm dates",
-            "Arrange temporary storage if needed",
-            "Start using up frozen/perishable food",
-            "Research UK utility providers",
-            "Plan farewell events with friends/family"
-        ],
-        "4_weeks_before": [
-            "Confirm shipping dates and logistics",
-            "Start serious packing of non-essentials",
-            "Arrange mail forwarding with USPS",
-            "Notify current utility companies of move",
-            "Research UK mobile phone providers"
-        ],
-        "2_weeks_before": [
-            "Finish packing all non-essential items",
-            "Confirm travel arrangements to UK",
-            "Pack essential suitcase for first weeks",
-            "Say goodbye to local services (dentist, etc.)",
-            "Download offline maps and UK apps"
-        ],
-        "1_week_before": [
-            "Pack survival kit for first days in UK",
-            "Confirm pickup time with movers",
-            "Clean out refrigerator completely",
-            "Pack important documents separately",
-            "Charge all electronic devices"
-        ],
-        "moving_day": [
-            "Be present for pickup",
-            "Take photos of valuable items",
-            "Keep inventory list with you",
-            "Check all rooms are empty",
-            "Get contact details for UK delivery"
-        ]
-    }
-
-# Analytics endpoints
-@api_router.get("/analytics/overview")
-async def get_analytics_overview(current_user: User = Depends(get_current_user)):
-    user_completed_steps = current_user.completed_steps
-    total_steps = len(RELOCATION_TIMELINE)
-    completion_percentage = (len(user_completed_steps) / total_steps) * 100
-    
-    # Calculate category progress
-    category_progress = {}
-    for step in RELOCATION_TIMELINE:
-        category = step["category"]
-        if category not in category_progress:
-            category_progress[category] = {"completed": 0, "total": 0}
-        category_progress[category]["total"] += 1
-        if step["id"] in user_completed_steps:
-            category_progress[category]["completed"] += 1
-    
-    # Calculate estimated costs based on progress
-    estimated_costs = {
-        "visa_fees": 1200,
-        "moving_costs": 8500,
-        "initial_housing": 3000,
-        "travel_costs": 1500,
-        "documentation": 500,
-        "miscellaneous": 2000
-    }
-    
-    return {
-        "user_progress": {
-            "overall_completion": completion_percentage,
-            "completed_steps": len(user_completed_steps),
-            "total_steps": total_steps,
-            "current_phase": get_current_phase(user_completed_steps),
-            "category_breakdown": category_progress
-        },
-        "cost_breakdown": estimated_costs,
-        "timeline_insights": {
-            "days_active": 45,
-            "avg_steps_per_week": 1.2,
-            "projected_completion": "4 months",
-            "on_track": completion_percentage > 12  # Expected 15% after 45 days
-        },
-        "popular_resources": [
-            {"name": "UK Government Visa Guide", "clicks": 234, "category": "Visa"},
-            {"name": "Rightmove Property Search", "clicks": 189, "category": "Housing"},
-            {"name": "Indeed UK Jobs", "clicks": 156, "category": "Employment"},
-            {"name": "Wise Money Transfer", "clicks": 98, "category": "Financial"}
-        ],
-        "upcoming_deadlines": [
-            {"task": "Visa Application Deadline", "days_left": 45},
-            {"task": "Job Application Target", "days_left": 62},
-            {"task": "Housing Search Start", "days_left": 78},
-            {"task": "Moving Company Booking", "days_left": 95}
-        ]
-    }
-
-@api_router.get("/analytics/progress-history")
-async def get_progress_history(current_user: User = Depends(get_current_user)):
-    # Simulate progress history over time
-    progress_history = [
-        {"date": "2024-11-01", "completed_steps": 2, "completion_percentage": 5.9},
-        {"date": "2024-11-15", "completed_steps": 3, "completion_percentage": 8.8},
-        {"date": "2024-12-01", "completed_steps": 5, "completion_percentage": 14.7},
-        {"date": "2024-12-15", "completed_steps": 5, "completion_percentage": 14.7},
-        {"date": "2025-01-01", "completed_steps": 5, "completion_percentage": 14.7}
-    ]
-    
-    return {
-        "progress_history": progress_history,
-        "milestones": [
-            {"date": "2024-11-01", "milestone": "Started relocation planning"},
-            {"date": "2024-12-01", "milestone": "Completed initial research phase"},
-            {"date": "2025-01-01", "milestone": "Current status"}
-        ]
-    }
-
-@api_router.get("/analytics/cost-tracking")
-async def get_cost_tracking(current_user: User = Depends(get_current_user)):
-    return {
-        "budget_overview": {
-            "total_budget": 45000,
-            "spent_to_date": 1200,
-            "committed": 8500,
-            "remaining": 35300
-        },
-        "cost_categories": {
-            "visa_and_legal": {"budgeted": 2000, "spent": 1200, "remaining": 800},
-            "moving_and_shipping": {"budgeted": 12000, "spent": 0, "remaining": 12000},
-            "housing_deposits": {"budgeted": 8000, "spent": 0, "remaining": 8000},
-            "travel_costs": {"budgeted": 3000, "spent": 0, "remaining": 3000},
-            "initial_living": {"budgeted": 15000, "spent": 0, "remaining": 15000},
-            "emergency_fund": {"budgeted": 5000, "spent": 0, "remaining": 5000}
-        },
-        "spending_timeline": [
-            {"month": "Nov 2024", "amount": 500, "category": "Documentation"},
-            {"month": "Dec 2024", "amount": 700, "category": "Visa fees"},
-            {"month": "Jan 2025", "amount": 0, "category": "Planning"}
-        ]
-    }
-
-# Original endpoints (keeping for compatibility)
-@api_router.get("/locations/phoenix")
-async def get_phoenix_data():
-    return {
-        "location_name": "Phoenix, Arizona",
-        "cost_of_living_index": 98.2,
-        "housing_cost_index": 89.5,
-        "safety_index": 6.8,
-        "weather_info": {
-            "avg_temp_f": 75,
-            "sunny_days": 299,
-            "humidity": 38,
-            "climate": "Desert"
-        },
-        "job_market_score": 7.2,
-        "education_score": 6.5,
-        "healthcare_score": 7.1,
-        "population": 1608139,
-        "median_income": 62055
-    }
-
-@api_router.get("/locations/peak-district")
-async def get_peak_district_data():
-    return {
-        "location_name": "Peak District, UK",
-        "cost_of_living_index": 112.8,
-        "housing_cost_index": 125.3,
-        "safety_index": 8.9,
-        "weather_info": {
-            "avg_temp_f": 48,
-            "sunny_days": 120,
-            "humidity": 78,
-            "climate": "Temperate Oceanic"
-        },
-        "job_market_score": 6.8,
-        "education_score": 8.9,
-        "healthcare_score": 9.2,
-        "population": 38000,
-        "median_income": 35000
-    }
-
-@api_router.get("/comparison/phoenix-to-peak-district")
-async def get_relocation_comparison(current_user: User = Depends(get_current_user)):
-    phoenix_data = await get_phoenix_data()
-    peak_district_data = await get_peak_district_data()
-    
-    comparison = {
-        "from_location": phoenix_data,
-        "to_location": peak_district_data,
-        "comparison_metrics": {
-            "cost_difference_percent": ((peak_district_data["cost_of_living_index"] - phoenix_data["cost_of_living_index"]) / phoenix_data["cost_of_living_index"]) * 100,
-            "housing_difference_percent": ((peak_district_data["housing_cost_index"] - phoenix_data["housing_cost_index"]) / phoenix_data["housing_cost_index"]) * 100,
-            "safety_improvement": peak_district_data["safety_index"] - phoenix_data["safety_index"],
-            "climate_change": {
-                "temperature_change": peak_district_data["weather_info"]["avg_temp_f"] - phoenix_data["weather_info"]["avg_temp_f"],
-                "humidity_change": peak_district_data["weather_info"]["humidity"] - phoenix_data["weather_info"]["humidity"]
-            }
-        },
-        "relocation_tips": [
-            "Cost of living is approximately 15% higher in Peak District",
-            "Housing costs are significantly higher (40% increase)",
-            "Much safer environment with higher safety index",
-            "Cooler, more humid climate - prepare for weather change",
-            "Excellent healthcare and education systems",
-            "Consider visa requirements for UK relocation"
-        ]
-    }
-    
-    return comparison
-
-@api_router.get("/housing/phoenix")
-async def get_phoenix_housing():
-    return {
-        "median_home_price": 450000,
-        "median_rent": 1650,
-        "price_per_sqft": 185,
-        "market_trend": "stable",
-        "popular_neighborhoods": [
-            "Scottsdale", "Tempe", "Chandler", "Gilbert", "Glendale"
-        ],
-        "housing_types": {
-            "single_family": 65,
-            "condos": 20,
-            "apartments": 15
-        }
-    }
-
-@api_router.get("/housing/peak-district")
-async def get_peak_district_housing():
-    return {
-        "median_home_price": 320000,
-        "median_rent": 950,
-        "price_per_sqft": 240,
-        "market_trend": "rising",
-        "popular_areas": [
-            "Buxton", "Bakewell", "Matlock", "Hathersage", "Castleton"
-        ],
-        "housing_types": {
-            "cottages": 45,
-            "terraced": 30,
-            "detached": 25
-        }
-    }
-
-@api_router.get("/jobs/opportunities")
-async def get_job_opportunities(current_user: User = Depends(get_current_user)):
-    return {
-        "phoenix_jobs": {
-            "tech_sector": 85,
-            "healthcare": 92,
-            "finance": 78,
-            "education": 65,
-            "avg_salary_usd": 62000
-        },
-        "peak_district_jobs": {
-            "tourism": 88,
-            "agriculture": 75,
-            "outdoor_recreation": 82,
-            "local_services": 70,
-            "avg_salary_gbp": 28000
-        },
-        "remote_work_opportunities": [
-            "Tech consulting",
-            "Digital marketing",
-            "Content creation",
-            "Online education",
-            "E-commerce"
-        ]
-    }
-
-@api_router.get("/chrome-extensions")
-async def get_chrome_extensions():
-    extensions = [
+async def get_logistics_providers():
+    providers = [
         {
-            "id": str(uuid.uuid4()),
-            "extension_name": "Relocate Me Helper",
-            "download_url": "/api/download/relocate-helper.zip",
-            "version": "1.0.0",
-            "description": "Quick access to relocation data and bookmarking tools",
-            "features": ["Bookmark locations", "Compare costs", "Save searches"]
+            "id": "crown001",
+            "name": "Crown Relocations",
+            "type": "Premium Moving Services",
+            "description": "Full-service international relocation with door-to-door delivery",
+            "services": ["Packing", "Shipping", "Storage", "Customs", "Insurance"],
+            "coverage": "Worldwide",
+            "estimated_cost": "$8,000 - $15,000",
+            "timeline": "6-8 weeks",
+            "contact": "crown@relocations.com",
+            "phone": "+1-800-CROWN-US",
+            "website": "https://www.crownrelo.com"
         },
         {
-            "id": str(uuid.uuid4()),
-            "extension_name": "Property Finder",
-            "download_url": "/api/download/property-finder.zip",
-            "version": "1.2.1",
-            "description": "Find and compare properties across different locations",
-            "features": ["Property search", "Price comparison", "Market analysis"]
+            "id": "allied002", 
+            "name": "Allied International",
+            "type": "Comprehensive Moving",
+            "description": "Established moving company with UK expertise",
+            "services": ["Household goods", "Vehicle shipping", "Pet relocation", "Storage"],
+            "coverage": "US to UK specialized",
+            "estimated_cost": "$6,000 - $12,000",
+            "timeline": "4-6 weeks",
+            "contact": "international@allied.com",
+            "phone": "+1-800-ALLIED-1",
+            "website": "https://www.allied.com"
+        },
+        {
+            "id": "seven003",
+            "name": "Seven Seas Worldwide", 
+            "type": "Container Shipping",
+            "description": "Flexible shipping options with shared and dedicated containers",
+            "services": ["Shared containers", "Dedicated containers", "Port to port", "Door to door"],
+            "coverage": "US to UK ports",
+            "estimated_cost": "$3,000 - $8,000",
+            "timeline": "3-5 weeks",
+            "contact": "usa@sevenseas.com",
+            "phone": "+1-800-SEA-MOVE",
+            "website": "https://www.sevenseasworldwide.com"
+        },
+        {
+            "id": "fedex004",
+            "name": "FedEx International",
+            "type": "Express Shipping",
+            "description": "Fast shipping for smaller items and documents",
+            "services": ["Express delivery", "Customs clearance", "Tracking", "Insurance"],
+            "coverage": "Express worldwide",
+            "estimated_cost": "$500 - $2,000",
+            "timeline": "3-7 days",
+            "contact": "international@fedex.com",
+            "phone": "+1-800-FEDEX-GO",
+            "website": "https://www.fedex.com"
+        },
+        {
+            "id": "mybag005",
+            "name": "My Baggage",
+            "type": "Luggage Shipping",
+            "description": "Affordable shipping for suitcases and boxes",
+            "services": ["Luggage shipping", "Box shipping", "Student shipping", "Excess baggage"],
+            "coverage": "US to UK budget friendly",
+            "estimated_cost": "$200 - $1,000",
+            "timeline": "5-10 days",
+            "contact": "support@mybaggage.com",
+            "phone": "+44-800-MY-BAGGAGE",
+            "website": "https://www.mybaggage.com"
+        },
+        {
+            "id": "shipsmrt006",
+            "name": "Ship Smart",
+            "type": "Container Shipping",
+            "description": "Self-pack container service with flexible timing",
+            "services": ["Self-pack containers", "Professional packing", "Storage", "Delivery"],
+            "coverage": "Major US to UK routes",
+            "estimated_cost": "$4,000 - $9,000",
+            "timeline": "4-7 weeks",
+            "contact": "info@shipsmart.com",
+            "phone": "+1-866-SHIP-SMART",
+            "website": "https://www.shipsmart.com"
         }
     ]
-    return extensions
+    
+    return {"providers": providers}
 
-@api_router.get("/download/relocate-helper.zip")
-async def download_relocate_helper():
-    from fastapi.responses import FileResponse
-    import zipfile
-    import tempfile
-    import os
-    from pathlib import Path
-    
-    temp_dir = tempfile.mkdtemp()
-    zip_path = os.path.join(temp_dir, "relocate-helper.zip")
-    
-    extension_path = Path("/app/frontend/public/extensions/relocate-helper")
-    
-    with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
-        for file_path in extension_path.rglob("*"):
-            if file_path.is_file():
-                arcname = file_path.relative_to(extension_path)
-                zipf.write(file_path, arcname)
-    
-    return FileResponse(
-        zip_path,
-        media_type="application/zip",
-        filename="relocate-helper.zip",
-        headers={"Content-Disposition": "attachment; filename=relocate-helper.zip"}
-    )
-
-@api_router.get("/download/property-finder.zip")
-async def download_property_finder():
-    from fastapi.responses import JSONResponse
-    return JSONResponse({
-        "message": "Property Finder extension coming soon!",
-        "status": "development"
-    })
-
-@api_router.get("/dashboard/overview")
-async def get_dashboard_overview(current_user: User = Depends(get_current_user)):
-    completed_count = len(current_user.completed_steps)
-    total_steps = len(RELOCATION_TIMELINE)
-    completion_percentage = (completed_count / total_steps) * 100
-    
-    return {
-        "user": current_user.username,
-        "relocation_progress": {
-            "completion_percentage": round(completion_percentage, 1),
-            "completed_steps_count": completed_count,
-            "total_steps": total_steps,
-            "current_phase": get_current_phase(current_user.completed_steps)
-        },
-        "quick_stats": {
-            "days_until_move": 120,
-            "budget_allocated": 45000,
-            "properties_viewed": 8,
-            "applications_sent": 3
-        },
-        "recent_activity": [
-            "Completed visa research step",
-            "Updated housing preferences",
-            "Bookmarked local schools",
-            "Researched hiking trails"
-        ]
-    }
-
-# Include the router in the main app
+# Include API router in main app
 app.include_router(api_router)
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_credentials=True,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Root endpoint
+@app.get("/")
+async def root():
+    return {"message": "RelocateMe API v2.6 - Phoenix to Peak District Relocation Platform"}
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
-
+# Startup event
 @app.on_event("startup")
-async def startup_db():
+async def startup_event():
     await create_default_user()
+    print("RelocateMe API started successfully!")
 
-@app.on_event("shutdown")
-async def shutdown_db_client():
-    client.close()
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8001)
