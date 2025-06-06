@@ -2105,199 +2105,73 @@ const ResourcesPage = () => {
   );
 };
 
-// Hacking Animation Login Component
+// Simple Login Page without complex animations
 const LoginPage = () => {
-  const [currentPhase, setCurrentPhase] = useState('initial'); // initial, hacking, backdoor, authenticating, success
-  const [terminalLines, setTerminalLines] = useState([]);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [showForm, setShowForm] = useState(false);
-  const [loginUsername, setLoginUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [animationTimeoutId, setAnimationTimeoutId] = useState(null);
+  const [loginData, setLoginData] = useState({
+    username: "relocate_user",
+    password: "SecurePass2025!"
+  });
 
-  const hackingCommands = [
-    "root@relocation-system:~# nmap -sS 192.168.1.1",
-    "Starting Nmap scan...",
-    "Host is up (0.023s latency)",
-    "PORT     STATE SERVICE",
-    "22/tcp   open  ssh",
-    "443/tcp  open  https",
-    "8001/tcp open  unknown",
-    "",
-    "root@relocation-system:~# hydra -l admin -P wordlist.txt ssh://192.168.1.1",
-    "Hydra v9.4 starting...",
-    "[SSH] host: 192.168.1.1   login: admin   password: relocate2025",
-    "[SSH] Valid credentials found!",
-    "",
-    "root@relocation-system:~# ssh admin@192.168.1.1",
-    "Welcome to RelocateMe Secure Terminal",
-    "Last login: Thu Jun  6 02:15:42 2025 from 10.0.0.1",
-    "",
-    "admin@relocate-server:~$ sudo -l",
-    "User admin may run the following commands:",
-    "    (ALL : ALL) ALL",
-    "",
-    "admin@relocate-server:~$ cat /etc/shadow | grep relocate_user",
-    "relocate_user:$6$salt$hash:19834:0:99999:7:::",
-    "",
-    "admin@relocate-server:~$ john --wordlist=passwords.txt shadow.txt",
-    "John the Ripper 1.9.0-jumbo-1",
-    "Loaded 1 password hash",
-    "Press 'q' or Ctrl-C to abort...",
-    "SecurePass2025!  (relocate_user)",
-    "",
-    "admin@relocate-server:~$ echo 'Backdoor installed successfully'",
-    "Backdoor installed successfully",
-    "",
-    "admin@relocate-server:~$ ./backdoor_auth.sh",
-    "Initializing backdoor authentication...",
-    "Bypassing security protocols...",
-    "Injecting authentication tokens...",
-    "AUTHENTICATION BYPASS: SUCCESS",
-    "",
-    "ACCESS GRANTED - WELCOME TO RELOCATE SYSTEM"
-  ];
-
-  const typewriterEffect = (lines, callback) => {
-    let currentLineIndex = 0;
-    let currentCharIndex = 0;
-    const currentTerminalLines = [];
-
-    const typeNextChar = () => {
-      if (currentLineIndex >= lines.length) {
-        console.log("Typewriter animation completed, calling callback");
-        if (callback) callback();
-        return;
-      }
-
-      const currentLine = lines[currentLineIndex];
-      
-      if (currentCharIndex >= currentLine.length) {
-        currentTerminalLines.push(currentLine);
-        setTerminalLines([...currentTerminalLines]);
-        currentLineIndex++;
-        currentCharIndex = 0;
-        // Faster line transition - reduced from 100-300ms to 30-80ms
-        setTimeout(typeNextChar, 30 + Math.random() * 50);
-      } else {
-        const partialLine = currentLine.substring(0, currentCharIndex + 1);
-        const displayLines = [...currentTerminalLines, partialLine];
-        setTerminalLines(displayLines);
-        currentCharIndex++;
-        // Much faster character typing - reduced from 20-100ms to 2-8ms
-        setTimeout(typeNextChar, 2 + Math.random() * 6);
-      }
-    };
-
-    try {
-      typeNextChar();
-    } catch (error) {
-      console.error("Typewriter effect error:", error);
-      if (callback) callback(); // Fallback to complete the flow
-    }
-  };
-
-  const startHackingAnimation = () => {
-    setIsAnimating(true);
-    setCurrentPhase('hacking');
-    setTerminalLines([]);
-    
-    // Add a timeout safety net in case animation gets stuck
-    const timeoutId = setTimeout(() => {
-      console.log("Animation timeout reached, forcing completion");
-      setCurrentPhase('success');
-      setTimeout(() => {
-        setShowForm(true);
-      }, 1000);
-    }, 15000); // 15 second timeout
-    
-    setAnimationTimeoutId(timeoutId);
-    
-    typewriterEffect(hackingCommands, () => {
-      clearTimeout(timeoutId);
-      console.log("Animation completed normally");
-      setTimeout(() => {
-        setCurrentPhase('success');
-        setTimeout(() => {
-          setShowForm(true);
-        }, 2000);
-      }, 1000);
-    });
-  };
-
-  const skipAnimation = () => {
-    if (animationTimeoutId) {
-      clearTimeout(animationTimeoutId);
-    }
-    setCurrentPhase('success');
-    setTimeout(() => {
-      setShowForm(true);
-    }, 500);
-  };
-
-  const handleRealLogin = async (e) => {
+  const handleSimpleLogin = async (e) => {
     e.preventDefault();
-    setCurrentPhase('authenticating');
-
-    // Use the credentials that were "discovered" by the hack
-    const hackUsername = "relocate_user";
-    const hackPassword = "SecurePass2025!";
-
     try {
-      const response = await axios.post(`${API}/api/auth/login`, {
-        username: hackUsername,
-        password: hackPassword
-      });
-
+      const response = await axios.post(`${API}/api/auth/login`, loginData);
       if (response.data && response.data.access_token) {
         localStorage.setItem("token", response.data.access_token);
-        localStorage.setItem("username", hackUsername);
-        setCurrentPhase('success');
-        setTimeout(() => {
-          window.location.reload();
-        }, 1500);
-      } else {
-        setError("Authentication failed");
-        setCurrentPhase('initial');
-        setShowForm(false);
+        localStorage.setItem("username", loginData.username);
+        setIsLoggedIn(true);
+        setUsername(loginData.username);
+        console.log("Login successful");
       }
-    } catch (err) {
-      setError("System breach unsuccessful");
-      console.error("Login error:", err);
-      setCurrentPhase('initial');
-      setShowForm(false);
+    } catch (error) {
+      console.error("Login failed:", error);
+      alert("Login failed. Please try again.");
     }
   };
 
-  if (currentPhase === 'initial') {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center p-6 relative overflow-hidden">
-        {/* Film noir background with subtle texture */}
-        <div className="absolute inset-0 opacity-10 bg-gradient-to-br from-gray-900 via-black to-gray-800"></div>
+  return (
+    <div className="min-h-screen bg-black flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-serif text-white mb-2">RELOCATE.SYS</h1>
+          <p className="text-gray-400 font-mono">[ SECURE ACCESS PORTAL ]</p>
+        </div>
         
-        <div className="max-w-2xl w-full bg-black border-2 border-white p-8 shadow-2xl relative z-10">
-          <div className="text-center mb-8">
-            <h1 className="text-5xl font-bold text-white mb-4 font-serif noir-title">
-              RELOCATE.SYS
-            </h1>
-            <p className="text-gray-300 font-mono text-lg tracking-wider">
-              [ UNAUTHORIZED ACCESS DETECTED ]
-            </p>
-            <p className="text-gray-500 font-mono text-sm mt-2">
-              SECURITY BREACH IMMINENT - INITIATE COUNTERMEASURES
-            </p>
-          </div>
-
-          {error && (
-            <div className="bg-red-900 border border-red-400 text-red-200 p-4 mb-6 font-mono text-sm animate-pulse">
-              ⚠️ {error}
+        <div className="bg-gray-900 border border-gray-700 p-8 rounded-lg">
+          <form onSubmit={handleSimpleLogin} className="space-y-6">
+            <div>
+              <label className="block text-gray-300 mb-2 font-mono text-sm">USERNAME</label>
+              <input
+                type="text"
+                value={loginData.username}
+                onChange={(e) => setLoginData({...loginData, username: e.target.value})}
+                className="w-full bg-black border border-gray-600 p-3 text-white font-mono"
+                autoComplete="username"
+              />
             </div>
-          )}
-
-          <div className="text-center">
+            
+            <div>
+              <label className="block text-gray-300 mb-2 font-mono text-sm">PASSWORD</label>
+              <input
+                type="password"
+                value={loginData.password}
+                onChange={(e) => setLoginData({...loginData, password: e.target.value})}
+                className="w-full bg-black border border-gray-600 p-3 text-white font-mono"
+                autoComplete="current-password"
+              />
+            </div>
+            
             <button
-              onClick={startHackingAnimation}
+              type="submit"
+              className="w-full bg-white text-black py-3 px-6 font-mono font-bold hover:bg-gray-200 transition-colors"
+            >
+              [ ACCESS SYSTEM ]
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
               className="hoverable primary-button mb-4"
             >
               [ INITIATE SYSTEM BREACH ]
