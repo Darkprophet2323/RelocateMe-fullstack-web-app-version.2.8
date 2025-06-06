@@ -715,7 +715,7 @@ const TimelinePage = () => {
       });
       
       // Refresh timeline data
-      const response = await axios.get(`${API}/api/timeline/full`);
+      const response = await axios.get(`${API}/api/timeline/public`);
       setTimelineData({
         timeline: response.data.timeline || [],
         categories: {}
