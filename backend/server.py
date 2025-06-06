@@ -955,7 +955,11 @@ async def get_all_resources():
             {"name": "NHS Migrant Health Guide", "url": "https://www.gov.uk/guidance/nhs-entitlements-migrant-health-guide", "description": "Healthcare entitlements for migrants"},
             {"name": "Bupa Health Insurance", "url": "https://www.bupa.co.uk/health/health-insurance", "description": "Private health insurance options"},
             {"name": "Aviva Health Insurance", "url": "https://www.aviva.co.uk/health/health-insurance/", "description": "Private healthcare cover"},
-            {"name": "AXA Global Healthcare", "url": "https://www.axaglobalhealthcare.com/", "description": "International health insurance"}
+            {"name": "AXA Global Healthcare", "url": "https://www.axaglobalhealthcare.com/", "description": "International health insurance"},
+            {"name": "NHS GP Registration", "url": "https://www.nhs.uk/nhs-services/gps/how-to-register-with-a-gp-surgery/", "description": "How to register with a local GP in the UK"},
+            {"name": "Bupa UK", "url": "https://www.bupa.co.uk/", "description": "Private health insurance and services"},
+            {"name": "AXA Health", "url": "https://www.axahealth.co.uk/", "description": "Private healthcare provider"},
+            {"name": "General Medical Council", "url": "https://www.gmc-uk.org/", "description": "Regulator of UK doctors — find a doctor"}
         ],
         "financial": [
             {"name": "HSBC UK", "url": "https://www.hsbc.co.uk/", "description": "Major UK banking services"},
