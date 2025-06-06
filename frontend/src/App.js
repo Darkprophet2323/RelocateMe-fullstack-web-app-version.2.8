@@ -1052,12 +1052,12 @@ const ProgressPage = () => {
               <div className="space-y-4 mb-8">
                 <h3 className="font-semibold text-white font-mono tracking-wider">TASK CHECKLIST:</h3>
                 {item.subtasks.map((subtask, subIndex) => (
-                  <label key={subIndex} className="flex items-center cursor-pointer group">
+                  <label key={subIndex} className="flex items-start cursor-pointer group progress-item">
                     <input
                       type="checkbox"
                       checked={subtask.completed}
                       onChange={() => toggleSubtask(item.id, subIndex)}
-                      className="mr-4 w-6 h-6 border-2 border-gray-600 bg-black checked:bg-white checked:border-white appearance-none cursor-pointer relative transition-all duration-200"
+                      className="mr-4 w-6 h-6 border-2 border-gray-600 bg-black checked:bg-white checked:border-white appearance-none cursor-pointer relative transition-all duration-200 flex-shrink-0"
                       style={{
                         backgroundImage: subtask.completed ? "url(\"data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='black' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='m13.854 3.646-7.5 7.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6 10.293l7.146-7.147a.5.5 0 0 1 .708.708z'/%3e%3c/svg%3e\")" : 'none'
                       }}
