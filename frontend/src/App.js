@@ -304,9 +304,7 @@ const Navigation = ({ user, onLogout, currentPath }) => {
                 <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-b-red-900"></div>
               </div>
             </button>
-            
-            {/* Burgundy Mission Console Button */}
-            <button
+          </div>
               onClick={handleMissionConsole}
               className="hoverable ml-4 px-4 py-2 bg-red-900 border border-red-700 text-red-200 text-xs font-mono font-bold tracking-wider hover:bg-red-800 hover:border-red-600 hover:text-red-100 transition-all duration-300 relative group"
               style={{
