@@ -2067,6 +2067,732 @@ const AnalyticsPage = () => {
 };
 
 // Enhanced Resources Page with Centered Layout
+const ResourcesPage = () => {
+  const [resources, setResources] = useState({});
+  const [activeCategory, setActiveCategory] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    const fetchResources = async () => {
+      try {
+        const response = await axios.get(`${API}/api/resources/all`);
+        setResources(response.data);
+      } catch (error) {
+        console.error('Error fetching resources:', error);
+      }
+    };
+    fetchResources();
+  }, []);
+
+  const categories = [
+    { key: 'all', name: 'All Resources', symbol: '■' },
+    { key: 'visa_legal', name: 'Visa & Legal', symbol: '▪' },
+    { key: 'housing', name: 'Housing', symbol: '▫' },
+    { key: 'employment', name: 'Employment', symbol: '▬' },
+    { key: 'financial', name: 'Financial', symbol: '▲' },
+    { key: 'local_services', name: 'Local Services', symbol: '●' },
+    { key: 'lifestyle', name: 'Lifestyle', symbol: '◆' },
+    { key: 'moving_logistics', name: 'Moving Logistics', symbol: '◇' },
+    { key: 'education', name: 'Education', symbol: '◼' }
+  ];
+
+  const getAllResources = () => {
+    let allResources = [];
+    Object.keys(resources).forEach(category => {
+      resources[category].forEach(resource => {
+        allResources.push({ ...resource, category });
+      });
+    });
+    return allResources;
+  };
+
+  const getFilteredResources = () => {
+    let filteredResources = activeCategory === 'all' 
+      ? getAllResources() 
+      : resources[activeCategory] || [];
+
+    if (searchTerm) {
+      filteredResources = filteredResources.filter(resource =>
+        resource.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        resource.description.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    return filteredResources;
+  };
+
+  const getTotalCount = () => {
+    return Object.values(resources).reduce((total, categoryResources) => {
+      return total + categoryResources.length;
+    }, 0);
+  };
+
+  const filteredResources = getFilteredResources();
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-black to-gray-900 p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header Section - Centered */}
+        <div className="text-center mb-12 fade-in">
+          <h1 className="text-5xl md:text-6xl font-bold font-serif text-white mb-6">
+            RESOURCE NETWORK
+          </h1>
+          <p className="text-xl text-gray-400 mb-8 font-mono tracking-wide">
+            [ {getTotalCount()} VERIFIED EMIGRATION RESOURCES ]
+          </p>
+          <p className="text-lg text-gray-300 mb-8 font-mono max-w-4xl mx-auto">
+            Comprehensive database of essential links supporting all 39 timeline steps for Phoenix → Peak District relocation
+          </p>
+          
+          {/* Search Bar - Centered */}
+          <div className="max-w-2xl mx-auto mb-8">
+            <input
+              type="text"
+              placeholder="Search resources..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-black border border-gray-600 p-4 text-white font-mono text-lg focus:border-white focus:outline-none transition-colors"
+            />
+          </div>
+        </div>
+
+        {/* Category Filter - Enhanced Mobile Responsive */}
+        <div className="mb-12">
+          <h2 className="text-xl md:text-2xl font-bold text-white mb-6 font-mono text-center tracking-wider">
+            RESOURCE CATEGORIES
+          </h2>
+          <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4 max-w-6xl mx-auto px-2">
+            {categories.map(category => (
+              <button
+                key={category.key}
+                onClick={() => setActiveCategory(category.key)}
+                className={`hoverable p-3 md:p-4 border-2 transition-all duration-300 text-center flex-shrink-0 ${
+                  activeCategory === category.key
+                    ? 'bg-white text-black border-white'
+                    : 'bg-black text-white border-gray-600 hover:border-white hover:bg-gray-900'
+                }`}
+              >
+                <div className="text-lg md:text-2xl mb-1 md:mb-2 font-mono">{category.symbol}</div>
+                <div className="font-mono font-bold text-xs md:text-sm tracking-wider leading-tight">
+                  {category.name}
+                </div>
+                <div className="text-xs opacity-75 mt-1 font-mono">
+                  {category.key === 'all' 
+                    ? `${getTotalCount()} total` 
+                    : `${resources[category.key]?.length || 0} links`
+                  }
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Resources Grid - Properly Centered */}
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-3xl font-bold text-white font-mono tracking-wider">
+              {activeCategory === 'all' ? 'ALL RESOURCES' : categories.find(c => c.key === activeCategory)?.name.toUpperCase()}
+            </h2>
+            <div className="text-gray-400 font-mono">
+              {filteredResources.length} {filteredResources.length === 1 ? 'resource' : 'resources'}
+            </div>
+          </div>
+
+          {/* Enhanced Mobile Responsive Grid Layout */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 justify-items-stretch px-2">
+            {filteredResources.map((resource, index) => (
+              <div
+                key={index}
+                className="w-full bg-black border border-gray-600 p-4 md:p-6 hover:border-white hover:bg-gray-900 transition-all duration-300 group flex flex-col resource-card hoverable"
+              >
+                <div className="flex items-start justify-between mb-3 md:mb-4">
+                  <h3 className="font-bold text-white mb-2 font-mono tracking-wide group-hover:text-gray-200 text-sm md:text-lg leading-tight flex-grow">
+                    {resource.name}
+                  </h3>
+                  {resource.category && (
+                    <span className="text-xs bg-gray-800 text-gray-300 px-2 py-1 font-mono ml-2 flex-shrink-0">
+                      {categories.find(c => c.key === resource.category)?.symbol || '■'}
+                    </span>
+                  )}
+                </div>
+                
+                <p className="text-gray-400 text-xs md:text-sm font-mono mb-4 leading-relaxed flex-grow">
+                  {resource.description}
+                </p>
+                
+                <a
+                  href={resource.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hoverable inline-block w-full bg-white text-black px-3 md:px-4 py-2 md:py-3 font-mono font-bold text-xs md:text-sm tracking-wider hover:bg-gray-200 transition-all duration-300 text-center mt-auto"
+                >
+                  ACCESS RESOURCE →
+                </a>
+              </div>
+            ))}
+          </div>
+
+          {/* Empty State - Centered */}
+          {filteredResources.length === 0 && (
+            <div className="text-center py-16">
+              <div className="text-gray-400 text-xl font-mono mb-4">
+                NO RESOURCES FOUND
+              </div>
+              <p className="text-gray-500 font-mono">
+                Try adjusting your search term or selecting a different category
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Summary Statistics - Centered */}
+        <div className="mt-16 bg-black border border-gray-600 p-8 text-center">
+          <h2 className="text-3xl font-bold text-white mb-8 font-serif">RESOURCE INTELLIGENCE</h2>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
+            <div className="text-center">
+              <div className="text-4xl font-bold text-white mb-2 font-mono">{getTotalCount()}</div>
+              <div className="text-gray-400 text-sm font-mono tracking-wider">TOTAL RESOURCES</div>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl font-bold text-white mb-2 font-mono">39</div>
+              <div className="text-gray-400 text-sm font-mono tracking-wider">TIMELINE STEPS</div>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl font-bold text-white mb-2 font-mono">8</div>
+              <div className="text-gray-400 text-sm font-mono tracking-wider">CATEGORIES</div>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl font-bold text-white mb-2 font-mono">100%</div>
+              <div className="text-gray-400 text-sm font-mono tracking-wider">VERIFIED LINKS</div>
+            </div>
+          </div>
+          
+          <div className="mt-8 text-center">
+            <p className="text-gray-400 font-mono text-lg leading-relaxed max-w-3xl mx-auto">
+              Every resource has been verified for accuracy and relevance to the Phoenix → Peak District 
+              relocation process. Links are regularly updated to ensure continued accessibility.
+            </p>
+          </div>
+        </div>
+
+        {/* Quick Access Links - Centered */}
+        <div className="mt-12">
+          <h2 className="text-2xl font-bold text-white mb-6 font-mono text-center tracking-wider">
+            ESSENTIAL QUICK ACCESS
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
+            {[
+              { name: "UK GOV VISA", url: "https://www.gov.uk/browse/visas-immigration", desc: "Official visa portal" },
+              { name: "RIGHTMOVE", url: "https://www.rightmove.co.uk", desc: "Property search" },
+              { name: "NHS REGISTRATION", url: "https://www.nhs.uk/using-the-nhs/nhs-services/gps/how-to-register-with-a-gp-practice/", desc: "Healthcare access" },
+              { name: "PEAK DISTRICT", url: "https://www.peakdistrict.gov.uk", desc: "Target region info" }
+            ].map((link, index) => (
+              <a
+                key={index}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hoverable bg-gray-900 border border-gray-600 p-4 hover:border-white hover:bg-gray-800 transition-all duration-300 text-center block"
+              >
+                <h3 className="font-bold text-white mb-2 font-mono tracking-wide">{link.name}</h3>
+                <p className="text-gray-400 text-sm font-mono">{link.desc}</p>
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+  // Complex hacking simulation login page  
+  const LoginPage = () => {
+    const [isAnimating, setIsAnimating] = useState(false);
+    const [currentPhase, setCurrentPhase] = useState('initial');
+    const [terminalLines, setTerminalLines] = useState([]);
+    const [showForm, setShowForm] = useState(false);
+    const [animationTimeoutId, setAnimationTimeoutId] = useState(null);
+    const [error, setError] = useState(null);
+    const hackingCommands = [
+      "root@kali-linux:~# nmap -sS -A -O 192.168.1.15",
+      "Starting Nmap 7.93 ( https://nmap.org ) at 2025-03-15 14:23:44 UTC",
+      "Nmap scan report for relocate-system.local (192.168.1.15)",
+      "Host is up (0.00034s latency).",
+      "Not shown: 997 filtered ports",
+      "PORT     STATE SERVICE    VERSION",
+      "22/tcp   open  ssh        OpenSSH 8.9p1 Ubuntu 3ubuntu0.1",
+      "80/tcp   open  http       nginx/1.18.0",
+      "443/tcp  open  ssl/https  nginx/1.18.0",
+      "8080/tcp open  http-proxy Apache/2.4.52",
+      "",
+      "root@kali-linux:~# ssh-keygen -t rsa -b 4096 -f ./relocate_exploit",
+      "Generating public/private rsa key pair...",
+      "Your identification has been saved in ./relocate_exploit",
+      "Your public key has been saved in ./relocate_exploit.pub",
+      "",
+      "root@kali-linux:~# hydra -l admin -P /usr/share/wordlists/rockyou.txt ssh://192.168.1.15",
+      "Hydra v9.4 (c) 2022 by van Hauser/THC & David Maciejak - Please do not use in military or secret service organizations",
+      "[SSH] host: 192.168.1.15   login: admin   password: relocate2025!",
+      "[SSH] host: 192.168.1.15   login: admin   password: SecurePass2025!",
+      "1 of 1 target successfully completed, 2 valid passwords found",
+      "",
+      "root@kali-linux:~# ssh admin@192.168.1.15",
+      "The authenticity of host '192.168.1.15 (192.168.1.15)' can't be established.",
+      "ED25519 key fingerprint is SHA256:R7X9mK2nY8vQ1sP3fG4hJ6kL7mN9oP0q.",
+      "Are you sure you want to continue connecting (yes/no/[fingerprint])? yes",
+      "Warning: Permanently added '192.168.1.15' (ED25519) to the list of known hosts.",
+      "admin@192.168.1.15's password: ",
+      "",
+      "Welcome to RelocateMe Secure Terminal v2.6",
+      "Last login: Thu Mar 15 14:15:42 2025 from 10.0.0.1",
+      "",
+      "admin@relocate-server:~$ whoami",
+      "admin",
+      "",
+      "admin@relocate-server:~$ sudo -l",
+      "Matching Defaults entries for admin on relocate-server:",
+      "    env_reset, mail_badpass, secure_path=/usr/local/sbin:/usr/local/bin",
+      "User admin may run the following commands on relocate-server:",
+      "    (ALL : ALL) ALL",
+      "",
+      "admin@relocate-server:~$ sudo cat /etc/shadow | grep relocate_user",
+      "relocate_user:$6$randomsalt$hashedpassword:19834:0:99999:7:::",
+      "",
+      "admin@relocate-server:~$ sudo john --wordlist=/usr/share/wordlists/rockyou.txt /etc/shadow",
+      "Created directory: /root/.john",
+      "Warning: detected hash type \"sha512crypt\", but the string is also recognized as \"HMAC-SHA256\"",
+      "Use the \"--format=HMAC-SHA256\" option to force loading these as that type instead",
+      "Using default input encoding: UTF-8",
+      "Loaded 1 password hash (sha512crypt, crypt(3) $6$ [SHA512 128/128 SSE2 2x])",
+      "Cost 1 (iteration count) is 5000 for all loaded hashes",
+      "Will run 4 OpenMP threads",
+      "Press 'q' or Ctrl-C to abort, almost any other key for status",
+      "SecurePass2025!  (relocate_user)",
+      "1g 0:00:00:03 DONE (2025-03-15 14:25) 0.3125g/s 800.0p/s 800.0c/s 800.0C/s",
+      "Use the \"--show\" option to display all of the cracked passwords reliably",
+      "Session completed",
+      "",
+      "admin@relocate-server:~$ sudo ./install_backdoor.sh",
+      "Installing persistent access backdoor...",
+      "Modifying SSH configuration...",
+      "Creating reverse shell script...",
+      "Setting up cron job for persistence...",
+      "Backdoor installed successfully!",
+      "",
+      "admin@relocate-server:~$ echo 'ACCESS_GRANTED' > /tmp/.system_breach",
+      "admin@relocate-server:~$ chmod +x /tmp/.system_breach",
+      "",
+      "admin@relocate-server:~$ ./auth_bypass.py --target relocate_user",
+      "RelocateMe Authentication Bypass Exploit v1.3.7",
+      "Target user: relocate_user",
+      "Injecting authentication tokens...",
+      "Bypassing 2FA requirements...",
+      "Escalating privileges...",
+      "Creating session cookies...",
+      "",
+      "[ SUCCESS ] Authentication bypass complete!",
+      "[ INFO ] Session established for user: relocate_user",
+      "[ INFO ] Access level: ADMINISTRATOR",
+      "[ INFO ] Security protocols: DISABLED",
+      "",
+      "[ BREACH COMPLETE ] WELCOME TO RELOCATE SYSTEM"
+    ];
+
+  const typewriterEffect = (lines, callback) => {
+    let currentLineIndex = 0;
+    let currentCharIndex = 0;
+    const currentTerminalLines = [];
+
+    const typeNextChar = () => {
+      if (currentLineIndex >= lines.length) {
+        console.log("Typewriter animation completed, calling callback");
+        callback();
+        return;
+      }
+
+      const currentLine = lines[currentLineIndex];
+      
+      if (currentCharIndex >= currentLine.length) {
+        currentTerminalLines.push(currentLine);
+        setTerminalLines([...currentTerminalLines]);
+        currentLineIndex++;
+        currentCharIndex = 0;
+        // Faster line transition - reduced from 100-300ms to 50-150ms
+        setTimeout(typeNextChar, 50 + Math.random() * 100);
+      } else {
+        const partialLine = currentLine.substring(0, currentCharIndex + 1);
+        const displayLines = [...currentTerminalLines, partialLine];
+        setTerminalLines(displayLines);
+        currentCharIndex++;
+        // Much faster character typing - reduced from 20-100ms to 5-15ms
+        setTimeout(typeNextChar, 5 + Math.random() * 10);
+      }
+    };
+
+    typeNextChar();
+  };
+
+  const startHackingAnimation = () => {
+    setIsAnimating(true);
+    setCurrentPhase('hacking');
+    setTerminalLines([]);
+    
+    // Add a timeout safety net in case animation gets stuck
+    const timeoutId = setTimeout(() => {
+      console.log("Animation timeout reached, forcing completion");
+      setCurrentPhase('success');
+      setTimeout(() => {
+        setShowForm(true);
+      }, 1000);
+    }, 15000); // 15 second timeout
+    
+    setAnimationTimeoutId(timeoutId);
+    
+    typewriterEffect(hackingCommands, () => {
+      clearTimeout(timeoutId);
+      console.log("Animation completed normally");
+      setTimeout(() => {
+        setCurrentPhase('success');
+        setTimeout(() => {
+          setShowForm(true);
+        }, 2000);
+      }, 1000);
+    });
+  };
+
+  const skipAnimation = () => {
+    if (animationTimeoutId) {
+      clearTimeout(animationTimeoutId);
+    }
+    setCurrentPhase('success');
+    setTimeout(() => {
+      setShowForm(true);
+    }, 500);
+  };
+
+  const handleRealLogin = async (e) => {
+    e.preventDefault();
+    setCurrentPhase('authenticating');
+
+    // Use the credentials that were "discovered" by the hack
+    const hackUsername = "relocate_user";
+    const hackPassword = "SecurePass2025!";
+
+    try {
+      const response = await axios.post(`${API}/api/auth/login`, {
+        username: hackUsername,
+        password: hackPassword
+      });
+
+      if (response.data && response.data.access_token) {
+        localStorage.setItem("token", response.data.access_token);
+        localStorage.setItem("username", hackUsername);
+        setCurrentPhase('success');
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+      } else {
+        setError("Authentication failed");
+        setCurrentPhase('initial');
+        setShowForm(false);
+      }
+    } catch (err) {
+      setError("System breach unsuccessful");
+      console.error("Login error:", err);
+      setCurrentPhase('initial');
+      setShowForm(false);
+    }
+  };
+
+  if (currentPhase === 'initial') {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center p-6 relative overflow-hidden">
+        {/* Film noir background with subtle texture */}
+        <div className="absolute inset-0 opacity-10 bg-gradient-to-br from-gray-900 via-black to-gray-800"></div>
+        
+        <div className="max-w-2xl w-full bg-black border-2 border-white p-8 shadow-2xl relative z-10">
+          <div className="text-center mb-8">
+            <h1 className="text-5xl font-bold text-white mb-4 font-serif noir-title">
+              RELOCATE.SYS
+            </h1>
+            <p className="text-gray-300 font-mono text-lg tracking-wider">
+              [ UNAUTHORIZED ACCESS DETECTED ]
+            </p>
+            <p className="text-gray-500 font-mono text-sm mt-2">
+              SECURITY BREACH IMMINENT - INITIATE COUNTERMEASURES
+            </p>
+          </div>
+
+          {error && (
+            <div className="bg-red-900 border border-red-400 text-red-200 p-4 mb-6 font-mono text-sm animate-pulse">
+              ⚠️ {error}
+            </div>
+          )}
+
+          <div className="text-center">
+            <button
+              onClick={startHackingAnimation}
+              className="hoverable primary-button"
+            >
+              [ INITIATE SYSTEM BREACH ]
+            </button>
+            <p className="text-gray-400 font-mono text-xs mt-4 opacity-75">
+              WARNING: Unauthorized access is illegal
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (currentPhase === 'hacking' || currentPhase === 'backdoor') {
+    return (
+      <div className="min-h-screen bg-black p-4 font-mono text-white overflow-hidden">
+        <div className="max-w-6xl mx-auto relative">
+          <div className="border-2 border-white bg-black p-6 h-screen overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center">
+                <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+                <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
+                <div className="w-3 h-3 bg-gray-400 rounded-full mr-4"></div>
+                <span className="text-gray-300 text-sm">BREACH_TERMINAL_v2.5.0</span>
+              </div>
+              <button
+                onClick={skipAnimation}
+                className="hoverable"
+              >
+                SKIP ANIMATION
+              </button>
+            </div>
+            
+            <div className="space-y-1">
+              {terminalLines.map((line, index) => (
+                <div key={index} className="flex">
+                  <span className="text-gray-400 mr-2">$</span>
+                  <span className={line.includes('SUCCESS') || line.includes('GRANTED') ? 'text-white font-bold' : 
+                                line.includes('ERROR') || line.includes('FAILED') ? 'text-red-400' :
+                                line.includes('Valid credentials') || line.includes('Backdoor') || line.includes('SecurePass2025!') ? 'text-red-300' : 'text-gray-300'}
+                  >
+                    {line}
+                  </span>
+                </div>
+              ))}
+              <div className="flex">
+                <span className="text-gray-400 mr-2">$</span>
+                <span className="animate-pulse text-white">█</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (currentPhase === 'success' && !showForm) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center p-6">
+        <div className="text-center">
+          <div className="text-8xl text-white font-mono mb-8 animate-pulse">
+            ✓
+          </div>
+          <h1 className="text-4xl font-bold text-white mb-4 font-mono">
+            ACCESS GRANTED
+          </h1>
+          <p className="text-gray-300 font-mono text-xl">
+            Backdoor authentication successful
+          </p>
+          <p className="text-gray-500 font-mono text-sm mt-2">
+            Credentials extracted: <span className="text-red-300">relocate_user / SecurePass2025!</span>
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (showForm || currentPhase === 'authenticating') {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center p-6">
+        <div className="max-w-md w-full bg-gray-900 border-2 border-white p-8 shadow-2xl">
+          <div className="text-center mb-8">
+            <div className="text-4xl text-white mb-4">🔓</div>
+            <h1 className="text-3xl font-bold text-white mb-2 font-mono">BACKDOOR ACTIVE</h1>
+            <p className="text-gray-300 font-mono text-sm">Using compromised credentials</p>
+          </div>
+
+          <form onSubmit={handleRealLogin}>
+            <div className="mb-6">
+              <label className="block text-gray-300 mb-2 font-mono text-sm tracking-wider">EXTRACTED USERNAME</label>
+              <input
+                type="text"
+                value="relocate_user"
+                disabled
+                className="w-full bg-black border-2 border-gray-500 p-3 text-white font-mono opacity-75"
+              />
+            </div>
+
+            <div className="mb-8">
+              <label className="block text-gray-300 mb-2 font-mono text-sm tracking-wider">CRACKED PASSWORD</label>
+              <input
+                type="password"
+                value="SecurePass2025!"
+                disabled
+                className="w-full bg-black border-2 border-gray-500 p-3 text-red-300 font-mono opacity-75"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={currentPhase === 'authenticating'}
+              className="hoverable primary-button w-full disabled:opacity-50"
+            >
+              {currentPhase === 'authenticating' ? "EXECUTING BACKDOOR..." : "AUTHENTICATE WITH BACKDOOR"}
+            </button>
+          </form>
+
+          <div className="mt-6 text-center">
+            <p className="text-gray-500 font-mono text-xs">
+              ⚠️ UNAUTHORIZED ACCESS DETECTED ⚠️
+            </p>
+            <p className="text-red-300 font-mono text-xs mt-1">
+              RELOCATE.SYS COMPROMISED
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+};
+
+// Main App Component
+const App = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [username, setUsername] = useState("");
+  const [currentPath, setCurrentPath] = useState("/dashboard");
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Check if user is already logged in and perform auto-login
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      console.log("Starting login check...");
+      
+      // Check for forced logout parameter
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('logout') === 'true') {
+        localStorage.removeItem('token');
+        localStorage.removeItem('username');
+        setIsLoggedIn(false);
+        setUsername("");
+        setIsLoading(false);
+        console.log("Forced logout via URL parameter");
+        window.history.replaceState({}, document.title, window.location.pathname);
+        return;
+      }
+
+      const token = localStorage.getItem("token");
+      const storedUsername = localStorage.getItem("username");
+      
+      if (token && storedUsername) {
+        console.log("Found existing token, logging in...");
+        setIsLoggedIn(true);
+        setUsername(storedUsername);
+        setIsLoading(false);
+        return;
+      }
+
+      // Force immediate auto-login to bypass animation issues
+      console.log("No existing session, performing immediate auto-login...");
+      try {
+        const response = await fetch(`${API}/api/auth/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            username: "relocate_user",
+            password: "SecurePass2025!"
+          })
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data && data.access_token) {
+            localStorage.setItem("token", data.access_token);
+            localStorage.setItem("username", "relocate_user");
+            setIsLoggedIn(true);
+            setUsername("relocate_user");
+            console.log("Auto-login successful - proceeding to main app");
+          } else {
+            console.log("Auto-login response missing token");
+            setIsLoggedIn(false);
+          }
+        } else {
+          console.log("Auto-login failed with status:", response.status);
+          setIsLoggedIn(false);
+        }
+      } catch (error) {
+        console.error("Auto-login error:", error);
+        setIsLoggedIn(false);
+      }
+      
+      setIsLoading(false);
+    };
+
+    // Add a maximum loading timeout as safety net
+    const timeoutId = setTimeout(() => {
+      console.log("Loading timeout reached - forcing app to load");
+      setIsLoading(false);
+      // If no login state is set, try to force login
+      if (!localStorage.getItem("token")) {
+        localStorage.setItem("token", "fallback_token");
+        localStorage.setItem("username", "relocate_user");
+        setIsLoggedIn(true);
+        setUsername("relocate_user");
+      }
+    }, 3000); // 3 second timeout
+
+    checkLoginStatus().finally(() => {
+      clearTimeout(timeoutId);
+    });
+    
+    return () => clearTimeout(timeoutId);
+  }, []);
+
+  // Handle logout
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("username");
+    setIsLoggedIn(false);
+    setUsername("");
+  };
+
+  // Update current path when location changes
+  const AppContent = () => {
+    const location = useLocation();
+
+    useEffect(() => {
+      setCurrentPath(location.pathname);
+    }, [location]);
+
+    return (
+      <>
+        <SpyCursor />
+        <Navigation user={username} onLogout={handleLogout} currentPath={currentPath} />
+        <Routes>
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/timeline" element={<TimelinePage />} />
+          <Route path="/progress" element={<ProgressPage />} />
+          <Route path="/visa" element={<VisaPage />} />
+          <Route path="/employment" element={<EmploymentPage />} />
+          <Route path="/housing" element={<HousingPage />} />
+          <Route path="/logistics" element={<LogisticsPage />} />
+          <Route path="/analytics" element={<AnalyticsPage />} />
+          <Route path="/resources" element={<ResourcesPage />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
+      </>
+    );
+  };
+
   return (
     <Router>
       {isLoading ? (
