@@ -2655,7 +2655,7 @@ const App = () => {
           <Route path="/timeline" element={<TimelinePage />} />
           <Route path="/progress" element={<ProgressPage />} />
           <Route path="/visa" element={<VisaPage />} />
-          <Route path="/jobs" element={<EmploymentPage />} />
+          <Route path="/jobs" element={<JobsPage />} />
           <Route path="/housing" element={<HousingPage />} />
           <Route path="/logistics" element={<LogisticsPage />} />
           <Route path="/analytics" element={<AnalyticsPage />} />
