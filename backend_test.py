@@ -258,6 +258,15 @@ def main():
                 tester.test_update_timeline_progress(step["id"], True)
                 break
     
+    # Test password reset functionality
+    tester.test_password_reset_request("relocate_user")
+    
+    # Test visa requirement details
+    success, visa_data = tester.test_visa_requirements()
+    if success and visa_data and "visa_types" in visa_data and len(visa_data["visa_types"]) > 0:
+        visa_type = visa_data["visa_types"][0]["visa_type"].lower().replace(" ", "-")
+        tester.test_visa_requirement_details(visa_type)
+    
     # Print summary
     success = tester.print_summary()
     return 0 if success else 1
