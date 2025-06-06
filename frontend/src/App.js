@@ -2055,15 +2055,15 @@ const ResourcesPage = () => {
   }, []);
 
   const categories = [
-    { key: 'all', name: 'All Resources', icon: '🌐' },
-    { key: 'visa_legal', name: 'Visa & Legal', icon: '📋' },
-    { key: 'housing', name: 'Housing', icon: '🏠' },
-    { key: 'employment', name: 'Employment', icon: '💼' },
-    { key: 'financial', name: 'Financial', icon: '💰' },
-    { key: 'local_services', name: 'Local Services', icon: '🏛️' },
-    { key: 'lifestyle', name: 'Lifestyle', icon: '🎭' },
-    { key: 'moving_logistics', name: 'Moving Logistics', icon: '📦' },
-    { key: 'education', name: 'Education', icon: '🎓' }
+    { key: 'all', name: 'All Resources', symbol: '■' },
+    { key: 'visa_legal', name: 'Visa & Legal', symbol: '▪' },
+    { key: 'housing', name: 'Housing', symbol: '▫' },
+    { key: 'employment', name: 'Employment', symbol: '▬' },
+    { key: 'financial', name: 'Financial', symbol: '▲' },
+    { key: 'local_services', name: 'Local Services', symbol: '●' },
+    { key: 'lifestyle', name: 'Lifestyle', symbol: '◆' },
+    { key: 'moving_logistics', name: 'Moving Logistics', symbol: '◇' },
+    { key: 'education', name: 'Education', symbol: '◼' }
   ];
 
   const getAllResources = () => {
