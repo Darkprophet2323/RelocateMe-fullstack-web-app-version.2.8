@@ -286,16 +286,28 @@ const Navigation = ({ user, onLogout, currentPath }) => {
               </Link>
             ))}
             
-            {/* Burgundy Mission Console Button */}
+            {/* Burgundy Mission Console Button - Fixed sizing */}
             <button
               onClick={handleMissionConsole}
-              className="hoverable ml-4 px-4 py-2 bg-red-900 border border-red-700 text-red-200 text-xs font-mono font-bold tracking-wider hover:bg-red-800 hover:border-red-600 hover:text-red-100 transition-all duration-300 relative group"
+              className="hoverable ml-4 px-4 py-2 text-xs font-mono font-bold tracking-wider transition-all duration-300 relative group flex-shrink-0"
               style={{
                 background: 'linear-gradient(135deg, #7f1d1d 0%, #991b1b 50%, #7f1d1d 100%)',
-                boxShadow: '0 2px 8px rgba(127, 29, 29, 0.3)'
+                border: '1px solid #991b1b',
+                color: '#fecaca',
+                boxShadow: '0 2px 8px rgba(127, 29, 29, 0.3)',
+                minWidth: '140px',
+                height: '32px'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = 'linear-gradient(135deg, #991b1b 0%, #b91c1c 50%, #991b1b 100%)';
+                e.target.style.color = '#fee2e2';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = 'linear-gradient(135deg, #7f1d1d 0%, #991b1b 50%, #7f1d1d 100%)';
+                e.target.style.color = '#fecaca';
               }}
             >
-              <span className="mr-1 text-red-400">[X]</span>
+              <span className="text-red-400 mr-1">[X]</span>
               MISSION CONSOLE
               
               {/* Enhanced Tooltip */}
