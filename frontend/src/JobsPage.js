@@ -204,53 +204,20 @@ const JobsPage = () => {
           </p>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <a
-              href="https://aiapply.co"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hoverable bg-gray-900 border border-gray-700 p-4 hover:border-white transition-all duration-300 text-center group"
-            >
-              <div className="text-2xl mb-2">🤖</div>
-              <h3 className="font-bold text-white mb-2 font-mono text-sm">AI APPLY</h3>
-              <p className="text-gray-400 text-xs font-mono">AI-powered job application platform</p>
-              <div className="text-xs text-gray-500 mt-2 font-mono break-all">→ aiapply.co</div>
-            </a>
-            
-            <a
-              href="https://uk.indeed.com/jobs?q=hospitality&l=Peak+District"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hoverable bg-gray-900 border border-gray-700 p-4 hover:border-white transition-all duration-300 text-center group"
-            >
-              <div className="text-2xl mb-2">🔍</div>
-              <h3 className="font-bold text-white mb-2 font-mono text-sm">INDEED UK</h3>
-              <p className="text-gray-400 text-xs font-mono">Largest UK job search platform</p>
-              <div className="text-xs text-gray-500 mt-2 font-mono break-all">→ uk.indeed.com</div>
-            </a>
-            
-            <a
-              href="https://www.caterer.com/jobs"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hoverable bg-gray-900 border border-gray-700 p-4 hover:border-white transition-all duration-300 text-center group"
-            >
-              <div className="text-2xl mb-2">🍽️</div>
-              <h3 className="font-bold text-white mb-2 font-mono text-sm">CATERER.COM</h3>
-              <p className="text-gray-400 text-xs font-mono">Hospitality industry specialists</p>
-              <div className="text-xs text-gray-500 mt-2 font-mono break-all">→ caterer.com/jobs</div>
-            </a>
-            
-            <a
-              href="https://www.leisurejobs.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hoverable bg-gray-900 border border-gray-700 p-4 hover:border-white transition-all duration-300 text-center group"
-            >
-              <div className="text-2xl mb-2">🏨</div>
-              <h3 className="font-bold text-white mb-2 font-mono text-sm">LEISURE JOBS</h3>
-              <p className="text-gray-400 text-xs font-mono">Tourism & hospitality careers</p>
-              <div className="text-xs text-gray-500 mt-2 font-mono break-all">→ leisurejobs.com</div>
-            </a>
+            {platforms.map((platform, index) => (
+              <a
+                key={index}
+                href={platform.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hoverable bg-gray-900 border border-gray-700 p-4 hover:border-white transition-all duration-300 text-center group no-overflow"
+              >
+                <div className="text-2xl mb-2">{platform.icon}</div>
+                <h3 className="font-bold text-white mb-2 font-mono text-sm break-words">{platform.name}</h3>
+                <p className="text-gray-400 text-xs font-mono break-words">{platform.description}</p>
+                <div className="text-xs text-gray-500 mt-2 font-mono resource-url">→ {platform.url.replace('https://', '').split('/')[0]}</div>
+              </a>
+            ))}
           </div>
           
           <div className="text-center mt-6">
