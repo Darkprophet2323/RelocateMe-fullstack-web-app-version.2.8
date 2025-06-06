@@ -509,10 +509,32 @@ async def create_default_user():
             email="relocate@example.com",
             hashed_password=hashed_password,
             current_step=1,
-            completed_steps=[1, 2, 3, 12, 19]  # Some example completed steps
+            completed_steps=[]  # Start with no completed steps
         )
         await db.users.insert_one(default_user.dict())
         print("Default user created successfully")
+
+@api_router.post("/analytics/reset")
+async def reset_analytics(current_user: User = Depends(get_current_user)):
+    """Reset all user progress and analytics to clean state"""
+    # Reset user progress
+    await db.users.update_one(
+        {"username": current_user.username},
+        {"$set": {
+            "completed_steps": [],
+            "current_step": 1
+        }}
+    )
+    
+    # Clear progress logs
+    await db.progress_logs.delete_many({"user_id": current_user.id})
+    
+    return {
+        "message": "Analytics and progress reset successfully",
+        "completed_steps": 0,
+        "total_steps": len(RELOCATION_TIMELINE),
+        "current_phase": "Planning"
+    }
 
 # Password reset endpoints
 @api_router.post("/auth/reset-password")
