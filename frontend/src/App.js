@@ -149,6 +149,146 @@ const SpyCursor = () => {
   );
 };
 
+// MISSION DEBRIEF Noir Button Component
+const MissionDebriefButton = () => {
+  const handleClick = () => {
+    window.open('about:blank', '_blank');
+  };
+
+  return (
+    <button
+      onClick={handleClick}
+      className="mission-debrief-button"
+      style={{
+        position: 'fixed',
+        bottom: '120px',
+        right: '30px',
+        zIndex: 100,
+        backgroundColor: '#e0e0e0',
+        color: '#000',
+        border: 'none',
+        padding: '12px 24px',
+        fontSize: '14px',
+        fontFamily: 'Cinzel, serif',
+        fontWeight: 'bold',
+        letterSpacing: '1.5px',
+        textTransform: 'uppercase',
+        cursor: 'pointer',
+        borderRadius: '0',
+        minHeight: '48px',
+        background: `
+          linear-gradient(45deg, transparent 49%, rgba(255,255,255,0.1) 50%, transparent 51%),
+          linear-gradient(rgba(240,240,240,1) 0%, rgba(200,200,200,1) 100%)
+        `,
+        backgroundSize: '20px 20px, 100% 100%',
+        transition: 'all 0.3s ease',
+        animation: 'fadeInDebrief 1.2s ease-out',
+        boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)',
+        overflow: 'hidden',
+        position: 'relative'
+      }}
+      onMouseEnter={(e) => {
+        e.target.style.transform = 'translateY(-2px)';
+        e.target.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.4)';
+        e.target.querySelector('.arrow').style.transform = 'translateX(3px)';
+        
+        // Add sweep effect
+        const sweep = e.target.querySelector('.sweep-effect');
+        if (sweep) {
+          sweep.style.transform = 'translateX(100%)';
+        }
+      }}
+      onMouseLeave={(e) => {
+        e.target.style.transform = 'translateY(0)';
+        e.target.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.3)';
+        e.target.querySelector('.arrow').style.transform = 'translateX(0)';
+        
+        // Reset sweep effect
+        const sweep = e.target.querySelector('.sweep-effect');
+        if (sweep) {
+          sweep.style.transform = 'translateX(-100%)';
+        }
+      }}
+      onMouseDown={(e) => {
+        e.target.style.transform = 'translateY(-1px) scale(0.98)';
+      }}
+      onMouseUp={(e) => {
+        e.target.style.transform = 'translateY(-2px) scale(1)';
+      }}
+    >
+      <div 
+        className="sweep-effect"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          background: 'linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.4) 50%, transparent 70%)',
+          transform: 'translateX(-100%)',
+          transition: 'transform 0.6s ease',
+          pointerEvents: 'none'
+        }}
+      />
+      <span style={{ position: 'relative', zIndex: 1 }}>
+        MISSION DEBRIEF
+      </span>
+      <span 
+        className="arrow"
+        style={{
+          marginLeft: '8px',
+          transition: 'transform 0.3s ease',
+          position: 'relative',
+          zIndex: 1
+        }}
+      >
+        →
+      </span>
+      
+      <style jsx>{`
+        @keyframes fadeInDebrief {
+          0% {
+            opacity: 0;
+            transform: translateY(20px) scale(0.9);
+          }
+          50% {
+            opacity: 0.7;
+            transform: translateY(-5px) scale(1.02);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+        
+        .mission-debrief-button {
+          font-family: 'Cinzel', serif !important;
+        }
+        
+        @media (max-width: 768px) {
+          .mission-debrief-button {
+            fontSize: '12px !important';
+            padding: '12px 20px !important';
+            letterSpacing: '1px !important';
+            bottom: '80px !important';
+            right: '20px !important';
+          }
+        }
+        
+        @media (max-width: 480px) {
+          .mission-debrief-button {
+            fontSize: '10px !important';
+            padding: '10px 16px !important';
+            letterSpacing: '0.8px !important';
+            bottom: '60px !important';
+            right: '15px !important';
+          }
+        }
+      `}</style>
+    </button>
+  );
+};
+
 // Enhanced Progress Wizard Component with Noir Theme
 const ProgressWizard = ({ currentStep, totalSteps, completedSteps }) => {
   const progressPercentage = (completedSteps / totalSteps) * 100;
