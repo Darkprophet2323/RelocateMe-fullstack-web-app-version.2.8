@@ -2293,9 +2293,19 @@ const LoginPage = () => {
           <div className="text-center">
             <button
               onClick={startHackingAnimation}
-              className="hoverable primary-button"
+              className="hoverable primary-button mb-4"
             >
               [ INITIATE SYSTEM BREACH ]
+            </button>
+            <br />
+            <button
+              onClick={() => {
+                setCurrentPhase('success');
+                setTimeout(() => setShowForm(true), 500);
+              }}
+              className="hoverable text-gray-400 hover:text-white transition-colors text-sm border border-gray-600 px-4 py-2"
+            >
+              DIRECT ACCESS
             </button>
             <p className="text-gray-400 font-mono text-xs mt-4 opacity-75">
               WARNING: Unauthorized access is illegal
