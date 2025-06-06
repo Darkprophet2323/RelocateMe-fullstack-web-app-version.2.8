@@ -792,6 +792,24 @@ async def get_full_timeline(current_user: User = Depends(get_current_user)):
         "budget_for_phase": calculate_relocation_budget().total_budget / 8  # Budget per phase
     }
 
+@api_router.get("/timeline/public")
+async def get_public_timeline():
+    """Get timeline without authentication for display purposes"""
+    timeline_public = []
+    
+    for step in RELOCATION_TIMELINE:
+        step_copy = step.copy()
+        step_copy["is_completed"] = False  # Default to not completed
+        timeline_public.append(step_copy)
+    
+    return {
+        "timeline": timeline_public,
+        "total_steps": len(RELOCATION_TIMELINE),
+        "completed_steps": 0,
+        "completion_percentage": 0,
+        "current_phase": "Planning"
+    }
+
 @api_router.get("/timeline/by-category")
 async def get_timeline_by_category(current_user: User = Depends(get_current_user)):
     user_completed_steps = current_user.completed_steps
