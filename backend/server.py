@@ -1022,6 +1022,24 @@ async def get_all_resources():
             {"name": "Student Finance", "url": "https://www.gov.uk/student-finance", "description": "Education funding"},
             {"name": "Apprenticeships", "url": "https://www.gov.uk/apply-apprenticeship", "description": "Work-based learning"},
             {"name": "Professional Development", "url": "https://www.cipd.co.uk", "description": "Career advancement courses"}
+        ],
+        "additional_resources": [
+            {"name": "UK Postcode Finder", "url": "https://www.royalmail.com/find-a-postcode", "description": "Find UK postcodes and addresses"},
+            {"name": "UK Weather Service", "url": "https://www.metoffice.gov.uk", "description": "Official UK weather forecasts"},
+            {"name": "UK Driver's License", "url": "https://www.gov.uk/driving-licence-application", "description": "Apply for UK driving license"},
+            {"name": "UK TV License", "url": "https://www.tvlicensing.co.uk", "description": "Required for watching live TV"},
+            {"name": "Compare UK Utilities", "url": "https://www.comparethemarket.com", "description": "Compare energy and utility providers"},
+            {"name": "UK Broadband Comparison", "url": "https://www.moneysavingexpert.com/broadband", "description": "Find best internet deals"},
+            {"name": "UK Mobile Networks", "url": "https://www.ofcom.org.uk/phones-telecoms-and-internet/advice-for-consumers/mobile-coverage-checker", "description": "Check mobile coverage"},
+            {"name": "UK Charity Support", "url": "https://www.citizensadvice.org.uk", "description": "Free advice and support"},
+            {"name": "UK Emergency Services", "url": "https://www.gov.uk/emergency-services", "description": "Police, fire, ambulance contacts"},
+            {"name": "UK Consumer Rights", "url": "https://www.gov.uk/consumer-protection-rights", "description": "Know your consumer rights"},
+            {"name": "Peak District Walks", "url": "https://www.peakdistrictwalks.com", "description": "Detailed walking guides"},
+            {"name": "Peak District Photography", "url": "https://www.peakdistrictphotography.co.uk", "description": "Photography locations and tips"},
+            {"name": "Peak District Wildlife", "url": "https://www.derbyshirewildlifetrust.org.uk", "description": "Local wildlife conservation"},
+            {"name": "Peak District History", "url": "https://www.peakdistricthistory.org.uk", "description": "Local history and heritage"},
+            {"name": "Peak District Climbing", "url": "https://www.peakdistrictclimbing.co.uk", "description": "Rock climbing information"},
+            {"name": "Peak District Cycling", "url": "https://www.peakdistrictcycling.co.uk", "description": "Cycling routes and rentals"}
         ]
     }
 
