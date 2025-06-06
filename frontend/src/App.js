@@ -305,6 +305,26 @@ const Navigation = ({ user, onLogout, currentPath }) => {
               </div>
             </button>
           </div>
+            
+            {/* Burgundy Mission Console Button */}
+            <button
+              onClick={handleMissionConsole}
+              className="hoverable ml-4 px-4 py-2 bg-red-900 border border-red-700 text-red-200 text-xs font-mono font-bold tracking-wider hover:bg-red-800 hover:border-red-600 hover:text-red-100 transition-all duration-300 relative group"
+              style={{
+                background: 'linear-gradient(135deg, #7f1d1d 0%, #991b1b 50%, #7f1d1d 100%)',
+                boxShadow: '0 2px 8px rgba(127, 29, 29, 0.3)'
+              }}
+            >
+              <span className="mr-1 text-red-400">[X]</span>
+              MISSION CONSOLE
+              
+              {/* Enhanced Tooltip */}
+              <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-red-900 border border-red-700 text-red-200 text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-50 font-mono rounded-md">
+                EXTERNAL MISSION DEBRIEF
+                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-b-red-900"></div>
+              </div>
+            </button>
+          </div>
           </div>
 
           {/* Desktop User Controls */}
