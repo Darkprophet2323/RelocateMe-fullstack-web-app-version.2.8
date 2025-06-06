@@ -20,21 +20,67 @@ const ResourcesPage = () => {
       console.log('Fetching resources from:', `${API}/api/resources/all`);
       const response = await axios.get(`${API}/api/resources/all`);
       console.log('Resources response:', response.data);
-      setResources(response.data);
       
-      // Count total resources
-      let total = 0;
-      Object.values(response.data).forEach(category => {
-        total += category.length;
-      });
-      setTotalResources(total);
-      console.log('Total resources counted:', total);
+      if (response.data && Object.keys(response.data).length > 0) {
+        setResources(response.data);
+        
+        // Count total resources
+        let total = 0;
+        Object.values(response.data).forEach(category => {
+          total += category.length;
+        });
+        setTotalResources(total);
+        console.log('Total resources counted:', total);
+      } else {
+        console.log('Empty response, using fallback data');
+        setFallbackResources();
+      }
       
       setLoading(false);
     } catch (error) {
       console.error('Error fetching resources:', error);
+      console.log('API call failed, using fallback data');
+      setFallbackResources();
       setLoading(false);
     }
+  };
+
+  const setFallbackResources = () => {
+    const fallbackData = {
+      "visa_legal": [
+        {"name": "UK Gov Visa & Immigration", "url": "https://www.gov.uk/browse/visas-immigration", "description": "Official UK visa information portal"},
+        {"name": "UK Skilled Worker Visa", "url": "https://www.gov.uk/skilled-worker-visa", "description": "Employment-based skilled worker visa"},
+        {"name": "UK Family Visa", "url": "https://www.gov.uk/uk-family-visa", "description": "Family reunion and spouse visas"},
+        {"name": "Migration Expert", "url": "https://www.migrationexpert.co.uk/", "description": "Professional immigration consultation"},
+        {"name": "Immigration Lawyers UK", "url": "https://www.immigrationlawyers.co.uk/", "description": "Specialist immigration legal services"}
+      ],
+      "flights_moving": [
+        {"name": "Google Flights", "url": "https://www.google.com/flights", "description": "Flight search and booking platform"},
+        {"name": "Skyscanner", "url": "https://www.skyscanner.net/", "description": "Flight comparison and booking"},
+        {"name": "International Movers", "url": "https://www.internationalmovers.com/", "description": "Moving company directory"},
+        {"name": "Ship Overseas", "url": "https://www.shipoverseas.com/", "description": "International shipping platform"}
+      ],
+      "housing": [
+        {"name": "Rightmove", "url": "https://www.rightmove.co.uk/", "description": "UK's largest property portal"},
+        {"name": "Zoopla", "url": "https://www.zoopla.co.uk/", "description": "Property search and valuation"},
+        {"name": "Peak Cottages", "url": "https://www.peakcottages.com/", "description": "Peak District holiday and rental properties"},
+        {"name": "Bagshaws Residential", "url": "https://www.bagshawsresidential.co.uk/", "description": "Local Peak District estate agents"}
+      ],
+      "financial": [
+        {"name": "HSBC UK", "url": "https://www.hsbc.co.uk/", "description": "Major UK banking services"},
+        {"name": "Wise", "url": "https://wise.com/", "description": "International money transfers"},
+        {"name": "Revolut", "url": "https://www.revolut.com/", "description": "Digital banking platform"},
+        {"name": "Monzo", "url": "https://www.monzo.com/", "description": "Mobile-first banking"}
+      ]
+    };
+    
+    setResources(fallbackData);
+    let total = 0;
+    Object.values(fallbackData).forEach(category => {
+      total += category.length;
+    });
+    setTotalResources(total);
+    console.log('Fallback resources set, total:', total);
   };
 
   const handleSearch = async (query) => {
