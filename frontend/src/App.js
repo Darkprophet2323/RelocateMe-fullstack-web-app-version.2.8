@@ -760,12 +760,12 @@ const TimelinePage = () => {
                       </div>
                     </div>
                     <div className="flex-1">
-                      <label className="flex items-center cursor-pointer group">
+                      <label className="flex items-start cursor-pointer group">
                         <input
                           type="checkbox"
                           checked={step.is_completed}
                           onChange={(e) => updateStepProgress(step.id, e.target.checked)}
-                          className="hoverable mr-4 w-6 h-6 border-2 border-gray-600 bg-black checked:bg-white checked:border-white appearance-none cursor-pointer relative transition-all duration-300"
+                          className="hoverable mt-1 mr-3 md:mr-4 w-5 h-5 md:w-6 md:h-6 border-2 border-gray-600 bg-black checked:bg-white checked:border-white appearance-none cursor-pointer relative transition-all duration-300 flex-shrink-0"
                           style={{
                             backgroundImage: step.is_completed ? "url(\"data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='black' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='m13.854 3.646-7.5 7.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6 10.293l7.146-7.147a.5.5 0 0 1 .708.708z'/%3e%3c/svg%3e\")" : 'none',
                             backgroundSize: '16px 16px',
@@ -773,11 +773,13 @@ const TimelinePage = () => {
                             backgroundRepeat: 'no-repeat'
                           }}
                         />
-                        <h3 className={`text-2xl font-bold font-mono tracking-wide transition-all duration-300 hoverable ${
-                          step.is_completed ? 'text-white line-through opacity-75' : 'text-white group-hover:text-gray-300'
-                        }`}>
-                          {step.title}
-                        </h3>
+                        <div className="flex-grow">
+                          <h3 className={`text-xl md:text-2xl font-bold font-mono tracking-wide transition-all duration-300 hoverable ${
+                            step.is_completed ? 'text-white line-through opacity-75' : 'text-white group-hover:text-gray-300'
+                          }`}>
+                            {step.title}
+                          </h3>
+                        </div>
                       </label>
                       <div className="flex items-center mt-3 space-x-4">
                         <span className="px-3 py-1 text-sm border border-gray-600 text-gray-300 font-mono tracking-wider uppercase">
