@@ -267,9 +267,9 @@ const MissionDebriefButton = () => {
         
         @media (max-width: 768px) {
           .mission-debrief-button {
-            fontSize: '12px !important';
-            padding: '12px 20px !important';
-            letterSpacing: '1px !important';
+            fontSize: '11px !important';
+            padding: '10px 16px !important';
+            letterSpacing: '0.8px !important';
             bottom: '80px !important';
             right: '20px !important';
           }
@@ -277,9 +277,9 @@ const MissionDebriefButton = () => {
         
         @media (max-width: 480px) {
           .mission-debrief-button {
-            fontSize: '10px !important';
-            padding: '10px 16px !important';
-            letterSpacing: '0.8px !important';
+            fontSize: '9px !important';
+            padding: '8px 12px !important';
+            letterSpacing: '0.6px !important';
             bottom: '60px !important';
             right: '15px !important';
           }
