@@ -2106,12 +2106,12 @@ const ResourcesPage = () => {
   );
 };
 
-// Hacking Animation Login Component
-const LoginPage = () => {
-  const [currentPhase, setCurrentPhase] = useState('initial'); // initial, hacking, backdoor, authenticating, success
-  const [terminalLines, setTerminalLines] = useState([]);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [showForm, setShowForm] = useState(false);
+  // Complex hacking simulation login page  
+  const LoginPage = () => {
+    const [isAnimating, setIsAnimating] = useState(false);
+    const [currentPhase, setCurrentPhase] = useState('initial');
+    const [terminalLines, setTerminalLines] = useState([]);
+    const [showForm, setShowForm] = useState(false);
   const [loginUsername, setLoginUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
