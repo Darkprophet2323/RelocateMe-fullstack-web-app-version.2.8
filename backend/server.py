@@ -943,7 +943,11 @@ async def get_all_resources():
             {"name": "Expat Focus UK", "url": "https://www.expatfocus.com/united-kingdom", "description": "UK expat advice and community"},
             {"name": "Just Landed UK", "url": "https://www.justlanded.com/english/United-Kingdom", "description": "UK expat guide and resources"},
             {"name": "Meetup Expat UK", "url": "https://www.meetup.com/topics/expat/gb/", "description": "Expat meetups across UK"},
-            {"name": "InterNations Manchester", "url": "https://internations.org/manchester-expats", "description": "Manchester expat community"}
+            {"name": "InterNations Manchester", "url": "https://internations.org/manchester-expats", "description": "Manchester expat community"},
+            {"name": "Expatica UK", "url": "https://www.expatica.com/uk/", "description": "Expat news and information hub"},
+            {"name": "Manchester International Friends", "url": "https://www.meetup.com/manchester-international-friends/", "description": "Find expat meetups and social events"},
+            {"name": "British Expats UK Forum", "url": "https://britishexpats.com/forum/united-kingdom-76/", "description": "Forum and community for expats in the UK"},
+            {"name": "Manchester Expats Facebook", "url": "https://www.facebook.com/groups/manchesterexpats/", "description": "Community-driven groups for connecting with locals and expats"}
         ],
         "healthcare": [
             {"name": "NHS Moving to England", "url": "https://www.nhs.uk/using-the-nhs/moving-to-england-from-abroad/", "description": "NHS services for newcomers"},
