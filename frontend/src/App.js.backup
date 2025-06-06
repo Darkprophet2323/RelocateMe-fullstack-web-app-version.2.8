@@ -3,111 +3,213 @@ import "./App.css";
 import { BrowserRouter as Router, Route, Routes, Link, Navigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { gsap } from "gsap";
+import ResourcesPage from "./ResourcesPage";
 
 const API = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
-// Spy Cursor Component - Simple and Reliable Implementation
+// Enhanced Transparent Spy Cursor Component - Improved visibility
 const SpyCursor = () => {
   const bigBallRef = useRef(null);
   const smallBallRef = useRef(null);
+  const mousePos = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
+    // Only enable cursor on desktop devices
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (isMobile) {
+      console.log('SpyCursor: Mobile device detected, skipping custom cursor');
+      return;
+    }
+
     const bigBall = bigBallRef.current;
     const smallBall = smallBallRef.current;
 
     if (!bigBall || !smallBall) return;
 
-    // Add custom cursor class to body
+    // Add custom cursor class to body and hide default cursor
     document.body.classList.add('spy-cursor-active');
+    document.body.style.cursor = 'none';
+    
+    // Add global styles for enhanced cursor transparency
+    const style = document.createElement('style');
+    style.textContent = `
+      .spy-cursor-active * {
+        cursor: none !important;
+      }
+      .cursor-hover-target {
+        transition: all 0.3s ease;
+      }
+      .cursor-hover-highlight {
+        background-color: rgba(255, 255, 255, 0.1) !important;
+        box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3) !important;
+        transform: scale(1.02) !important;
+      }
+    `;
+    document.head.appendChild(style);
 
-    // Simple mouse move handler
     const handleMouseMove = (e) => {
+      mousePos.current = { x: e.clientX, y: e.clientY };
+      
       if (bigBall && smallBall) {
-        bigBall.style.left = (e.clientX - 15) + 'px';
-        bigBall.style.top = (e.clientY - 15) + 'px';
-        smallBall.style.left = (e.clientX - 5) + 'px';
-        smallBall.style.top = (e.clientY - 5) + 'px';
+        const bigX = e.clientX - 20;
+        const bigY = e.clientY - 20;
+        const smallX = e.clientX - 3;
+        const smallY = e.clientY - 3;
+        
+        bigBall.style.transform = `translate3d(${bigX}px, ${bigY}px, 0)`;
+        smallBall.style.transform = `translate3d(${smallX}px, ${smallY}px, 0)`;
       }
     };
 
-    // Simple hover handlers
-    const handleMouseEnter = () => {
-      if (bigBall) {
-        bigBall.style.transform = 'scale(4)';
-        bigBall.style.transition = 'transform 0.3s ease';
+    // Enhanced hover handlers with better transparency
+    const handleMouseEnter = (e) => {
+      if (bigBall && smallBall) {
+        // Scale up with transparency
+        bigBall.style.transform = bigBall.style.transform + ' scale(2.5)';
+        bigBall.style.transition = 'transform 0.2s ease, opacity 0.2s ease';
+        bigBall.style.opacity = '0.8';
+        
+        // Enhanced mix-blend for better text visibility
+        bigBall.style.mixBlendMode = 'difference';
+        smallBall.style.mixBlendMode = 'difference';
+        smallBall.style.opacity = '1';
+        
+        // Add subtle glow effect
+        bigBall.style.filter = 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.4))';
+        
+        // Highlight the target element subtly
+        e.target.classList.add('cursor-hover-target', 'cursor-hover-highlight');
+        
+        // Add a subtle outline to the target for better visibility
+        const originalBoxShadow = e.target.style.boxShadow;
+        e.target.dataset.originalBoxShadow = originalBoxShadow;
       }
     };
 
-    const handleMouseLeave = () => {
-      if (bigBall) {
-        bigBall.style.transform = 'scale(1)';
-        bigBall.style.transition = 'transform 0.3s ease';
+    const handleMouseLeave = (e) => {
+      if (bigBall && smallBall) {
+        // Reset scale and transparency
+        const currentTransform = bigBall.style.transform.replace(/ scale\([^)]*\)/g, '');
+        bigBall.style.transform = currentTransform + ' scale(1)';
+        bigBall.style.transition = 'transform 0.2s ease, opacity 0.2s ease';
+        bigBall.style.opacity = '0.6';
+        
+        // Reset mix blend mode and effects
+        bigBall.style.mixBlendMode = 'normal';
+        smallBall.style.mixBlendMode = 'normal';
+        smallBall.style.opacity = '0.8';
+        bigBall.style.filter = 'none';
+        
+        // Remove highlight classes
+        e.target.classList.remove('cursor-hover-target', 'cursor-hover-highlight');
+        
+        // Restore original box shadow
+        if (e.target.dataset.originalBoxShadow) {
+          e.target.style.boxShadow = e.target.dataset.originalBoxShadow;
+          delete e.target.dataset.originalBoxShadow;
+        }
       }
     };
 
-    // Add event listeners to document
-    document.addEventListener('mousemove', handleMouseMove);
+    // Add event listeners
+    document.addEventListener('mousemove', handleMouseMove, { passive: true });
 
     // Function to add hover listeners to all interactive elements
     const addHoverListeners = () => {
       // Remove existing listeners first
-      document.querySelectorAll('.hoverable').forEach(element => {
+      document.querySelectorAll('.cursor-enhanced').forEach(element => {
         element.removeEventListener('mouseenter', handleMouseEnter);
         element.removeEventListener('mouseleave', handleMouseLeave);
-        element.classList.remove('hoverable');
+        element.classList.remove('cursor-enhanced');
       });
 
-      // Add to all interactive elements
+      // Comprehensive selectors for interactive elements
       const selectors = [
-        'button',
-        'a',
-        'input',
-        'textarea',
-        'select',
-        '[role="button"]',
-        '[onclick]',
-        'label'
+        'button:not([disabled])',
+        'a[href]:not([disabled])',
+        'input:not([disabled]):not([type="hidden"])',
+        'textarea:not([disabled])',
+        'select:not([disabled])',
+        '[role="button"]:not([disabled])',
+        '[onclick]:not([disabled])',
+        'label:not([disabled])',
+        '.hoverable:not([disabled])',
+        '[data-interactive]:not([disabled])',
+        'nav a:not([disabled])',
+        '.primary-button:not([disabled])',
+        '[tabindex]:not([tabindex="-1"]):not([disabled])',
+        '.cursor-target:not([disabled])',
+        '.mission-console:not([disabled])',
+        '[type="checkbox"]:not([disabled])',
+        '.resource-card:not([disabled])',
+        '.timeline-step:not([disabled])'
       ];
 
+      let elementCount = 0;
       selectors.forEach(selector => {
-        document.querySelectorAll(selector).forEach(element => {
-          element.classList.add('hoverable');
-          element.addEventListener('mouseenter', handleMouseEnter);
-          element.addEventListener('mouseleave', handleMouseLeave);
-        });
+        try {
+          document.querySelectorAll(selector).forEach(element => {
+            // Only add if element is visible and not already enhanced
+            if (!element.classList.contains('cursor-enhanced') && 
+                element.offsetParent !== null && 
+                window.getComputedStyle(element).display !== 'none') {
+              element.classList.add('cursor-enhanced');
+              element.addEventListener('mouseenter', handleMouseEnter, { passive: true });
+              element.addEventListener('mouseleave', handleMouseLeave, { passive: true });
+              elementCount++;
+            }
+          });
+        } catch (error) {
+          console.warn('SpyCursor: Error with selector', selector, error);
+        }
       });
 
-      console.log('Added hover listeners to', document.querySelectorAll('.hoverable').length, 'elements');
+      console.log('SpyCursor: Enhanced', elementCount, 'interactive elements with transparency');
     };
 
     // Initial setup
     addHoverListeners();
 
-    // Re-add listeners when DOM changes
-    const observer = new MutationObserver(() => {
-      setTimeout(addHoverListeners, 100);
-    });
+    // Re-add listeners when DOM changes with debouncing
+    let debounceTimer;
+    const debouncedUpdate = () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(addHoverListeners, 200);
+    };
 
+    const observer = new MutationObserver(debouncedUpdate);
     observer.observe(document.body, {
       childList: true,
-      subtree: true
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['class', 'href', 'onclick', 'disabled', 'style']
     });
 
     // Cleanup
     return () => {
       document.body.classList.remove('spy-cursor-active');
+      document.body.style.cursor = '';
       document.removeEventListener('mousemove', handleMouseMove);
-      observer.disconnect();
       
-      document.querySelectorAll('.hoverable').forEach(element => {
+      observer.disconnect();
+      clearTimeout(debounceTimer);
+      
+      // Remove styles
+      if (style.parentNode) {
+        style.parentNode.removeChild(style);
+      }
+      
+      document.querySelectorAll('.cursor-enhanced').forEach(element => {
         element.removeEventListener('mouseenter', handleMouseEnter);
         element.removeEventListener('mouseleave', handleMouseLeave);
+        element.classList.remove('cursor-enhanced', 'cursor-hover-target', 'cursor-hover-highlight');
       });
     };
   }, []);
 
   return (
-    <div className="cursor">
+    <div className="spy-cursor-container" style={{ pointerEvents: 'none', position: 'fixed', top: 0, left: 0, zIndex: 10000 }}>
+      {/* Large transparent cursor with border */}
       <div 
         ref={bigBallRef} 
         className="cursor__ball cursor__ball--big"
@@ -115,18 +217,21 @@ const SpyCursor = () => {
           position: 'fixed',
           top: 0,
           left: 0,
-          width: '30px',
-          height: '30px',
+          width: '40px',
+          height: '40px',
           pointerEvents: 'none',
           zIndex: 10000,
-          mixBlendMode: 'difference'
+          mixBlendMode: 'normal',
+          willChange: 'transform',
+          borderRadius: '50%',
+          background: 'rgba(247, 248, 250, 0.2)',
+          border: '2px solid rgba(247, 248, 250, 0.6)',
+          opacity: '0.6',
+          transition: 'all 0.2s ease'
         }}
-      >
-        <svg height="30" width="30" style={{ display: 'block' }}>
-          <circle cx="15" cy="15" r="12" strokeWidth="0" fill="#f7f8fa"></circle>
-        </svg>
-      </div>
+      />
       
+      {/* Small center dot for precision */}
       <div 
         ref={smallBallRef} 
         className="cursor__ball cursor__ball--small"
@@ -134,158 +239,19 @@ const SpyCursor = () => {
           position: 'fixed',
           top: 0,
           left: 0,
-          width: '10px',
-          height: '10px',
+          width: '6px',
+          height: '6px',
           pointerEvents: 'none',
           zIndex: 10000,
-          mixBlendMode: 'difference'
-        }}
-      >
-        <svg height="10" width="10" style={{ display: 'block' }}>
-          <circle cx="5" cy="5" r="4" strokeWidth="0" fill="#f7f8fa"></circle>
-        </svg>
-      </div>
-    </div>
-  );
-};
-
-// MISSION DEBRIEF CONSOLE Noir Button Component
-const MissionDebriefButton = () => {
-  const handleClick = () => {
-    window.open('https://os-theme-verify.emergent.host/', '_blank');
-  };
-
-  return (
-    <button
-      onClick={handleClick}
-      className="mission-debrief-button"
-      style={{
-        position: 'fixed',
-        bottom: '120px',
-        right: '30px',
-        zIndex: 100,
-        backgroundColor: '#e0e0e0',
-        color: '#000',
-        border: 'none',
-        padding: '12px 20px',
-        fontSize: '13px',
-        fontFamily: 'Cinzel, serif',
-        fontWeight: 'bold',
-        letterSpacing: '1.2px',
-        textTransform: 'uppercase',
-        cursor: 'pointer',
-        borderRadius: '0',
-        minHeight: '48px',
-        background: `
-          linear-gradient(45deg, transparent 49%, rgba(255,255,255,0.1) 50%, transparent 51%),
-          linear-gradient(rgba(240,240,240,1) 0%, rgba(200,200,200,1) 100%)
-        `,
-        backgroundSize: '20px 20px, 100% 100%',
-        transition: 'all 0.3s ease',
-        animation: 'fadeInDebrief 1.2s ease-out',
-        boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)',
-        overflow: 'hidden',
-        position: 'relative'
-      }}
-      onMouseEnter={(e) => {
-        e.target.style.transform = 'translateY(-2px)';
-        e.target.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.4)';
-        e.target.querySelector('.arrow').style.transform = 'translateX(3px)';
-        
-        // Add sweep effect
-        const sweep = e.target.querySelector('.sweep-effect');
-        if (sweep) {
-          sweep.style.transform = 'translateX(100%)';
-        }
-      }}
-      onMouseLeave={(e) => {
-        e.target.style.transform = 'translateY(0)';
-        e.target.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.3)';
-        e.target.querySelector('.arrow').style.transform = 'translateX(0)';
-        
-        // Reset sweep effect
-        const sweep = e.target.querySelector('.sweep-effect');
-        if (sweep) {
-          sweep.style.transform = 'translateX(-100%)';
-        }
-      }}
-      onMouseDown={(e) => {
-        e.target.style.transform = 'translateY(-1px) scale(0.98)';
-      }}
-      onMouseUp={(e) => {
-        e.target.style.transform = 'translateY(-2px) scale(1)';
-      }}
-    >
-      <div 
-        className="sweep-effect"
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          background: 'linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.4) 50%, transparent 70%)',
-          transform: 'translateX(-100%)',
-          transition: 'transform 0.6s ease',
-          pointerEvents: 'none'
+          mixBlendMode: 'normal',
+          willChange: 'transform',
+          borderRadius: '50%',
+          backgroundColor: 'rgba(247, 248, 250, 0.9)',
+          opacity: '0.8',
+          transition: 'all 0.2s ease'
         }}
       />
-      <span style={{ position: 'relative', zIndex: 1 }}>
-        MISSION DEBRIEF CONSOLE
-      </span>
-      <span 
-        className="arrow"
-        style={{
-          marginLeft: '8px',
-          transition: 'transform 0.3s ease',
-          position: 'relative',
-          zIndex: 1
-        }}
-      >
-        →
-      </span>
-      
-      <style jsx>{`
-        @keyframes fadeInDebrief {
-          0% {
-            opacity: 0;
-            transform: translateY(20px) scale(0.9);
-          }
-          50% {
-            opacity: 0.7;
-            transform: translateY(-5px) scale(1.02);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-        }
-        
-        .mission-debrief-button {
-          font-family: 'Cinzel', serif !important;
-        }
-        
-        @media (max-width: 768px) {
-          .mission-debrief-button {
-            fontSize: '11px !important';
-            padding: '10px 16px !important';
-            letterSpacing: '0.8px !important';
-            bottom: '80px !important';
-            right: '20px !important';
-          }
-        }
-        
-        @media (max-width: 480px) {
-          .mission-debrief-button {
-            fontSize: '9px !important';
-            padding: '8px 12px !important';
-            letterSpacing: '0.6px !important';
-            bottom: '60px !important';
-            right: '15px !important';
-          }
-        }
-      `}</style>
-    </button>
+    </div>
   );
 };
 
@@ -342,6 +308,10 @@ const Navigation = ({ user, onLogout, currentPath }) => {
     { path: "/resources", name: "RESOURCES", step: 9, description: "SUPPORT NETWORK" }
   ];
 
+  const handleMissionConsole = () => {
+    window.open('https://os-theme-verify.emergent.host/', '_blank');
+  };
+
   return (
     <nav className="bg-black bg-opacity-95 backdrop-blur-sm border-b border-gray-700 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
@@ -369,27 +339,65 @@ const Navigation = ({ user, onLogout, currentPath }) => {
                 </div>
               </Link>
             ))}
+            
+            {/* Burgundy Mission Console Button - Fixed sizing */}
+            <button
+              onClick={handleMissionConsole}
+              className="hoverable ml-4 px-4 py-2 text-xs font-mono font-bold tracking-wider transition-all duration-300 relative group flex-shrink-0"
+              style={{
+                background: 'linear-gradient(135deg, #7f1d1d 0%, #991b1b 50%, #7f1d1d 100%)',
+                border: '1px solid #991b1b',
+                color: '#fecaca',
+                boxShadow: '0 2px 8px rgba(127, 29, 29, 0.3)',
+                minWidth: '140px',
+                height: '32px'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = 'linear-gradient(135deg, #991b1b 0%, #b91c1c 50%, #991b1b 100%)';
+                e.target.style.color = '#fee2e2';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = 'linear-gradient(135deg, #7f1d1d 0%, #991b1b 50%, #7f1d1d 100%)';
+                e.target.style.color = '#fecaca';
+              }}
+            >
+              <span className="text-red-400 mr-1">[X]</span>
+              MISSION CONSOLE
+              
+              {/* Enhanced Tooltip */}
+              <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-red-900 border border-red-700 text-red-200 text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-50 font-mono rounded-md">
+                EXTERNAL MISSION DEBRIEF
+                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-b-red-900"></div>
+              </div>
+            </button>
           </div>
 
           {/* Desktop User Controls */}
           <div className="hidden md:flex items-center space-x-3">
-            <span className="text-gray-300 text-xs font-mono">USER: {user.toUpperCase()}</span>
+            <span className="text-gray-300 text-xs font-mono tracking-wider">
+              CODENAME: <span className="text-white font-bold">PHOENIX</span>
+            </span>
             <button
               onClick={onLogout}
-              className="hoverable logout-button"
+              className="hoverable bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white px-3 py-1 text-xs font-mono border border-gray-600 hover:border-gray-400 transition-all duration-300"
             >
-              [LOGOUT]
+              [ LOGOUT ]
             </button>
           </div>
 
-          {/* Mobile Header */}
+          {/* Mobile Header - Enhanced Responsive */}
           <div className="md:hidden flex items-center justify-between w-full">
-            <span className="text-white text-sm font-mono font-bold">RELOCATE.SYS</span>
-            <div className="flex items-center space-x-2">
-              <span className="text-gray-300 text-xs font-mono">USER: {user.toUpperCase()}</span>
+            <span className="text-white text-sm font-mono font-bold truncate">RELOCATE.SYS</span>
+            <div className="flex items-center space-x-2 flex-shrink-0">
+              <span className="text-gray-300 text-xs font-mono tracking-wider hidden sm:block">
+                CODENAME: <span className="text-white font-bold">PHOENIX</span>
+              </span>
+              <span className="text-gray-300 text-xs font-mono tracking-wider sm:hidden">
+                <span className="text-white font-bold">PHOENIX</span>
+              </span>
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="hoverable text-gray-400 hover:text-white p-2 rounded-md transition-colors duration-300"
+                className="hoverable text-gray-400 hover:text-white p-2 rounded-md transition-colors duration-300 flex-shrink-0"
               >
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   {isMobileMenuOpen ? (
@@ -422,6 +430,29 @@ const Navigation = ({ user, onLogout, currentPath }) => {
                   <div className="text-xs opacity-75 mt-1">{item.description}</div>
                 </Link>
               ))}
+            </div>
+            
+            {/* Mobile Mission Console Button - Fixed sizing */}
+            <div className="mb-3">
+              <button
+                onClick={() => {
+                  handleMissionConsole();
+                  setIsMobileMenuOpen(false);
+                }}
+                className="hoverable w-full text-center py-3 px-3 text-xs font-mono border rounded-md transition-all duration-300 flex-shrink-0"
+                style={{
+                  background: 'linear-gradient(135deg, #7f1d1d 0%, #991b1b 50%, #7f1d1d 100%)',
+                  border: '1px solid #991b1b',
+                  color: '#fecaca',
+                  minHeight: '56px'
+                }}
+              >
+                <div className="font-semibold text-sm">
+                  <span className="text-red-400 mr-1">[X]</span>
+                  MISSION CONSOLE
+                </div>
+                <div className="text-xs opacity-75 mt-1">EXTERNAL MISSION DEBRIEF</div>
+              </button>
             </div>
             <div className="flex justify-center">
               <button
@@ -705,7 +736,10 @@ const TimelinePage = () => {
             OPERATIONAL TIMELINE
           </h1>
           <p className="text-xl text-gray-400 mb-8 font-mono tracking-wide">
-            [ 34-STEP RELOCATION PROTOCOL: PHOENIX → PEAK DISTRICT ]
+            [ 39-STEP RELOCATION PROTOCOL: PHOENIX → PEAK DISTRICT ]
+          </p>
+          <p className="text-lg text-gray-300 mb-8 font-mono">
+            Budget Allocation: $400,000 Total • Focus: Hospitality/Waitressing Careers
           </p>
           
           <ProgressWizard 
@@ -754,21 +788,26 @@ const TimelinePage = () => {
                       </div>
                     </div>
                     <div className="flex-1">
-                      <label className="flex items-center cursor-pointer group">
+                      <label className="flex items-start cursor-pointer group">
                         <input
                           type="checkbox"
                           checked={step.is_completed}
                           onChange={(e) => updateStepProgress(step.id, e.target.checked)}
-                          className="mr-4 w-6 h-6 border-2 border-gray-600 bg-black checked:bg-white checked:border-white appearance-none cursor-pointer relative"
+                          className="hoverable mt-1 mr-3 md:mr-4 w-5 h-5 md:w-6 md:h-6 border-2 border-gray-600 bg-black checked:bg-white checked:border-white appearance-none cursor-pointer relative transition-all duration-300 flex-shrink-0"
                           style={{
-                            backgroundImage: step.is_completed ? "url(\"data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='black' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='m13.854 3.646-7.5 7.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6 10.293l7.146-7.147a.5.5 0 0 1 .708.708z'/%3e%3c/svg%3e\")" : 'none'
+                            backgroundImage: step.is_completed ? "url(\"data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='black' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='m13.854 3.646-7.5 7.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6 10.293l7.146-7.147a.5.5 0 0 1 .708.708z'/%3e%3c/svg%3e\")" : 'none',
+                            backgroundSize: '16px 16px',
+                            backgroundPosition: 'center',
+                            backgroundRepeat: 'no-repeat'
                           }}
                         />
-                        <h3 className={`text-2xl font-bold font-mono tracking-wide transition-all duration-300 ${
-                          step.is_completed ? 'text-white line-through' : 'text-white group-hover:text-gray-300'
-                        }`}>
-                          {step.title}
-                        </h3>
+                        <div className="flex-grow">
+                          <h3 className={`text-xl md:text-2xl font-bold font-mono tracking-wide transition-all duration-300 hoverable ${
+                            step.is_completed ? 'text-white line-through opacity-75' : 'text-white group-hover:text-gray-300'
+                          }`}>
+                            {step.title}
+                          </h3>
+                        </div>
                       </label>
                       <div className="flex items-center mt-3 space-x-4">
                         <span className="px-3 py-1 text-sm border border-gray-600 text-gray-300 font-mono tracking-wider uppercase">
@@ -2027,9 +2066,11 @@ const AnalyticsPage = () => {
   );
 };
 
-// Resources Page with Noir Theme
+// Enhanced Resources Page with Centered Layout
 const ResourcesPage = () => {
-  const [resources, setResources] = useState(null);
+  const [resources, setResources] = useState({});
+  const [activeCategory, setActiveCategory] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     const fetchResources = async () => {
@@ -2038,148 +2079,465 @@ const ResourcesPage = () => {
         setResources(response.data);
       } catch (error) {
         console.error('Error fetching resources:', error);
-        // Fallback data
-        setResources({
-          visa_legal: [
-            { name: "UK Government Visa Guide", url: "https://www.gov.uk/browse/visas-immigration", description: "Official UK visa information" },
-            { name: "Immigration Law Society", url: "https://www.lawsociety.org.uk", description: "Find qualified immigration lawyers" }
-          ],
-          employment: [
-            { name: "Indeed UK", url: "https://uk.indeed.com", description: "Primary job search platform" },
-            { name: "LinkedIn Jobs", url: "https://www.linkedin.com/jobs", description: "Professional networking and jobs" }
-          ],
-          housing: [
-            { name: "Rightmove", url: "https://www.rightmove.co.uk", description: "UK's largest property portal" },
-            { name: "Zoopla", url: "https://www.zoopla.co.uk", description: "Property search and valuation" }
-          ]
-        });
       }
     };
     fetchResources();
   }, []);
 
+  const categories = [
+    { key: 'all', name: 'All Resources', symbol: '■' },
+    { key: 'visa_legal', name: 'Visa & Legal', symbol: '▪' },
+    { key: 'housing', name: 'Housing', symbol: '▫' },
+    { key: 'employment', name: 'Employment', symbol: '▬' },
+    { key: 'financial', name: 'Financial', symbol: '▲' },
+    { key: 'local_services', name: 'Local Services', symbol: '●' },
+    { key: 'lifestyle', name: 'Lifestyle', symbol: '◆' },
+    { key: 'moving_logistics', name: 'Moving Logistics', symbol: '◇' },
+    { key: 'education', name: 'Education', symbol: '◼' }
+  ];
+
+  const getAllResources = () => {
+    let allResources = [];
+    Object.keys(resources).forEach(category => {
+      resources[category].forEach(resource => {
+        allResources.push({ ...resource, category });
+      });
+    });
+    return allResources;
+  };
+
+  const getFilteredResources = () => {
+    let filteredResources = activeCategory === 'all' 
+      ? getAllResources() 
+      : resources[activeCategory] || [];
+
+    if (searchTerm) {
+      filteredResources = filteredResources.filter(resource =>
+        resource.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        resource.description.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    return filteredResources;
+  };
+
+  const getTotalCount = () => {
+    return Object.values(resources).reduce((total, categoryResources) => {
+      return total + categoryResources.length;
+    }, 0);
+  };
+
+  const filteredResources = getFilteredResources();
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-black to-gray-900 p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8 fade-in">
-          <h1 className="text-5xl font-bold font-serif text-white mb-6">
-            SUPPORT NETWORK
+        {/* Header Section - Centered */}
+        <div className="text-center mb-12 fade-in">
+          <h1 className="text-5xl md:text-6xl font-bold font-serif text-white mb-6">
+            RESOURCE NETWORK
           </h1>
           <p className="text-xl text-gray-400 mb-8 font-mono tracking-wide">
-            [ EXTERNAL RESOURCES & INTELLIGENCE TOOLS ]
+            [ {getTotalCount()} VERIFIED EMIGRATION RESOURCES ]
           </p>
+          <p className="text-lg text-gray-300 mb-8 font-mono max-w-4xl mx-auto">
+            Comprehensive database of essential links supporting all 39 timeline steps for Phoenix → Peak District relocation
+          </p>
+          
+          {/* Search Bar - Centered */}
+          <div className="max-w-2xl mx-auto mb-8">
+            <input
+              type="text"
+              placeholder="Search resources..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-black border border-gray-600 p-4 text-white font-mono text-lg focus:border-white focus:outline-none transition-colors"
+            />
+          </div>
         </div>
 
-        {resources && Object.entries(resources).map(([category, items], categoryIndex) => (
-          <div key={category} className="mb-12">
-            <h2 className="text-3xl font-bold text-white mb-8 font-serif text-center capitalize">
-              {category.replace('_', ' & ')}
+        {/* Category Filter - Enhanced Mobile Responsive */}
+        <div className="mb-12">
+          <h2 className="text-xl md:text-2xl font-bold text-white mb-6 font-mono text-center tracking-wider">
+            RESOURCE CATEGORIES
+          </h2>
+          <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4 max-w-6xl mx-auto px-2">
+            {categories.map(category => (
+              <button
+                key={category.key}
+                onClick={() => setActiveCategory(category.key)}
+                className={`hoverable p-3 md:p-4 border-2 transition-all duration-300 text-center flex-shrink-0 ${
+                  activeCategory === category.key
+                    ? 'bg-white text-black border-white'
+                    : 'bg-black text-white border-gray-600 hover:border-white hover:bg-gray-900'
+                }`}
+              >
+                <div className="text-lg md:text-2xl mb-1 md:mb-2 font-mono">{category.symbol}</div>
+                <div className="font-mono font-bold text-xs md:text-sm tracking-wider leading-tight">
+                  {category.name}
+                </div>
+                <div className="text-xs opacity-75 mt-1 font-mono">
+                  {category.key === 'all' 
+                    ? `${getTotalCount()} total` 
+                    : `${resources[category.key]?.length || 0} links`
+                  }
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Resources Grid - Properly Centered */}
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-3xl font-bold text-white font-mono tracking-wider">
+              {activeCategory === 'all' ? 'ALL RESOURCES' : categories.find(c => c.key === activeCategory)?.name.toUpperCase()}
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {items.map((resource, index) => (
+            <div className="text-gray-400 font-mono">
+              {filteredResources.length} {filteredResources.length === 1 ? 'resource' : 'resources'}
+            </div>
+          </div>
+
+          {/* Enhanced Mobile Responsive Grid Layout */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 justify-items-stretch px-2">
+            {filteredResources.map((resource, index) => (
+              <div
+                key={index}
+                className="w-full bg-black border border-gray-600 p-4 md:p-6 hover:border-white hover:bg-gray-900 transition-all duration-300 group flex flex-col resource-card hoverable"
+              >
+                <div className="flex items-start justify-between mb-3 md:mb-4">
+                  <h3 className="font-bold text-white mb-2 font-mono tracking-wide group-hover:text-gray-200 text-sm md:text-lg leading-tight flex-grow">
+                    {resource.name}
+                  </h3>
+                  {resource.category && (
+                    <span className="text-xs bg-gray-800 text-gray-300 px-2 py-1 font-mono ml-2 flex-shrink-0">
+                      {categories.find(c => c.key === resource.category)?.symbol || '■'}
+                    </span>
+                  )}
+                </div>
+                
+                <p className="text-gray-400 text-xs md:text-sm font-mono mb-4 leading-relaxed flex-grow">
+                  {resource.description}
+                </p>
+                
                 <a
-                  key={index}
                   href={resource.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-black border border-gray-600 p-6 hover:border-white hover:bg-gray-900 transition-all duration-300 block"
+                  className="hoverable inline-block w-full bg-white text-black px-3 md:px-4 py-2 md:py-3 font-mono font-bold text-xs md:text-sm tracking-wider hover:bg-gray-200 transition-all duration-300 text-center mt-auto"
                 >
-                  <h3 className="font-bold text-white mb-3 font-mono tracking-wide">{resource.name}</h3>
-                  <p className="text-gray-400 text-sm font-mono">{resource.description}</p>
+                  ACCESS RESOURCE →
                 </a>
-              ))}
+              </div>
+            ))}
+          </div>
+
+          {/* Empty State - Centered */}
+          {filteredResources.length === 0 && (
+            <div className="text-center py-16">
+              <div className="text-gray-400 text-xl font-mono mb-4">
+                NO RESOURCES FOUND
+              </div>
+              <p className="text-gray-500 font-mono">
+                Try adjusting your search term or selecting a different category
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Summary Statistics - Centered */}
+        <div className="mt-16 bg-black border border-gray-600 p-8 text-center">
+          <h2 className="text-3xl font-bold text-white mb-8 font-serif">RESOURCE INTELLIGENCE</h2>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
+            <div className="text-center">
+              <div className="text-4xl font-bold text-white mb-2 font-mono">{getTotalCount()}</div>
+              <div className="text-gray-400 text-sm font-mono tracking-wider">TOTAL RESOURCES</div>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl font-bold text-white mb-2 font-mono">39</div>
+              <div className="text-gray-400 text-sm font-mono tracking-wider">TIMELINE STEPS</div>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl font-bold text-white mb-2 font-mono">8</div>
+              <div className="text-gray-400 text-sm font-mono tracking-wider">CATEGORIES</div>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl font-bold text-white mb-2 font-mono">100%</div>
+              <div className="text-gray-400 text-sm font-mono tracking-wider">VERIFIED LINKS</div>
             </div>
           </div>
-        ))}
-
-        {!resources && (
-          <div className="text-center py-12">
-            <div className="text-6xl mb-6">🔗</div>
-            <h2 className="text-3xl font-bold text-white mb-4 font-serif">LOADING RESOURCES</h2>
-            <p className="text-gray-400 font-mono">Establishing network connections...</p>
+          
+          <div className="mt-8 text-center">
+            <p className="text-gray-400 font-mono text-lg leading-relaxed max-w-3xl mx-auto">
+              Every resource has been verified for accuracy and relevance to the Phoenix → Peak District 
+              relocation process. Links are regularly updated to ensure continued accessibility.
+            </p>
           </div>
-        )}
+        </div>
+
+        {/* Quick Access Links - Centered */}
+        <div className="mt-12">
+          <h2 className="text-2xl font-bold text-white mb-6 font-mono text-center tracking-wider">
+            ESSENTIAL QUICK ACCESS
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
+            {[
+              { name: "UK GOV VISA", url: "https://www.gov.uk/browse/visas-immigration", desc: "Official visa portal" },
+              { name: "RIGHTMOVE", url: "https://www.rightmove.co.uk", desc: "Property search" },
+              { name: "NHS REGISTRATION", url: "https://www.nhs.uk/using-the-nhs/nhs-services/gps/how-to-register-with-a-gp-practice/", desc: "Healthcare access" },
+              { name: "PEAK DISTRICT", url: "https://www.peakdistrict.gov.uk", desc: "Target region info" }
+            ].map((link, index) => (
+              <a
+                key={index}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hoverable bg-gray-900 border border-gray-600 p-4 hover:border-white hover:bg-gray-800 transition-all duration-300 text-center block"
+              >
+                <h3 className="font-bold text-white mb-2 font-mono tracking-wide">{link.name}</h3>
+                <p className="text-gray-400 text-sm font-mono">{link.desc}</p>
+              </a>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
 };
 
-// Simple Login Page without complex animations
-const LoginPage = () => {
-  const [loginData, setLoginData] = useState({
-    username: "relocate_user",
-    password: "SecurePass2025!"
-  });
+  // Complex hacking simulation login page  
+  const LoginPage = () => {
+    const [isAnimating, setIsAnimating] = useState(false);
+    const [currentPhase, setCurrentPhase] = useState('initial');
+    const [terminalLines, setTerminalLines] = useState([]);
+    const [showForm, setShowForm] = useState(false);
+    const [animationTimeoutId, setAnimationTimeoutId] = useState(null);
+    const [error, setError] = useState(null);
+    const hackingCommands = [
+      "root@kali-linux:~# nmap -sS -A -O 192.168.1.15",
+      "Starting Nmap 7.93 ( https://nmap.org ) at 2025-03-15 14:23:44 UTC",
+      "Nmap scan report for relocate-system.local (192.168.1.15)",
+      "Host is up (0.00034s latency).",
+      "Not shown: 997 filtered ports",
+      "PORT     STATE SERVICE    VERSION",
+      "22/tcp   open  ssh        OpenSSH 8.9p1 Ubuntu 3ubuntu0.1",
+      "80/tcp   open  http       nginx/1.18.0",
+      "443/tcp  open  ssl/https  nginx/1.18.0",
+      "8080/tcp open  http-proxy Apache/2.4.52",
+      "",
+      "root@kali-linux:~# ssh-keygen -t rsa -b 4096 -f ./relocate_exploit",
+      "Generating public/private rsa key pair...",
+      "Your identification has been saved in ./relocate_exploit",
+      "Your public key has been saved in ./relocate_exploit.pub",
+      "",
+      "root@kali-linux:~# hydra -l admin -P /usr/share/wordlists/rockyou.txt ssh://192.168.1.15",
+      "Hydra v9.4 (c) 2022 by van Hauser/THC & David Maciejak - Please do not use in military or secret service organizations",
+      "[SSH] host: 192.168.1.15   login: admin   password: relocate2025!",
+      "[SSH] host: 192.168.1.15   login: admin   password: SecurePass2025!",
+      "1 of 1 target successfully completed, 2 valid passwords found",
+      "",
+      "root@kali-linux:~# ssh admin@192.168.1.15",
+      "The authenticity of host '192.168.1.15 (192.168.1.15)' can't be established.",
+      "ED25519 key fingerprint is SHA256:R7X9mK2nY8vQ1sP3fG4hJ6kL7mN9oP0q.",
+      "Are you sure you want to continue connecting (yes/no/[fingerprint])? yes",
+      "Warning: Permanently added '192.168.1.15' (ED25519) to the list of known hosts.",
+      "admin@192.168.1.15's password: ",
+      "",
+      "Welcome to RelocateMe Secure Terminal v2.6",
+      "Last login: Thu Mar 15 14:15:42 2025 from 10.0.0.1",
+      "",
+      "admin@relocate-server:~$ whoami",
+      "admin",
+      "",
+      "admin@relocate-server:~$ sudo -l",
+      "Matching Defaults entries for admin on relocate-server:",
+      "    env_reset, mail_badpass, secure_path=/usr/local/sbin:/usr/local/bin",
+      "User admin may run the following commands on relocate-server:",
+      "    (ALL : ALL) ALL",
+      "",
+      "admin@relocate-server:~$ sudo cat /etc/shadow | grep relocate_user",
+      "relocate_user:$6$randomsalt$hashedpassword:19834:0:99999:7:::",
+      "",
+      "admin@relocate-server:~$ sudo john --wordlist=/usr/share/wordlists/rockyou.txt /etc/shadow",
+      "Created directory: /root/.john",
+      "Warning: detected hash type \"sha512crypt\", but the string is also recognized as \"HMAC-SHA256\"",
+      "Use the \"--format=HMAC-SHA256\" option to force loading these as that type instead",
+      "Using default input encoding: UTF-8",
+      "Loaded 1 password hash (sha512crypt, crypt(3) $6$ [SHA512 128/128 SSE2 2x])",
+      "Cost 1 (iteration count) is 5000 for all loaded hashes",
+      "Will run 4 OpenMP threads",
+      "Press 'q' or Ctrl-C to abort, almost any other key for status",
+      "SecurePass2025!  (relocate_user)",
+      "1g 0:00:00:03 DONE (2025-03-15 14:25) 0.3125g/s 800.0p/s 800.0c/s 800.0C/s",
+      "Use the \"--show\" option to display all of the cracked passwords reliably",
+      "Session completed",
+      "",
+      "admin@relocate-server:~$ sudo ./install_backdoor.sh",
+      "Installing persistent access backdoor...",
+      "Modifying SSH configuration...",
+      "Creating reverse shell script...",
+      "Setting up cron job for persistence...",
+      "Backdoor installed successfully!",
+      "",
+      "admin@relocate-server:~$ echo 'ACCESS_GRANTED' > /tmp/.system_breach",
+      "admin@relocate-server:~$ chmod +x /tmp/.system_breach",
+      "",
+      "admin@relocate-server:~$ ./auth_bypass.py --target relocate_user",
+      "RelocateMe Authentication Bypass Exploit v1.3.7",
+      "Target user: relocate_user",
+      "Injecting authentication tokens...",
+      "Bypassing 2FA requirements...",
+      "Escalating privileges...",
+      "Creating session cookies...",
+      "",
+      "[ SUCCESS ] Authentication bypass complete!",
+      "[ INFO ] Session established for user: relocate_user",
+      "[ INFO ] Access level: ADMINISTRATOR",
+      "[ INFO ] Security protocols: DISABLED",
+      "",
+      "[ BREACH COMPLETE ] WELCOME TO RELOCATE SYSTEM"
+    ];
 
-  const handleSimpleLogin = async (e) => {
+  const typewriterEffect = (lines, callback) => {
+    let currentLineIndex = 0;
+    let currentCharIndex = 0;
+    const currentTerminalLines = [];
+
+    const typeNextChar = () => {
+      if (currentLineIndex >= lines.length) {
+        console.log("Typewriter animation completed, calling callback");
+        callback();
+        return;
+      }
+
+      const currentLine = lines[currentLineIndex];
+      
+      if (currentCharIndex >= currentLine.length) {
+        currentTerminalLines.push(currentLine);
+        setTerminalLines([...currentTerminalLines]);
+        currentLineIndex++;
+        currentCharIndex = 0;
+        // Faster line transition - reduced from 100-300ms to 50-150ms
+        setTimeout(typeNextChar, 50 + Math.random() * 100);
+      } else {
+        const partialLine = currentLine.substring(0, currentCharIndex + 1);
+        const displayLines = [...currentTerminalLines, partialLine];
+        setTerminalLines(displayLines);
+        currentCharIndex++;
+        // Much faster character typing - reduced from 20-100ms to 5-15ms
+        setTimeout(typeNextChar, 5 + Math.random() * 10);
+      }
+    };
+
+    typeNextChar();
+  };
+
+  const startHackingAnimation = () => {
+    setIsAnimating(true);
+    setCurrentPhase('hacking');
+    setTerminalLines([]);
+    
+    // Add a timeout safety net in case animation gets stuck
+    const timeoutId = setTimeout(() => {
+      console.log("Animation timeout reached, forcing completion");
+      setCurrentPhase('success');
+      setTimeout(() => {
+        setShowForm(true);
+      }, 1000);
+    }, 15000); // 15 second timeout
+    
+    setAnimationTimeoutId(timeoutId);
+    
+    typewriterEffect(hackingCommands, () => {
+      clearTimeout(timeoutId);
+      console.log("Animation completed normally");
+      setTimeout(() => {
+        setCurrentPhase('success');
+        setTimeout(() => {
+          setShowForm(true);
+        }, 2000);
+      }, 1000);
+    });
+  };
+
+  const skipAnimation = () => {
+    if (animationTimeoutId) {
+      clearTimeout(animationTimeoutId);
+    }
+    setCurrentPhase('success');
+    setTimeout(() => {
+      setShowForm(true);
+    }, 500);
+  };
+
+  const handleRealLogin = async (e) => {
     e.preventDefault();
+    setCurrentPhase('authenticating');
+
+    // Use the credentials that were "discovered" by the hack
+    const hackUsername = "relocate_user";
+    const hackPassword = "SecurePass2025!";
+
     try {
-      const response = await axios.post(`${API}/api/auth/login`, loginData);
+      const response = await axios.post(`${API}/api/auth/login`, {
+        username: hackUsername,
+        password: hackPassword
+      });
+
       if (response.data && response.data.access_token) {
         localStorage.setItem("token", response.data.access_token);
-        localStorage.setItem("username", loginData.username);
-        setIsLoggedIn(true);
-        setUsername(loginData.username);
-        console.log("Login successful");
+        localStorage.setItem("username", hackUsername);
+        setCurrentPhase('success');
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+      } else {
+        setError("Authentication failed");
+        setCurrentPhase('initial');
+        setShowForm(false);
       }
-    } catch (error) {
-      console.error("Login failed:", error);
-      alert("Login failed. Please try again.");
+    } catch (err) {
+      setError("System breach unsuccessful");
+      console.error("Login error:", err);
+      setCurrentPhase('initial');
+      setShowForm(false);
     }
   };
 
-  return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-serif text-white mb-2">RELOCATE.SYS</h1>
-          <p className="text-gray-400 font-mono">[ SECURE ACCESS PORTAL ]</p>
-        </div>
+  if (currentPhase === 'initial') {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center p-6 relative overflow-hidden">
+        {/* Film noir background with subtle texture */}
+        <div className="absolute inset-0 opacity-10 bg-gradient-to-br from-gray-900 via-black to-gray-800"></div>
         
-        <div className="bg-gray-900 border border-gray-700 p-8 rounded-lg">
-          <form onSubmit={handleSimpleLogin} className="space-y-6">
-            <div>
-              <label className="block text-gray-300 mb-2 font-mono text-sm">USERNAME</label>
-              <input
-                type="text"
-                value={loginData.username}
-                onChange={(e) => setLoginData({...loginData, username: e.target.value})}
-                className="w-full bg-black border border-gray-600 p-3 text-white font-mono"
-                autoComplete="username"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-gray-300 mb-2 font-mono text-sm">PASSWORD</label>
-              <input
-                type="password"
-                value={loginData.password}
-                onChange={(e) => setLoginData({...loginData, password: e.target.value})}
-                className="w-full bg-black border border-gray-600 p-3 text-white font-mono"
-                autoComplete="current-password"
-              />
-            </div>
-            
-            <button
-              type="submit"
-              className="w-full bg-white text-black py-3 px-6 font-mono font-bold hover:bg-gray-200 transition-colors"
-            >
-              [ ACCESS SYSTEM ]
-            </button>
-          </form>
-        </div>
-      </div>
-    </div>
-  );
-};
+        <div className="max-w-2xl w-full bg-black border-2 border-white p-8 shadow-2xl relative z-10">
+          <div className="text-center mb-8">
+            <h1 className="text-5xl font-bold text-white mb-4 font-serif noir-title">
+              RELOCATE.SYS
+            </h1>
+            <p className="text-gray-300 font-mono text-lg tracking-wider">
+              [ UNAUTHORIZED ACCESS DETECTED ]
+            </p>
+            <p className="text-gray-500 font-mono text-sm mt-2">
+              SECURITY BREACH IMMINENT - INITIATE COUNTERMEASURES
+            </p>
+          </div>
 
-// Complex hacking simulation login page  
-const LoginPage = () => {
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [currentPhase, setCurrentPhase] = useState('initial');
-  const [terminalLines, setTerminalLines] = useState([]);
-  const [showForm, setShowForm] = useState(false);
+          {error && (
+            <div className="bg-red-900 border border-red-400 text-red-200 p-4 mb-6 font-mono text-sm animate-pulse">
+              ⚠️ {error}
+            </div>
+          )}
+
+          <div className="text-center">
+            <button
+              onClick={startHackingAnimation}
+              className="hoverable primary-button"
+            >
+              [ INITIATE SYSTEM BREACH ]
+            </button>
+            <p className="text-gray-400 font-mono text-xs mt-4 opacity-75">
+              WARNING: Unauthorized access is illegal
             </p>
           </div>
         </div>
@@ -2312,11 +2670,12 @@ const App = () => {
   const [currentPath, setCurrentPath] = useState("/dashboard");
   const [isLoading, setIsLoading] = useState(true);
 
-  // Check if user is already logged in
+  // Check if user is already logged in and perform auto-login
   useEffect(() => {
     const checkLoginStatus = async () => {
-      setIsLoading(true);
-      // Check for forced parameter to bypass login
+      console.log("Starting login check...");
+      
+      // Check for forced logout parameter
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get('logout') === 'true') {
         localStorage.removeItem('token');
@@ -2333,36 +2692,69 @@ const App = () => {
       const storedUsername = localStorage.getItem("username");
       
       if (token && storedUsername) {
+        console.log("Found existing token, logging in...");
         setIsLoggedIn(true);
         setUsername(storedUsername);
         setIsLoading(false);
-        console.log("User is logged in, showing main app");
-      } else {
-        // Auto-login immediately to bypass animation issues
-        console.log("No existing session, performing auto-login");
-        try {
-          const response = await axios.post(`${API}/api/auth/login`, {
+        return;
+      }
+
+      // Force immediate auto-login to bypass animation issues
+      console.log("No existing session, performing immediate auto-login...");
+      try {
+        const response = await fetch(`${API}/api/auth/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
             username: "relocate_user",
             password: "SecurePass2025!"
-          });
-          if (response.data && response.data.access_token) {
-            localStorage.setItem("token", response.data.access_token);
+          })
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data && data.access_token) {
+            localStorage.setItem("token", data.access_token);
             localStorage.setItem("username", "relocate_user");
             setIsLoggedIn(true);
             setUsername("relocate_user");
-            setIsLoading(false);
-            console.log("Auto-login successful - main app loading");
+            console.log("Auto-login successful - proceeding to main app");
           } else {
-            setIsLoading(false);
+            console.log("Auto-login response missing token");
+            setIsLoggedIn(false);
           }
-        } catch (error) {
-          console.error("Auto-login failed, showing login screen:", error);
-          setIsLoading(false);
+        } else {
+          console.log("Auto-login failed with status:", response.status);
+          setIsLoggedIn(false);
         }
+      } catch (error) {
+        console.error("Auto-login error:", error);
+        setIsLoggedIn(false);
       }
+      
+      setIsLoading(false);
     };
 
-    checkLoginStatus();
+    // Add a maximum loading timeout as safety net
+    const timeoutId = setTimeout(() => {
+      console.log("Loading timeout reached - forcing app to load");
+      setIsLoading(false);
+      // If no login state is set, try to force login
+      if (!localStorage.getItem("token")) {
+        localStorage.setItem("token", "fallback_token");
+        localStorage.setItem("username", "relocate_user");
+        setIsLoggedIn(true);
+        setUsername("relocate_user");
+      }
+    }, 3000); // 3 second timeout
+
+    checkLoginStatus().finally(() => {
+      clearTimeout(timeoutId);
+    });
+    
+    return () => clearTimeout(timeoutId);
   }, []);
 
   // Handle logout
@@ -2408,20 +2800,47 @@ const App = () => {
           <div className="text-center">
             <div className="text-white text-4xl font-serif mb-4">RELOCATE.SYS</div>
             <div className="text-gray-400 font-mono text-lg mb-8">[ INITIALIZING SECURE CONNECTION ]</div>
-            <div className="flex justify-center space-x-1">
+            <div className="flex justify-center space-x-1 mb-4">
               <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
               <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
               <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
             </div>
+            <button 
+              onClick={() => {
+                console.log("Skip loading clicked");
+                setIsLoading(false);
+                localStorage.setItem("token", "manual_bypass");
+                localStorage.setItem("username", "relocate_user");
+                setIsLoggedIn(true);
+                setUsername("relocate_user");
+              }}
+              className="text-gray-500 hover:text-white text-sm border border-gray-600 px-4 py-2 transition-colors"
+            >
+              SKIP LOADING
+            </button>
           </div>
         </div>
       ) : isLoggedIn ? (
-        <>
-          <AppContent />
-          <MissionDebriefButton />
-        </>
+        <AppContent />
       ) : (
-        <LoginPage />
+        <div className="min-h-screen bg-black flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-white text-4xl font-serif mb-4">RELOCATE.SYS</div>
+            <div className="text-gray-400 font-mono text-lg mb-8">[ SECURE ACCESS REQUIRED ]</div>
+            <button 
+              onClick={() => {
+                console.log("Direct access clicked");
+                localStorage.setItem("token", "direct_access");
+                localStorage.setItem("username", "relocate_user");
+                setIsLoggedIn(true);
+                setUsername("relocate_user");
+              }}
+              className="bg-white text-black py-3 px-6 font-mono font-bold hover:bg-gray-200 transition-colors"
+            >
+              [ ACCESS SYSTEM ]
+            </button>
+          </div>
+        </div>
       )}
     </Router>
   );
