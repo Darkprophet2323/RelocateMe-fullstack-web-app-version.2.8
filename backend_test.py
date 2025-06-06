@@ -208,6 +208,16 @@ class RelocateMeAPITester:
             200
         )
 
+    def test_password_reset_request(self, username):
+        """Test requesting a password reset"""
+        return self.run_test(
+            "Request Password Reset",
+            "POST",
+            "auth/reset-password",
+            200,
+            data={"username": username}
+        )
+        
     def test_analytics_budget(self):
         """Test getting budget analytics"""
         return self.run_test(
