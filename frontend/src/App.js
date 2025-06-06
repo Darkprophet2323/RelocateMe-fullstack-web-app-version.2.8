@@ -24,7 +24,12 @@ const SpyCursor = () => {
     const bigBall = bigBallRef.current;
     const smallBall = smallBallRef.current;
 
-    if (!bigBall || !smallBall) return;
+    if (!bigBall || !smallBall) {
+      console.log('SpyCursor: Cursor elements not found');
+      return;
+    }
+
+    console.log('SpyCursor: Initializing enhanced cursor');
 
     // Add custom cursor class to body and hide default cursor
     document.body.classList.add('spy-cursor-active');
@@ -64,10 +69,12 @@ const SpyCursor = () => {
     // Enhanced hover handlers with better transparency
     const handleMouseEnter = (e) => {
       if (bigBall && smallBall) {
+        console.log('SpyCursor: Mouse entered element', e.target.tagName);
+        
         // Scale up with transparency
         bigBall.style.transform = bigBall.style.transform + ' scale(2.5)';
         bigBall.style.transition = 'transform 0.2s ease, opacity 0.2s ease';
-        bigBall.style.opacity = '0.8';
+        bigBall.style.opacity = '0.9';
         
         // Enhanced mix-blend for better text visibility
         bigBall.style.mixBlendMode = 'difference';
@@ -75,7 +82,7 @@ const SpyCursor = () => {
         smallBall.style.opacity = '1';
         
         // Add subtle glow effect
-        bigBall.style.filter = 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.4))';
+        bigBall.style.filter = 'drop-shadow(0 0 12px rgba(255, 255, 255, 0.6))';
         
         // Highlight the target element subtly
         e.target.classList.add('cursor-hover-target', 'cursor-hover-highlight');
@@ -88,11 +95,13 @@ const SpyCursor = () => {
 
     const handleMouseLeave = (e) => {
       if (bigBall && smallBall) {
+        console.log('SpyCursor: Mouse left element', e.target.tagName);
+        
         // Reset scale and transparency
         const currentTransform = bigBall.style.transform.replace(/ scale\([^)]*\)/g, '');
         bigBall.style.transform = currentTransform + ' scale(1)';
         bigBall.style.transition = 'transform 0.2s ease, opacity 0.2s ease';
-        bigBall.style.opacity = '0.6';
+        bigBall.style.opacity = '0.7';
         
         // Reset mix blend mode and effects
         bigBall.style.mixBlendMode = 'normal';
@@ -142,7 +151,8 @@ const SpyCursor = () => {
         '.mission-console:not([disabled])',
         '[type="checkbox"]:not([disabled])',
         '.resource-card:not([disabled])',
-        '.timeline-step:not([disabled])'
+        '.timeline-step:not([disabled])',
+        'h1, h2, h3, h4, h5, h6' // Add headers for text visibility testing
       ];
 
       let elementCount = 0;
@@ -187,6 +197,7 @@ const SpyCursor = () => {
 
     // Cleanup
     return () => {
+      console.log('SpyCursor: Cleaning up');
       document.body.classList.remove('spy-cursor-active');
       document.body.style.cursor = '';
       document.removeEventListener('mousemove', handleMouseMove);
@@ -224,9 +235,9 @@ const SpyCursor = () => {
           mixBlendMode: 'normal',
           willChange: 'transform',
           borderRadius: '50%',
-          background: 'rgba(247, 248, 250, 0.2)',
-          border: '2px solid rgba(247, 248, 250, 0.6)',
-          opacity: '0.6',
+          background: 'rgba(255, 255, 255, 0.25)',
+          border: '2px solid rgba(255, 255, 255, 0.8)',
+          opacity: '0.7',
           transition: 'all 0.2s ease'
         }}
       />
@@ -246,7 +257,7 @@ const SpyCursor = () => {
           mixBlendMode: 'normal',
           willChange: 'transform',
           borderRadius: '50%',
-          backgroundColor: 'rgba(247, 248, 250, 0.9)',
+          backgroundColor: 'rgba(255, 255, 255, 1)',
           opacity: '0.8',
           transition: 'all 0.2s ease'
         }}
