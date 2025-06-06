@@ -746,6 +746,53 @@ body::before {
   }
 }
 
+/* Enhanced Transparent Cursor Styles */
+.spy-cursor-active {
+  cursor: none !important;
+}
+
+.spy-cursor-active * {
+  cursor: none !important;
+}
+
+.cursor-hover-target {
+  transition: all 0.2s ease !important;
+}
+
+.cursor-hover-highlight {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.3) !important;
+  transform: scale(1.01) !important;
+}
+
+/* Transparent cursor animation */
+@keyframes cursorPulse {
+  0% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+}
+
+.cursor__ball--big {
+  animation: cursorPulse 2s ease-in-out infinite;
+}
+
+/* Enhanced visibility for text under cursor */
+.cursor-text-visible {
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.8) !important;
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border-radius: 2px !important;
+  padding: 1px 2px !important;
+}
+
 /* Mobile responsiveness for Mission Debrief Console button */
 @media (max-width: 768px) {
   .mission-debrief-button {
